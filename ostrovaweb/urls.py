@@ -15,9 +15,8 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from django.views.generic import TemplateView
 
-from ostrovaCalendar.article_views import ArticleAjaxChainedView
+from ostrovaCalendar import ArticleAjaxChainedView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
