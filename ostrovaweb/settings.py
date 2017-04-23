@@ -157,29 +157,29 @@ SUIT_CONFIG = {
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-# check for HEROKU presence
-#if 'DYNO' in os.environ:
+# check for HEROKU presence (must MANUALLY add ON_HEROKU as a configuration variable)
+if 'ON_HEROKU' in os.environ:
 
-import dj_database_url
-DATABASES = {
-   'default' :  dj_database_url.config(),
-}
-# else:
-#     dbDriver = 'django.db.backends.oracle'
-#     dbUser = 'OSTROVA'
-#     dbPass = 'ostrova'
-#     dbName = 'XE'
-#
-#     DATABASES = {
-#         'default': {
-#         'ENGINE': dbDriver,
-#         'HOST': '192.168.6.1',
-#         'PORT': '1521',
-#         'SID':'XE',
-#         'USER': dbUser,'PASSWORD': dbPass,
-#         'OPTIONS': { 'threaded': True, },
-#         },
-#     }
+    import dj_database_url
+    DATABASES = {
+       'default' :  dj_database_url.config(),
+    }
+else:
+    dbDriver = 'django.db.backends.oracle'
+    dbUser = 'OSTROVA'
+    dbPass = 'ostrova'
+    dbName = 'XE'
+
+    DATABASES = {
+        'default': {
+        'ENGINE': dbDriver,
+       'HOST': '192.168.6.1',
+        'PORT': '1521',
+        'SID':'XE',
+        'USER': dbUser,'PASSWORD': dbPass,
+        'OPTIONS': { 'threaded': True, },
+        },
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
