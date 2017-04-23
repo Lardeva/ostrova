@@ -1,0 +1,63 @@
+table tbody>tr.ostrova_cal_row:nth-child(10n+1)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+1)>th {
+	background-color:#f5f5f5;
+	border-top:1px solid #d0e9c6
+}
+
+table tbody>tr.ostrova_cal_row:nth-child(10n+2)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+2)>th {
+	background-color:#f5f5f5;
+	border-top:1px solid #d0e9c6
+}
+table tbody>tr.ostrova_cal_row:nth-child(10n+3)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+3)>th {
+	background-color:#f5f5f5;
+	border-top:1px solid #d0e9c6
+}
+table tbody>tr.ostrova_cal_row:nth-child(10n+4)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+4)>th {
+	background-color:#f5f5f5;
+	border-top:1px solid #d0e9c6
+}
+table tbody>tr.ostrova_cal_row:nth-child(10n+5)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+5)>th {
+	background-color:#f5f5f5;
+	border-top:1px solid #d0e9c6
+}
+
+
+
+table tbody>tr.ostrova_cal_row:nth-child(10n+6)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+6)>th {
+ 	background-color:white;
+ 	border-top:1px solid #d0e9c6
+}
+
+table tbody>tr.ostrova_cal_row:nth-child(10n+7)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+7)>th {
+ 	background-color:white;
+ 	border-top:1px solid #d0e9c6
+}
+table tbody>tr.ostrova_cal_row:nth-child(10n+8)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+8)>th {
+ 	background-color:white;
+ 	border-top:1px solid #d0e9c6
+}
+table tbody>tr.ostrova_cal_row:nth-child(10n+9)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+9)>th {
+ 	background-color:white;
+ 	border-top:1px solid #d0e9c6
+}
+table tbody>tr.ostrova_cal_row:nth-child(10n+10)>td,table tbody>tr.ostrova_cal_row:nth-child(10n+10 )>th {
+ 	background-color:white;
+ 	border-top:1px solid #d0e9c6
+}
+
+
+
+table tbody>tr.ostrova_cal_row>td.ostrova_deposit,table tbody>tr>th.ostrova_deposit {
+	background-color:#f2dede;
+	border-top:1px solid #eed3d3
+}
+table tbody>tr.ostrova_cal_row>td.ostrova_no_deposit,table tbody>tr>th.ostrova_no_deposit {
+	background-color:#fcf8e3;
+	border-top:1px solid #f8efbe
+}
+table tbody>tr.ostrova_cal_row>td.ostrova_free,table tbody>tr>th.ostrova_free {
+	background-color:#dff0d8;
+	border-top:1px solid #d0e9c6
+}
+
+
+

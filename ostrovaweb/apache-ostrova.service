@@ -1,0 +1,13 @@
+[Unit]
+Description=Apache for Ostrovaweb
+After=network.target
+
+[Service]
+User=root
+#Restart=always
+Type=oneshot
+ExecStart=/home/osboxes/apache_ostrova/apachectl start
+ExecStop=/home/osboxes/apache_ostrova/apachectl stop
+
+[Install]
+WantedBy=multi-user.targe
