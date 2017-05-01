@@ -1,8 +1,8 @@
+from django.utils import timezone
 from django.db import models
 from django.db.models import F
 from django.db.models import Sum
 from django.contrib.auth.models import User
-from datetime import datetime
 from ostrovaweb.utils import nvl, AdminURLMixin
 
 
@@ -34,7 +34,7 @@ class Supplier(models.Model):
 
 class Delivery(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
-    order_date = models.DateField( verbose_name="Дата на заявка", default=datetime.now())
+    order_date = models.DateField( verbose_name="Дата на заявка", default=timezone.now)
     supplier_fk = models.ForeignKey('Supplier', verbose_name="Доставчик")
     status = models.CharField(max_length=80, verbose_name="Статус", choices = (
         ('ПОРЪЧАНO', 'ПОРЪЧАНO'),
@@ -217,11 +217,11 @@ class Order(models.Model):
     deposit2 = models.FloatField(blank=True, null=True, verbose_name="Капаро 2")
     deposit2_date = models.DateField(blank=True, null=True, verbose_name="Дата на капаро2")
     update_state = models.CharField(max_length=80, blank=True, verbose_name="Актуализация на състоянието")
-    locked = models.CharField(max_length=4, blank=True, verbose_name="Статус за приключване")
+    locked = models.BooleanField(default=False, max_length=4,  verbose_name="Приключено")
     payed_final = models.FloatField(blank=True, null=True, verbose_name="Финално плащане")
     notes_torta = models.TextField(max_length=2000, blank=True, verbose_name="Забележка за тортата")
     notes_kitchen = models.TextField(max_length=2000, blank=True, verbose_name="Забележка за кухнята")
-
+    store_status = models.BooleanField(default=False, verbose_name=" Изписано от склада")
     def __str__(self):
         return str(self.parent) + ":" + str(self.phone) + ":" + str(self.child) + " :" + str(self.deposit) + " лв."
 
@@ -479,7 +479,7 @@ class stock_delivery_detail(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     stock_protocol_fk = models.ForeignKey('Stock_receipt_protocol', verbose_name="Протокол")
     article_store_fk = models.ForeignKey('ArticleStore', blank=False, null=False, verbose_name="Артикул")
-    orderdetail_fk = models.ForeignKey('Orderdetail', blank=True, null=True, verbose_name="Поръчано кол.")
+    orderdetail_fk = models.ForeignKey('Orderdetail', blank=True, null=True, verbose_name="Поръчка детайл")
     cnt = models.FloatField(verbose_name="Количество")
 
     class Meta:
@@ -493,21 +493,36 @@ class stock_delivery_detail(models.Model):
 
 
 class stock_receipt_protocol(models.Model):
-    id = models.AutoField(primary_key=True, verbose_name="Номер")
-    club_fk = models.ForeignKey('Club', null=True, verbose_name="Обект")
-    receipt_date = models.DateField(blank=True, null=True,verbose_name="Дата")
-    type = models.CharField(max_length=40, blank=True, null=True, verbose_name="Тип на протокола",choices = (
-         ('REVISION', 'ППП Ревизия'),
-         ('ORDER', 'ППП Продажба'),
-         ('DELIVERY', 'ППП Доставка'),
-         ('CORDELIVERY', 'ППП Корекция доставка'),
-         ('EXPEDITION', 'ППП Експедиция'),
-         ('LATEORD', 'ППП Късно изписване'),
-         ('INTERNAL', 'ППП Вътрешни нужди'),
-         ('SCRAP', 'ППП Брак'),
+    TYPES = (
+        ('REVISION', 'ППП Ревизия'),
+        ('ORDER', 'ППП Продажба'),
+        ('DELIVERY', 'ППП Доставка'),
+        ('EXPDELIVERY', 'ППП Доставка чрез експедиция'),
+        ('CORDELIVERY', 'ППП Корекция доставка'),
+        ('EXPEDITION', 'ППП Експедиция'),
+        ('LATEORD', 'ППП Късно изписване'),
+        ('INTERNAL', 'ППП Вътрешни нужди'),
+        ('SCRAP', 'ППП Брак'),
+    )
 
-     ), default='ППП Ревизия')
+    MANUAL_TYPES = (
+        ('REVISION', 'ППП Ревизия'),
+        ('CORDELIVERY', 'ППП Корекция доставка'),
+        ('EXPEDITION', 'ППП Експедиция'),
+        ('LATEORD', 'ППП Късно изписване'),
+        ('INTERNAL', 'ППП Вътрешни нужди'),
+        ('SCRAP', 'ППП Брак'),
+    )
+
+    id = models.AutoField(primary_key=True, verbose_name="Номер")
+    club_fk = models.ForeignKey('Club', verbose_name="Обект")
+    order_fk = models.ForeignKey('Order', blank=True, null=True, verbose_name="Поръчка")
+    delivery_fk = models.ForeignKey('Delivery', blank=True, null=True, verbose_name="Доставка")
+    receipt_date = models.DateField(blank=True, null=True,verbose_name="Дата", default=timezone.now)
+    type = models.CharField(max_length=40, verbose_name="Тип на протокола",choices=TYPES, default='REVISION', )
+    closed = models.BooleanField(default=False, verbose_name="Приключен")
     transfer_fk = models.ForeignKey('Stock_receipt_protocol', blank=True, null=True, verbose_name="Трансфер")
+    transfer_club_fk = models.ForeignKey('Club',blank=True, null=True, verbose_name="Към обект", related_name='stock_receipt_protocol_transfer_set')
     note = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Забележка")
 
     class Meta:
@@ -517,4 +532,4 @@ class stock_receipt_protocol(models.Model):
         verbose_name_plural = u"Приемо Предавателни Протоколи"
 
     def __str__(self):
-        return str(self.club_fk) + ":ППП:" + str(self.type)
+        return str(self.club_fk) + ":" + str(dict(self.TYPES)[self.type])
