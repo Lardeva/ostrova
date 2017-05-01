@@ -18,6 +18,9 @@ class ChainedSelectChoicesView(View):
         self.field_value = request.GET.get("field_value", None)
         self.parent_field = request.GET.get("parent_field")
         self.parent_value = request.GET.get("parent_value")
+        self.add_rel_field = request.GET.get("add_rel_field")
+        self.add_rel_value = request.GET.get("add_rel_value")
+
         if self.parent_value in EMPTY_VALUES + ('None', ):
             return self.empty_response()
         return super(ChainedSelectChoicesView, self).dispatch(request, *args, **kwargs)

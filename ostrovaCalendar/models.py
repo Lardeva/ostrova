@@ -1,12 +1,20 @@
-from datetime import datetime
 from django.db import models
+from django.db.models import F
 from django.db.models import Sum
-from django.utils import timezone
-# from django_permanent.models import PermanentModel
 from django.contrib.auth.models import User
 from datetime import datetime
-# Create your models here.
 from ostrovaweb.utils import nvl, AdminURLMixin
+
+
+class Employee(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    club_fk = models.ForeignKey('Club', null=True, blank=True, verbose_name="Клуб")
+
+    class Meta:
+        managed = True
+        db_table = 'Employee'
+        verbose_name = u"Служител"
+        verbose_name_plural = u"Служители"
 
 
 class Supplier(models.Model):
@@ -14,9 +22,8 @@ class Supplier(models.Model):
     name = models.CharField(max_length=60, blank=True, verbose_name="Име")
     description = models.CharField(max_length=500, blank=True, verbose_name="Описание")
 
-    def __str__( self ):
-        return  self.name
-
+    def __str__(self):
+        return self.name
 
     class Meta:
         managed = True
@@ -24,53 +31,67 @@ class Supplier(models.Model):
         verbose_name = u"Доставчик"
         verbose_name_plural = u"Доставчици"
 
+
 class Delivery(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
-    order_date = models.DateField(blank=True, null=True, verbose_name="Дата на заявка")
-    supplier_fk = models.ForeignKey('Supplier', blank=True, null=True, verbose_name="Доставчик")
-    status = models.CharField(max_length=80, blank=True, verbose_name="Статус", choices = (
+    order_date = models.DateField( verbose_name="Дата на заявка", default=datetime.now())
+    supplier_fk = models.ForeignKey('Supplier', verbose_name="Доставчик")
+    status = models.CharField(max_length=80, verbose_name="Статус", choices = (
         ('ПОРЪЧАНO', 'ПОРЪЧАНO'),
         ('ДОСТАВЕНО', 'ДОСТАВЕНО'),
         ('ОТКАЗАНО', 'ОТКАЗАНО'),
-    ))
+    ), default='ПОРЪЧАНO')
     user = models.ForeignKey(User, verbose_name="Служител")
-    delivery_date = models.DateField(blank=True, null=True, verbose_name="Дата на доставка ")
-    invoice_no = models.CharField(max_length=400, blank=True, verbose_name="Номер на фактура")
-    firm_invoice_no = models.CharField(max_length=400, blank=True, verbose_name="Факт. На фирма:")
-    paid = models.CharField(max_length=80, blank=True, verbose_name="Платено", choices = (
-        ('ДА', 'ДА'),
+    delivery_date = models.DateField(blank=True, null=True, verbose_name="Дата на доставка")
+    invoice_no = models.CharField(max_length=400, blank=True, null=True, verbose_name="Номер на фактура")
+    firm_invoice_no = models.CharField(max_length=400, blank=True, null=True, verbose_name="Факт. На фирма:")
+    paid = models.CharField(max_length=80,  verbose_name="Платено", choices = (
         ('НЕ', 'НЕ'),
-    ))
+        ('ДА', 'ДА'),
+    ), default = 'НЕ')
     cashdesk_fk = models.ForeignKey('Cashdesk',blank=True, null=True, verbose_name="Дата на плащане")
-    notes = models.TextField(max_length=2000, blank=True, verbose_name="Забележка")
-    club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
-    delivery_amount = models.FloatField(blank=True, null=True, verbose_name="Крайна цена")
+    notes = models.TextField(max_length=2000, blank=True,null=True, verbose_name="Забележка")
+    club_fk = models.ForeignKey('Club', verbose_name="Клуб")
     last_update_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата на опресняване")
+
+    # Computes dynamically total price of delivery, based on all detail models
+    @property
+    def delivery_amount(self):
+        result = DeliveryDetail.objects.filter(delivery_fk=self).aggregate(amount=Sum(F('cnt')*F('price')))
+        return nvl(result['amount'],0)
+    delivery_amount.fget.short_description = 'Крайна цена'
+
     class Meta:
-        managed = True
-        db_table = 'delivery'
-        verbose_name = u"Доставка"
-        verbose_name_plural = u"Доставки"
+            managed = True
+            db_table = 'delivery'
+            verbose_name = u"Доставка"
+            verbose_name_plural = u"Доставки"
 
     def __str__( self ):
         return str(self.supplier_fk) + ":" + str(self.delivery_date) + ":" + str(self.invoice_no)+ " :" + str(self.delivery_amount) + " лв."
 
-    #suit_form_tabs = (('provider', 'Provider'), ('information', 'Information'),('notes', 'Notes'))
 
 class DeliveryDetail(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     delivery_fk = models.ForeignKey('Delivery', null=True, verbose_name="Доставка N", )
     group_fk = models.ForeignKey('ArticleGroup', blank=False, null=True, verbose_name="Артикулна група")
     article_fk = models.ForeignKey('Article', blank=False, null=True, verbose_name="Артикул")
-    cnt = models.FloatField(blank=True, null=True, verbose_name="Количество")
-    price = models.FloatField(blank=True, null=True, verbose_name="Единична цена")
-    price_actual = models.FloatField(blank=True, null=True, verbose_name="Цена")
-    goods_id = models.IntegerField(blank=True, null=True, verbose_name="Номер на стока")
+    cnt = models.FloatField(verbose_name="Количество")
+    price = models.FloatField( verbose_name="Единична цена")
+
+    @property
+    def amount(self):
+        return nvl(self.price,0)*nvl(self.cnt,0)
+    amount.fget.short_description = 'Крайна цена'
+
     class Meta:
         managed = True
         db_table = 'delivery_detail'
         verbose_name = u"Доставка описание"
         verbose_name_plural = u"Доставки описание"
+
+    def __str__(self):
+        return str(self.group_fk) + ":" + str(self.article_fk) + ":" + str(self.cnt) + " :" + str(self.price) + " лв."
 
 
 class ArticleGroup(models.Model):
@@ -80,8 +101,8 @@ class ArticleGroup(models.Model):
     order_type = models.BooleanField(default=False, verbose_name="За продажби")
     create_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата на създаване")
     
-    def __str__( self ):
-        return  self.name
+    def __str__(self):
+        return self.name
 
     class Meta:
         managed = True
@@ -95,6 +116,7 @@ class Article(models.Model):
     name = models.CharField(max_length=100, blank=True, verbose_name="Име")
     group_fk = models.ForeignKey('ArticleGroup', null=True, verbose_name="Артикулна група")
     description = models.TextField(max_length=2000, blank=True, verbose_name="Описание")
+    supplier_fk = models.ManyToManyField('Supplier', verbose_name="Доставчик")
     delivery_price = models.FloatField(blank=True, null=True, verbose_name="Доставна цена")
     sale_price = models.FloatField(blank=True, null=True, verbose_name="Продажна цена")
     last_price_dl = models.FloatField(blank=True, null=True, verbose_name="Посл.Цена на доставка")
@@ -102,9 +124,9 @@ class Article(models.Model):
     last_update_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата промяна")
     measure = models.CharField(max_length=50, blank=True, null=True, verbose_name="Мярка")
     active = models.BooleanField(default=True, verbose_name="Активен")
-    def __str__( self ):
-        return self.group_fk.name + ":"+ self.name
 
+    def __str__(self):
+        return self.group_fk.name + ":" + self.name
 
     class Meta:
         managed = True
@@ -113,13 +135,30 @@ class Article(models.Model):
         verbose_name_plural = u"Артикули"
 
 
+class ArticleStore(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="Номер")
+    club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
+    article_fk = models.ForeignKey('Article', blank=False, null=True, verbose_name="Артикул")
+    cnt = models.FloatField(blank=True, null=True, verbose_name="Налично кол.")
+    cnt_min = models.FloatField(blank=True, null=True, verbose_name="Минимално кол.")
+    cnt_bl = models.FloatField(blank=True, null=True, verbose_name="Блокирано кол.")
+
+    def __str__(self):
+        return self.article_fk.group_fk.name + ":" + self.article_fk.name + ':' + str(self.cnt)
+
+    class Meta:
+        managed = True
+        db_table = 'article_store'
+        verbose_name = u"Складова наличност"
+        verbose_name_plural = u"Складови наличности"
+
 class Club(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     name = models.CharField(max_length=240, blank=True, verbose_name='Име')
     hall_price = models.FloatField(blank=True, null=True, verbose_name='Цена на зала')
     address = models.CharField(max_length=240, blank=True, verbose_name='Адрес')
 
-    def __str__( self ):
+    def __str__(self):
         return self.name
 
     class Meta:
@@ -128,18 +167,20 @@ class Club(models.Model):
         verbose_name = u"Клуб"
         verbose_name_plural = u"Клубове"
 
-class Saloon (models.Model):
+
+class Saloon(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
     name = models.CharField(max_length=200, blank=True,  verbose_name="Име")
 
-    def __str__( self ):
+    def __str__(self):
         return self.club_fk.name + ":" + self.name
 
     class Meta:
         db_table = 'saloon'
         verbose_name = u"Салон"
         verbose_name_plural = u"Салони"
+
 
 class Order(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
@@ -181,16 +222,14 @@ class Order(models.Model):
     notes_torta = models.TextField(max_length=2000, blank=True, verbose_name="Забележка за тортата")
     notes_kitchen = models.TextField(max_length=2000, blank=True, verbose_name="Забележка за кухнята")
 
-    def __str__( self ):
-        return str(self.parent) + ":" + str(self.phone) + ":" + str(self.child)+ " :" + str(self.deposit) + " лв."
+    def __str__(self):
+        return str(self.parent) + ":" + str(self.phone) + ":" + str(self.child) + " :" + str(self.deposit) + " лв."
 
     class Meta:
         managed = True
         db_table = 'order'
         verbose_name = u"Поръчка"
         verbose_name_plural = u"Поръчки"
-
-    #suit_form_tabs = (('club', 'Club'),('order', 'Order'), ('client', 'Client'),('paymends1', 'Paymends1'),('paymends2', 'Paymends2'),('notes', 'Notes'))
 
 
 class OrderDetail(models.Model):
@@ -211,9 +250,8 @@ class OrderDetail(models.Model):
     # dshamp_cnt = models.IntegerField(blank=True, null=True, verbose_name="Детско шампанско")
     # dshamp_price = models.FloatField(blank=True, null=True, verbose_name="Детско шампанско цена")
 
-
     def __str__( self ):
-        return self.group_fk.name + ":" + self.article_fk.name + ":" + str(self.cnt) + " "+ self.article_fk.measure + " :" + str(self.price) + " лв."
+        return self.group_fk.name + ":" + self.article_fk.name + ":" + str(self.cnt) + " " + self.article_fk.measure + " :" + str(self.price) + " лв."
 
     class Meta:
         managed = True
@@ -229,8 +267,8 @@ class Times(models.Model):
     time_end = models.CharField(max_length=40, blank=True,verbose_name="Край")
     weekday = models.IntegerField(blank=True, null=True,verbose_name="Ден от седмицата")
 
-    def __str__( self ):
-        return  self.time + ":" + self.time_end
+    def __str__(self):
+        return self.time + ":" + self.time_end
 
 
     class Meta:
@@ -239,15 +277,16 @@ class Times(models.Model):
         verbose_name = u"Час"
         verbose_name_plural = u"Часове"
 
+
 class Schedule(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
-    times_fk =models.ForeignKey('Times', verbose_name="Часови сегмент" )
+    times_fk = models.ForeignKey('Times', verbose_name="Часови сегмент")
     order_fk = models.ForeignKey('Order', blank=True, null=True, verbose_name="Поръчка N")
-    schedule_date =models.DateField(max_length=40, blank=True, verbose_name="Дата")
+    schedule_date = models.DateField(max_length=40, blank=True, verbose_name="Дата")
     club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
 
     def __str__(self):
-        return  str(self.schedule_date) + ":"+ str(self.order_fk) + ":" + self.times_fk.time
+        return str(self.schedule_date) + ":" + str(self.order_fk) + ":" + self.times_fk.time
 
     class Meta:
         managed = True
@@ -264,7 +303,6 @@ class Cashdesk_groups_income(models.Model):
     def __str__( self ):
         return  self.name + ":" + self.sub_name
 
-
     class Meta:
         managed = True
         db_table = 'cashdesk_groups_income'
@@ -280,14 +318,11 @@ class Cashdesk_groups_expense(models.Model):
     def __str__( self ):
         return  self.name + ":" + self.sub_name
 
-
     class Meta:
         managed = True
         db_table = 'cashdesk_groups_expense'
         verbose_name = u"Група каса разход"
         verbose_name_plural = u"Групи каса разход"
-
-
 
 
 class Cashdesk(AdminURLMixin, models.Model):
@@ -355,8 +390,6 @@ class Cashdesk(AdminURLMixin, models.Model):
     end_amount.fget.short_description = 'Очаквана сума в края на деня'
 
 
-
-
     @property
     def amt_header(self):
         return ''
@@ -385,8 +418,8 @@ class Cashdesk(AdminURLMixin, models.Model):
         verbose_name = u"Каса"
         verbose_name_plural = u"Каси"
 
-    def __str__( self ):
-        return str(self.id) + ":" + str(self.club_fk)+ ":" + str(self.rec_date)
+    def __str__(self):
+        return str(self.id) + ":" + str(self.club_fk) + ":" + str(self.rec_date)
 
 
 class Cashdesk_detail_income(models.Model):
@@ -396,15 +429,17 @@ class Cashdesk_detail_income(models.Model):
     cashdesk_groups_income_fk = models.ForeignKey('Cashdesk_groups_income', null=True, verbose_name="Група каса приходи")
     name = models.CharField(max_length=400, blank=True, null=True, verbose_name="Забележка")
     amount = models.FloatField(verbose_name="Сума")
-    # master_group = models.CharField(max_length=80, blank=True, verbose_name="Мастер Група")
-    # master_sub_group = models.CharField(max_length=120, blank=True, verbose_name="Мастер Подгрупа")
-    #
+
     class Meta:
         managed = True
         db_table = 'cashdesk_detail_income'
         verbose_name = u"Приходен касов ордер"
         verbose_name_plural = u"Приходни касови ордери"
-        
+
+    def __str__(self):
+        return str(self.cashdesk) + ":ПРИХОД:" + str(self.name) + ":" + str(self.amount)
+
+
 class Cashdesk_detail_expense(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     cashdesk = models.ForeignKey('Cashdesk', verbose_name="Каса")
@@ -412,35 +447,74 @@ class Cashdesk_detail_expense(models.Model):
     cashdesk_groups_expense_fk = models.ForeignKey('Cashdesk_groups_expense', null=True, verbose_name="Групи каса разходи")
     name = models.CharField(max_length=400, blank=True, null=True, verbose_name="Забележка")
     amount = models.FloatField(verbose_name="Сума")
-    # master_group = models.CharField(max_length=80, blank=True, verbose_name="Мастер Група")
-    # master_sub_group = models.CharField(max_length=120, blank=True, verbose_name="Мастер Подгрупа")
-    #
+
     class Meta:
         managed = True
         db_table = 'cashdesk_detail_expense'
         verbose_name = u"Разходен касов ордер"
         verbose_name_plural = u"Разходни касови ордери"
 
+    def __str__(self):
+        return str(self.cashdesk) + ":РАЗХОД:" + str(self.name) + ":" + str(self.amount)
 
-class Store(models.Model):
-    id = models.AutoField( primary_key=True, verbose_name="Номер")
-    club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
-    article_fk = models.ForeignKey('Article', null=True, verbose_name="Артикул")
-    name = models.CharField(max_length=400, blank=True, verbose_name="Име")
-    cnt_del_fk = models.ForeignKey('DeliveryDetail', blank=True, null=True, verbose_name="дост.к-во")
-    cnt_or_fk = models.ForeignKey('OrderDetail',blank=True, null=True, verbose_name="пор.к-во")
-    # cnt = models.FloatField(blank=True, null=True, verbose_name="Налично кол.")
-    # cnt = models.FloatField(blank=True, null=True, verbose_name="Брак")
-    price_actual = models.FloatField(blank=True, null=True, verbose_name="Цена")
-    order_date = models.DateField(blank=True, null=True, verbose_name="Дата на Поръчка")
-    delivery_date = models.DateField(blank=True, null=True, verbose_name="Дата на доставка ")
-    type = models.CharField(max_length=40, blank=True, verbose_name="Тип")
 
-    def __str__( self ):
-        return self.name
+class stock_acceptance_detail(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="Номер")
+    stock_protocol_fk = models.ForeignKey('Stock_receipt_protocol', verbose_name="Протокол")
+    article_store_fk = models.ForeignKey('ArticleStore', blank=False, null=False, verbose_name="Артикул")
+    deliverydetail_fk = models.ForeignKey('DeliveryDetail', blank=True, null=True, verbose_name="Доставено кол.")
+    cnt = models.FloatField(verbose_name="Количество")
 
     class Meta:
         managed = True
-        db_table = 'Store'
-        verbose_name = u"Склад"
-        verbose_name_plural = u"Складове"
+        db_table = 'stock_acceptance_detail'
+        verbose_name = u"Приемане на стока"
+        verbose_name_plural = u"Приемане на стоки"
+
+    def __str__(self):
+        return str(self.article_store_fk.article_fk.name) + ":Приемане на стока:" + str(self.cnt) + ":" + str(self.deliverydetail_fk)
+
+
+class stock_delivery_detail(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="Номер")
+    stock_protocol_fk = models.ForeignKey('Stock_receipt_protocol', verbose_name="Протокол")
+    article_store_fk = models.ForeignKey('ArticleStore', blank=False, null=False, verbose_name="Артикул")
+    orderdetail_fk = models.ForeignKey('Orderdetail', blank=True, null=True, verbose_name="Поръчано кол.")
+    cnt = models.FloatField(verbose_name="Количество")
+
+    class Meta:
+        managed = True
+        db_table = 'stock_delivery_detail'
+        verbose_name = u"Издаване на стока"
+        verbose_name_plural = u"Издаване на стоки"
+
+    def __str__(self):
+        return str(self.article_store_fk.article_fk.name) + ":Издаване на стока:" + str(self.cnt) + ":" + str(self.orderdetail_fk)
+
+
+class stock_receipt_protocol(models.Model):
+    id = models.AutoField(primary_key=True, verbose_name="Номер")
+    club_fk = models.ForeignKey('Club', null=True, verbose_name="Обект")
+    receipt_date = models.DateField(blank=True, null=True,verbose_name="Дата")
+    type = models.CharField(max_length=40, blank=True, null=True, verbose_name="Тип на протокола",choices = (
+         ('REVISION', 'ППП Ревизия'),
+         ('ORDER', 'ППП Продажба'),
+         ('DELIVERY', 'ППП Доставка'),
+         ('CORDELIVERY', 'ППП Корекция доставка'),
+         ('EXPEDITION', 'ППП Експедиция'),
+         ('LATEORD', 'ППП Късно изписване'),
+         ('INTERNAL', 'ППП Вътрешни нужди'),
+         ('SCRAP', 'ППП Брак'),
+
+     ), default='ППП Ревизия')
+    transfer_fk = models.ForeignKey('Stock_receipt_protocol', blank=True, null=True, verbose_name="Трансфер")
+    note = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Забележка")
+
+    class Meta:
+        managed = True
+        db_table = 'stock_receipt_protocol'
+        verbose_name = u"Приемо Предавателен Протокол"
+        verbose_name_plural = u"Приемо Предавателни Протоколи"
+
+    def __str__(self):
+        return str(self.club_fk) + ":ППП:" + str(self.type)

@@ -1,3 +1,5 @@
+from ostrovaweb.utils import nvl
+
 __author__ = 'Erik Telepovsky'
 
 import json
@@ -67,29 +69,82 @@ class ChainedChoicesMixin(object):
                 except AttributeError:
                     pass
 
+                additional_related_field = None
+                additional_related_value = None
                 if kwargs is not None:
-                    # inital data do not have any prefix
+                    # initial data do not have any prefix
                     if self.prefix in EMPTY_VALUES or is_initial:
                         parent_value = kwargs.get(field.parent_field, None)
                         field_value = kwargs.get(field_name, None)
+
+                        if hasattr(field, 'additional_related_field'):
+                            additional_related_field = field.additional_related_field
+                            if '__' in additional_related_field:
+                                # handle reference from inline field
+                                additional_related_value = kwargs.get('%s' % (field.additional_related_field.split('__')[-1]), None)
+                            else:
+                                # handle normal reference
+                                additional_related_value = kwargs.get(field.additional_related_field, None)
                     else:
-                        parent_value = kwargs.get('%s-%s' % (self.prefix, field.parent_field), None)
                         field_value = kwargs.get('%s-%s' % (self.prefix, field_name), None)
+
+                        if field.inline_fk_to_master:
+                            # handle reference from inline field
+                            parent_value = kwargs.get('%s' % field.parent_field, None)
+                        else:
+                            # handle normal inlined (or prefixed) reference
+                            parent_value = kwargs.get('%s-%s' % (self.prefix, field.parent_field), None)
+
+                        if hasattr(field, 'additional_related_field') and field.additional_related_field:
+                            additional_related_field = field.additional_related_field
+
+                            # a rather clumsy way to support master field lookup
+                            if '__' in additional_related_field:
+                                # handle reference from inline field
+                                additional_related_value = kwargs.get('%s' % (field.additional_related_field.split('__')[-1]), None)
+                            else:
+                                # handle normal inlined (or prefixed) reference
+                                additional_related_value = kwargs.get('%s-%s' % (self.prefix, field.additional_related_field), None)
+
                 else:
-                    parent_value = getattr(self.instance, '%s' % field.parent_field, None)
                     field_value = getattr(self.instance, '%s' % field_name, None)
+
+                    if field.inline_fk_to_master:
+                        # handle reference from inline field
+                        parent_value = getattr(self.instance, '%s' % field.inline_fk_to_master, None)
+                        parent_value = getattr(parent_value, '%s' % field.parent_field, None)
+                    else:
+                        # handle normal/inlined reference
+                        parent_value = getattr(self.instance, '%s' % field.parent_field, None)
+
+                    if hasattr(field, 'additional_related_field') and field.additional_related_field:
+                        additional_related_field = field.additional_related_field
+
+                        # lookup "deep" references of models, split with underscores, following foreign keys
+                        obj = self.instance
+                        pref_li = additional_related_field.split('__')
+                        for x in pref_li:
+                            if obj:
+                                obj = getattr(obj, '%s' % x, None)
+
+                        additional_related_value = obj
+
 
                 field.choices = [('', field.empty_label)]
 
                 # check that parent_value is valid
                 if parent_value:
                     parent_value = getattr(parent_value, 'pk', parent_value)
+                    additional_related_value = getattr(additional_related_value, 'pk', additional_related_value)
 
                     url = field.ajax_url
                     params = {
                         'field': field_name,
                         'parent_value': parent_value,
-                        'field_value': field_value
+                        'field_value': field_value,
+                        'add_rel_field': nvl(additional_related_field,''),
+                        'add_rel_value': nvl(additional_related_value,'')
+
                     }
                     data = c.get(url, params)
 

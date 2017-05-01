@@ -1,17 +1,16 @@
 from datetime import timedelta
 
 from django.contrib import admin
-
-# Register your models here.
-
-from django.contrib import admin
 from django.contrib import messages
+from django.contrib.auth.admin import UserAdmin
 from django.core.urlresolvers import reverse_lazy
+from django.forms import ModelChoiceField
 from django.shortcuts import redirect
 from django_object_actions import DjangoObjectActions
+from django_select2.forms import ModelSelect2Widget
 from reversion_compare.admin import CompareVersionAdmin
 
-from ostrovaCalendar.clever_select_enhanced.clever_txt_field import ChainedTextInputField
+from ostrovaCalendar.clever_select_enhanced.clever_txt_field import ChainedNumberInputField
 from ostrovaCalendar.clever_select_enhanced.form_fields import ChainedModelChoiceField
 from ostrovaCalendar.clever_select_enhanced.forms import ChainedChoicesModelForm
 
@@ -20,7 +19,13 @@ from ostrovaCalendar.models import *
 class DeliveryDetailForm(ChainedChoicesModelForm):
 
     article_fk = ChainedModelChoiceField(parent_field='group_fk', ajax_url=reverse_lazy('article_ajax_chained_models'),
-                                      label=u'Артикул', required=True,model=Article )
+                                      label=u'Артикул', required=True,model=Article, additional_related_field='delivery_fk__supplier_fk')
+
+    group_fk = ChainedModelChoiceField(parent_field='supplier_fk', inline_fk_to_master='delivery_fk', ajax_url=reverse_lazy('article_ajax_chained_models'),
+                                         label=u'Артикулна група', required=True,model=ArticleGroup )
+
+    price = ChainedNumberInputField(parent_field='article_fk', ajax_url=reverse_lazy('article_ajax_chained_models'),
+                                         label=u'Цена', required=True )
 
     class Meta:
         model = DeliveryDetail
@@ -34,28 +39,51 @@ class DeliveryDetailForm(ChainedChoicesModelForm):
 class DeliveryDetailInline(admin.TabularInline):
     model = DeliveryDetail
     form = DeliveryDetailForm
+
+    fields = ('group_fk','article_fk','price','cnt','price_final',)
+
     select_related = ('group', 'article')
 
-class DeliveryAdmin(admin.ModelAdmin):
-    # fields = ('order_date','order_time','firm','type','status','last_update_date','user','delivery_date','invoice_no','firm_invoice_no','paid','notes','club_fk','order_amount')
-    list_display = ('id','club_fk','order_date', 'delivery_date', 'supplier_fk', 'invoice_no','firm_invoice_no','status', 'paid',)
+    readonly_fields = ('price_final',)
+
+    def price_final(self,obj):
+        return nvl(obj.price,0)*nvl(obj.cnt,0)
+
+
+class DeliveryAdmin(CompareVersionAdmin):
+    list_display = ('id','club_fk','order_date', 'delivery_date', 'supplier_fk', 'invoice_no','firm_invoice_no','status', 'paid','delivery_amount',)
     # list_editable = ('club_fk','status')
 
-    readonly_fields = ('id',)
+    def get_form(self, request, obj=None, **kwargs):
+
+         form = super(DeliveryAdmin, self).get_form(request, obj,**kwargs)
+
+         # if edditing (obj will be filled in with the exeistin model)
+         if obj:
+              # alternatives for readonly:
+              # form.base_fields['supplier_fk'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})
+              # form.base_fields['club_fk'].widget = django.forms.widgets.Select(attrs={'readonly':'True','onfocus':"this.defaultIndex=this.selectedIndex;", 'onchange':"this.selectedIndex=this.defaultIndex;"})
+              form.base_fields['supplier_fk'].disabled = True
+              form.base_fields['club_fk'].disabled = True
+
+
+         # if club is specified for the current user (in the user model), do not allow choosing another club
+         if request.user.employee.club_fk:
+             form.base_fields['club_fk'].initial = request.user.employee.club_fk
+             form.base_fields['club_fk'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})  # simulates readonly on the browser with the help of css
+             #form.base_fields['club_fk'].disabled = True  - does not work well on add new operation's on save
+
+         return form
+
+    readonly_fields = ('id','delivery_amount','user', 'last_update_date', 'order_date', 'delivery_date')
+
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-provider',),
             'fields': ['id','supplier_fk','order_date','delivery_date','invoice_no','firm_invoice_no','club_fk','status','paid','delivery_amount',]
         }),
 
-        #
-        # ('Information', {
-        #     'classes': ('suit-tab', 'suit-tab-information',),
-        #     'fields': ['delivery_date','invoice_no','firm_invoice_no', 'delivery_amount','last_update_date',]
-        # }),
-
-
-        ('Note', {
+        ('Забележки', {
             'classes': ('suit-tab', 'suit-tab-notes',),
             'fields': ['notes','user','last_update_date',]
         }),
@@ -63,15 +91,15 @@ class DeliveryAdmin(admin.ModelAdmin):
 
     suit_form_tabs = (('provider', 'Доставка'), ('notes', 'Забележки'))
 
-    # todo def on_save(self, obj):
-    #     obj = currnt_user
-
     inlines = [
         DeliveryDetailInline,
     ]
 
     def save_model(self, request, obj, form, change):
 
+        ###############################################################
+        # Handle payment
+        ###############################################################
         if 'paid' in form.changed_data and form.cleaned_data['paid'] == 'ДА':
             payment_doc = Cashdesk_detail_expense()
 
@@ -85,20 +113,35 @@ class DeliveryAdmin(admin.ModelAdmin):
 
             messages.info(request,"Добавено плащане за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
 
+        ###############################################################
+        # Handle store record
+        ###############################################################
+
+        if 'status' in form.changed_data and form.cleaned_data['status'] == 'ДОСТАВЕНО':
+            # todo: add store record
+
+            obj.delivery_date = datetime.now()
+
+        ###############################################################
+        # Handle misc data
+        ###############################################################
+
+        obj.last_update_date = datetime.now()
+        obj.user = request.user
+        if request.user.employee.club_fk:
+            obj.club_fk = request.user.employee.club_fk
+
         super(DeliveryAdmin, self).save_model(request, obj, form, change)
 
-    # def get_inline_instances(self, request, obj=None):
-    #         return [inline(self.model, self.admin_site) for inline in self.inlines]
-
-
 admin.site.register(Delivery, DeliveryAdmin)
+
 
 class ClubAdmin(admin.ModelAdmin):
     fields = ('name', 'hall_price', 'address',)
     list_display =( 'name', 'hall_price', 'address',)
 
-#
 admin.site.register(Club, ClubAdmin)
+
 
 class ArticleGroupAdmin(admin.ModelAdmin):
     fields = ('name','delivery_type','order_type','create_date',)
@@ -106,19 +149,19 @@ class ArticleGroupAdmin(admin.ModelAdmin):
  #   list_editable = ('delivery_type','order_type',)
     readonly_fields = ('create_date',)
 
-#
 admin.site.register(ArticleGroup, ArticleGroupAdmin)
 
 
 class ArticleAdmin(admin.ModelAdmin):
-    fields = ('id','name', 'description','measure','last_update_date','group_fk','active',)
+    fields = ('id','name', 'description','measure','last_update_date','group_fk','supplier_fk','delivery_price','sale_price','active',)
     list_display =('name','group_fk','description','measure','delivery_price','sale_price','active',)
     readonly_fields = ('last_update_date','id',)
+
+    filter_horizontal = ('supplier_fk',)
 
     list_filter = ('group_fk','active')
     search_fields = ('name', 'description')
 
-#
 admin.site.register(Article, ArticleAdmin)
 
 
@@ -126,10 +169,10 @@ class ArticleForm(ChainedChoicesModelForm):
     article = ChainedModelChoiceField(parent_field='group', ajax_url=reverse_lazy('article_ajax_chained_models'),
                                       label=u'Артикул', required=True,model=Article )
 
-
     class Meta:
         model = Article
         fields = '__all__'
+
 
 class  ArticleInline(admin.TabularInline):
     model = Article
@@ -138,10 +181,28 @@ class  ArticleInline(admin.TabularInline):
 
 
 
+
+
+class ArticleStoreAdmin(CompareVersionAdmin):
+    readonly_fields = ('id',)
+    list_display = ('id','club_fk','article_fk', 'cnt', 'cnt_min', 'cnt_bl',)
+admin.site.register(ArticleStore, ArticleStoreAdmin)
+
 class OrderDetailForm(ChainedChoicesModelForm):
 
-    article_fk = ChainedModelChoiceField(parent_field='group_fk', ajax_url=reverse_lazy('article_ajax_chained_models'),
-                                      label=u'Артикул', required=True,model=Article )
+    #article_fk = ChainedModelChoiceField(parent_field='group_fk', ajax_url=reverse_lazy('article_ajax_chained_models'),
+#                                      label=u'Артикул', required=True,model=Article )
+
+    # article_fk = ModelChoiceField(
+    #     queryset=Article.objects.filter(active=True),
+    #     label='Артикул',
+    #     widget=ModelSelect2Widget(
+    #         model=Article,
+    #         search_fields=['name__icontains'],
+    #         max_results=100,
+    #         dependent_fields={'orderdetail_set-0-group_fk': 'group_fk'},
+    #     )
+    # )
 
     class Meta:
         model = OrderDetail
@@ -157,6 +218,9 @@ class OrderDetailInline(admin.TabularInline):
     form = OrderDetailForm
 #    select_related = ('group', 'article')
 
+    raw_id_fields = ( 'article_fk',)
+
+
 class OrderAdmin(CompareVersionAdmin):
 
     change_list_template = "admin/ostrovaCalendar/order/change_list.html"
@@ -170,33 +234,29 @@ class OrderAdmin(CompareVersionAdmin):
 
     date_hierarchy = "rec_date"
 
-
-    list_display = ('rec_date','club_fk','rec_time','parent','child','hall_count','locked','payed_final',)
+    list_display = ('rec_date', 'club_fk', 'rec_time', 'parent', 'child', 'hall_count', 'locked', 'payed_final',)
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-club',),
             'fields': ['club_fk','rec_date','rec_time_slot','locked','user']
         }),
 
-        # ('Order', {
-        #     'classes': ('suit-tab', 'suit-tab-club',),
-        #     'fields': ['hall_count','hall_price','validity_date']
-        # }),
-
-        ('Client', {
+        ('Клиент', {
             'classes': ('suit-tab', 'suit-tab-club',),
             'fields': ['parent','phone','child','age','child_count','adult_count','saloon_fk','address','email',]
         }),
 
-        ('Paymends1', {
+        ('Плащане1', {
             'classes': ('suit-tab', 'suit-tab-club',),
             'fields': ['deposit','discount','price_final','payment_date',]
         }),
-        ('Paymends2', {
+
+        ('Плащане2', {
             'classes': ('suit-tab', 'suit-tab-club',),
             'fields': ['deposit2_date','deposit2','payed_final',]
         }),
-        ('Note', {
+
+        ('Забележка', {
             'classes': ('suit-tab', 'suit-tab-notes',),
             'fields': ['order_date', 'create_date','last_update_date','changes','update_state','notes','refusal_date','refusal_reason','notes_torta','notes_kitchen',]
         }),
@@ -209,10 +269,8 @@ class OrderAdmin(CompareVersionAdmin):
                       #('paymends2', 'Paymends2'),
                       ('notes', 'Забележки'))
 
-
     def locked(self, obj):
         return len(obj.locked_set.all())
-
 
     def suit_row_attributes(self, obj):
         class_locked = {
@@ -274,15 +332,16 @@ class OrderAdmin(CompareVersionAdmin):
 
             messages.info(request,"Добавено финално плащане за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
 
-
         super(OrderAdmin, self).save_model(request, obj, form, change)
 
 admin.site.register(Order, OrderAdmin)
+
 
 class SaloonAdmin(admin.ModelAdmin):
     fields = ('club_fk', 'name')
 
 admin.site.register(Saloon, SaloonAdmin)
+
 
 class TimesAdmin(admin.ModelAdmin):
     fields = ('time_slot',)
@@ -325,6 +384,7 @@ class Cashdesk_detail_expenseAdmin(admin.ModelAdmin):
 
 admin.site.register(Cashdesk_detail_expense, Cashdesk_detail_expenseAdmin)
 
+
 class Cashdesk_detail_income_inline(admin.TabularInline):
     model = Cashdesk_detail_income
     readonly_fields = ('cashdesk_groups_income_fk', 'name', 'amount', 'delivery_fk')
@@ -334,6 +394,7 @@ class Cashdesk_detail_income_inline(admin.TabularInline):
 
     def has_add_permission(self, request, obj=None):
         return False
+
 
 class Cashdesk_detail_income_inline_add(admin.TabularInline):
     model = Cashdesk_detail_income
@@ -347,7 +408,6 @@ class Cashdesk_detail_income_inline_add(admin.TabularInline):
 
     def has_change_permission(self, request, obj=None):
         return False
-
 
 
 class Cashdesk_detail_expense_inline(admin.TabularInline):
@@ -378,11 +438,9 @@ class Cashdesk_detail_expense_inline_add(admin.TabularInline):
         return False
 
 
-
 class Cashdesk_groups_incomeAdmin(admin.ModelAdmin):
     fields = ('name', 'sub_name',)
     list_display = ('name', 'sub_name',)
-
 
 admin.site.register(Cashdesk_groups_income, Cashdesk_groups_incomeAdmin)
 
@@ -390,7 +448,6 @@ admin.site.register(Cashdesk_groups_income, Cashdesk_groups_incomeAdmin)
 class Cashdesk_Groups__expenseAdmin(admin.ModelAdmin):
     fields = ('name', 'sub_name',)
     list_display = ('name', 'sub_name',)
-
 
 admin.site.register(Cashdesk_groups_expense, Cashdesk_Groups__expenseAdmin)
 
@@ -419,6 +476,7 @@ class CashdeskAdmin(DjangoObjectActions, admin.ModelAdmin):
             'classes': ('suit-tab', 'suit-tab-Cashdesk_end',),
             'fields': ['end_bank_100', 'end_bank_50', 'end_bank_20', 'end_bank_10', 'end_bank_5', 'end_bank_2', 'end_coin_100', 'end_coin_50', 'end_coin_20', 'end_coin_10', 'end_coin_5',]
         }),
+
         ('Други', {
             'classes': ('suit-tab', 'suit-tab-оther',),
             'fields': [ 'beg_close_date','beg_open_date','create_date', 'last_update_date',]
@@ -483,20 +541,6 @@ class CashdeskAdmin(DjangoObjectActions, admin.ModelAdmin):
 admin.site.register(Cashdesk, CashdeskAdmin)
 
 
-
-# class Cashdesk_DetailAdmin(admin.ModelAdmin):
-#     fields = ('id', 'category', 'article_no','name',)
-#     list_display = ('club_fk', 'rec_date', 'group_name', 'sub_group_name', 'name','amount', 'master_group', 'master_sub_group')
-# admin.site.register(Cashdesk_Detail, Cashdesk_DetailAdmin)
-
-
-
-
-class StoreAdmin(admin.ModelAdmin):
-    fields = ('name','club_fk','cnt_del_fk','cnt_or_fk',)
-    list_display = ('name','club_fk','article_fk','cnt_del_fk','cnt_or_fk',)
-admin.site.register(Store, StoreAdmin)
-
 class ScheduleAdmin(admin.ModelAdmin):
     list_display =('schedule_date','times_fk','order_fk',)
     fields =('schedule_date','times_fk','order_fk',)
@@ -542,3 +586,85 @@ class ScheduleAdmin(admin.ModelAdmin):
                      return {'class': css_class}
 
 admin.site.register(Schedule, ScheduleAdmin)
+
+
+# Define an inline admin descriptor for Employee model
+# which acts a bit like a singleton
+class EmployeeInline(admin.StackedInline):
+    model = Employee
+    can_delete = False
+    verbose_name_plural = 'Допълнителни данни за служител'
+
+# Define a new User admin
+class EmployeeAdmin(UserAdmin):
+    inlines = (EmployeeInline, )
+
+# Re-register UserAdmin
+admin.site.unregister(User)
+admin.site.register(User, EmployeeAdmin)
+
+
+
+# class StockAcceptance_detailAdmin(admin.ModelAdmin):
+#
+#     fields = ('article_fk', 'deliverydetail_fk', 'cnt','name',)
+#     list_display =('article_fk', 'deliverydetail_fk', 'cnt','name',)
+#
+# admin.site.register(stock_acceptance_detail, StockAcceptance_detailAdmin)
+#
+#
+# class StockDelivery_detailAdmin(admin.ModelAdmin):
+#
+#     fields = ('article_fk', 'orderdetail_fk', 'cnt',)
+#     list_display =('article_fk', 'orderdetail_fk', 'cnt',)
+#admin.site.register(stock_delivery_detail, StockDelivery_detailAdmin)
+
+
+class stock_delivery_detail_inline(admin.TabularInline):
+    model = stock_delivery_detail
+
+    #readonly_fields = ('delivery_fk',)
+
+    raw_id_fields = ("orderdetail_fk",)
+    extra = 5
+
+
+class stock_acceptance_detail_inline(admin.TabularInline):
+    model = stock_acceptance_detail
+    #readonly_fields = ('cashdesk_groups_expense_fk', 'name', 'amount', 'order_fk')
+
+    raw_id_fields = ("deliverydetail_fk",)
+
+    extra = 5
+
+
+class stock_receipt_protocolAdmin(admin.ModelAdmin):
+
+    fields = ('id', 'type','club_fk', 'receipt_date','note',)
+    list_display =('id','receipt_date','type', 'club_fk', )
+    readonly_fields = ('id', )
+
+    inlines = [
+        stock_delivery_detail_inline,
+        stock_acceptance_detail_inline,
+    ]
+
+def stock_receipt_protocolclose(self, request, obj):
+
+    newstock_receipt_protocol=stock_receipt_protocol()
+    newstock_receipt_protocol.rec_date =obj.rec_date +timedelta(days=1)
+
+
+stock_receipt_protocolclose.label = "Приключване"  # optional
+stock_receipt_protocolclose.short_description = "Приключване на протокол"  # optional
+
+change_actions = ('stock_receipt_protocolclose', )
+
+
+def has_add_permission(self, request, obj=None):
+    return True
+
+def has_delete_permission(self, request, obj=None):
+    return False
+
+admin.site.register(stock_receipt_protocol, stock_receipt_protocolAdmin)

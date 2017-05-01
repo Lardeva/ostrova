@@ -9,7 +9,9 @@ $(document).ready(function() {
             {
                 field: valuefield.attr('name'),
                 parent_field: $(this).attr('name'),
-                parent_value: $(this).val()
+                parent_value: $(this).val(),
+                add_rel_field: valuefield.attr('additional_related_field'),
+                add_rel_value: $('#' + valuefield.attr('additional_related_field')).val()
             },
             function(j) {
                 var options = '';

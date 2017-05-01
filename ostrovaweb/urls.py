@@ -27,5 +27,6 @@ urlpatterns = [
     # url(r'^schedule/', include('schedule.urls')),
 
     url(r'^report_builder/', include('report_builder.urls')),
-    #url(r'^explorer/', include('explorer.urls')),
+
+    url(r'^select2/', include('django_select2.urls')),
 ]

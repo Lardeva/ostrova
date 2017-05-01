@@ -8,13 +8,16 @@ $(document).ready(function() {
             {
                 field: valuefield.attr('name'),
                 parent_field: $(this).attr('name'),
-                parent_value: $(this).val()
+                parent_value: $(this).val(),
+                add_rel_field: valuefield.attr('additional_related_field'),
+                add_rel_value: $('#' + valuefield.attr('additional_related_field')).val()
             },
             function(j) {
                 var txt = '';
                 for (var i = 0; i < j.length; i++) {
                     txt += j[i][1] + ' ';
                 }
+                txt = txt.replace(/ +$/, '');  //strip last space, which is necessary for numeric fields
                 valuefield.val(txt);
                 valuefield.trigger('change');
                 valuefield.trigger("liszt:updated"); // support for chosen versions < 1.0.0

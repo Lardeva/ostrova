@@ -10,22 +10,42 @@ class ChainedSelect(Select):
     Form must inherit from ChainedChoicesMixin (or from helper forms ChainedChoicesForm and ChainedChoicesModelForm)
     which loads the options when there is already an instance or initial data.
     """
-    def __init__(self, parent_field=None, ajax_url=None, *args, **kwargs):
+    def __init__(self, parent_field=None, ajax_url=None, field_prefix = None, additional_related_field = None, additional_related_field_prefix = None, *args, **kwargs):
         self.parent_field = parent_field
         self.ajax_url = ajax_url
+        self.field_prefix = field_prefix
+        self.additional_related_field = additional_related_field
+        self.additional_related_field_prefix = additional_related_field_prefix
         super(ChainedSelect, self).__init__(*args, **kwargs)
 
 #    class Media:
 #        js = ['js/clever-selects.js']
 
     def render(self, name, value, attrs={}, choices=()):
-        field_prefix = attrs['id'][:attrs['id'].rfind('-') + 1]
+
         formset_prefix = attrs['id'][:attrs['id'].find('-') + 1]
 
-        if not field_prefix:
-            parentfield_id = "id_" + self.parent_field
+        if self.field_prefix:
+            parentfield_id = self.field_prefix + self.parent_field
         else:
-            parentfield_id = field_prefix + self.parent_field
+            field_prefix = attrs['id'][:attrs['id'].rfind('-') + 1]
+
+            if not field_prefix:
+                parentfield_id = "id_" + self.parent_field
+            else:
+                parentfield_id = field_prefix + self.parent_field
+
+        if self.additional_related_field:
+            if self.additional_related_field_prefix:
+                additional_related_id = self.additional_related_field_prefix + self.additional_related_field
+            else:
+                field_prefix = attrs['id'][:attrs['id'].rfind('-') + 1]
+
+                if not field_prefix:
+                    additional_related_id = "id_" + self.additional_related_field
+                else:
+                    additional_related_id = field_prefix + self.additional_related_field
+            attrs['additional_related_field'] = additional_related_id
 
         attrs.update(self.attrs)
         attrs['ajax_url'] = self.ajax_url

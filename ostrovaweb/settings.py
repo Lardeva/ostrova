@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     # Object history
     'reversion',
     'reversion_compare',
+
+    'django_select2',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -120,7 +122,10 @@ SUIT_CONFIG = {
               {'url': '/admin/ostrovaCalendar/store', 'label': 'Склад', },
               {'url': '/admin/ostrovaCalendar/cashdesk_detail_expense', 'label': 'Разходни касови ордери', },
               {'url': '/admin/ostrovaCalendar/cashdesk_detail_income', 'label': 'Приходни касови ордери', },
-           #'schedule',
+              {'url': '/admin/ostrovaCalendar/stock_receipt_protocol', 'label': 'Приемо Предавателни Протоколи', },
+              {'url': '/admin/ostrovaCalendar/articlestore', 'label': 'Склад Артикули', },
+
+             #'schedule',
             # 'ostrovaCalendar.delivery',
             # 'ostrovaCalendar.order',
             # 'ostrovaCalendar.cash_desk',

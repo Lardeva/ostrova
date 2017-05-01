@@ -27,7 +27,7 @@ class ChainedChoiceField(ChoiceField):
 
 
 class ChainedModelChoiceField(ModelChoiceField):
-    def __init__(self, parent_field, ajax_url, model, empty_label='--------', *args, **kwargs):
+    def __init__(self, parent_field, ajax_url, model, empty_label='--------', inline_fk_to_master = None, field_prefix = None, additional_related_field=None, additional_related_field_prefix = None, *args, **kwargs):
 
         self.parent_field = parent_field
         self.ajax_url = ajax_url
@@ -35,9 +35,27 @@ class ChainedModelChoiceField(ModelChoiceField):
         #self.queryset = model.objects.all()  # Large querysets could take long time to load all values (django-cities)
         self.queryset = model.objects.none()
         self.empty_label = empty_label
+        self.inline_fk_to_master = inline_fk_to_master
+        self.additional_related_field = additional_related_field
+
+        # if field is referencing from inline to master record, then field prefix should not be the inline field form, but rather the simplier
+        # id_<field name>. The ChainedSelect will account this.
+
+        if inline_fk_to_master and not field_prefix:
+            field_prefix = 'id_'
+
+        if additional_related_field and '__' in additional_related_field:
+            # if "deep" references of models used for related fields, take only the last part to reference the form field
+            additional_related_field = additional_related_field.split('__')[-1]
+            if not additional_related_field_prefix:
+                additional_related_field_prefix = 'id_'
 
         defaults = {
-            'widget': ChainedSelect(parent_field=parent_field, ajax_url=ajax_url, attrs={'empty_label': empty_label}),
+            'widget': ChainedSelect(parent_field=parent_field, ajax_url=ajax_url,
+                                    field_prefix = field_prefix,
+                                    additional_related_field_prefix = additional_related_field_prefix,
+                                    additional_related_field  = additional_related_field,
+                                    attrs={'empty_label': empty_label, }),
         }
         defaults.update(kwargs)
 
