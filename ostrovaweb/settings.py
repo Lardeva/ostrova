@@ -18,13 +18,14 @@ import logging
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# BOWER_COMPONENTS_ROOT = BASE_DIR + '/components/'
-#
-# BOWER_INSTALLED_APPS = (
-# #    'jquery',
-# #    'jquery-ui',
-#     'bootstrap',
-# )
+BOWER_COMPONENTS_ROOT = BASE_DIR + '/components/'
+
+BOWER_INSTALLED_APPS = (
+   'jquery',
+   'jquery-ui',
+   'bootstrap',
+   'fullcalendar',
+)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -61,7 +62,17 @@ INSTALLED_APPS = [
     'reversion_compare',
 
     'django_select2',
+
+    # 'jquery-ui',
+    # 'bootstrap',
+    'djangobower',
+
+    'controlcenter',
 ]
+
+CONTROLCENTER_DASHBOARDS = (
+    'ostrovaCalendar.dashboard.MyDashboard',
+)
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
@@ -93,6 +104,7 @@ TEMPLATES = [
 
                 'django.template.context_processors.static',
                 'django.template.context_processors.media',
+                'django.core.context_processors.request',
             ],
             'loaders': [
                 'django.template.loaders.app_directories.Loader',
@@ -115,23 +127,25 @@ SUIT_CONFIG = {
         { # 'app': 'ostrovaCalendar',
          'label': 'Документи',
          'models': (
-              {'url': '/admin/ostrovaCalendar/schedule', 'label': 'Календар', },
+#              {'url': '/admin/ostrovaCalendar/schedule', 'label': 'Календар', },
+              {'url': '/fullcalendar', 'label': 'Календар', },
               {'url': '/admin/ostrovaCalendar/delivery', 'label': 'Доставка', },
               {'url': '/admin/ostrovaCalendar/order', 'label': 'Поръчка', },
               {'url': '/admin/ostrovaCalendar/cashdesk', 'label': 'Каса', },
               {'url': '/admin/ostrovaCalendar/cashdesk_detail_expense', 'label': 'Разходни касови ордери', },
               {'url': '/admin/ostrovaCalendar/cashdesk_detail_income', 'label': 'Приходни касови ордери', },
+              {'url': '/admin/ostrovaCalendar/cashdesk_detail_transfer', 'label': 'Касови трансфери', },
               {'url': '/admin/ostrovaCalendar/stock_receipt_protocol', 'label': 'Приемо Предавателни Протоколи', },
               {'url': '/admin/ostrovaCalendar/articlestore', 'label': 'Склад Артикули', },
 
-             #'schedule',
-            # 'ostrovaCalendar.delivery',
+                         # 'ostrovaCalendar.delivery',
             # 'ostrovaCalendar.order',
             # 'ostrovaCalendar.cash_desk',
             # 'ostrovaCalendar.store',
             ),
 
         },
+        'schedule',
 
         {'label': 'Номенклатури', 'models': (
             {'url': '/admin/ostrovaCalendar/supplier', 'label': 'Досавчик', },
@@ -209,7 +223,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'bg'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Sofia'
 
 USE_I18N = True
 
@@ -221,12 +235,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-#STATICFILES_FINDERS = [
-#    'django.contrib.staticfiles.finders.FileSystemFinder',
-#    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    #'djangobower.finders.BowerFinder'
-#    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
-#]
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'djangobower.finders.BowerFinder'
+    # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
+]
 
 
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')

@@ -8,20 +8,85 @@
 {% block tab_id %}id="home_tab"{% endblock %}
 
 {% block extrahead %}
-<link rel='stylesheet' type='text/css' href="{% static 'fullcalendar/fullcalendar.css' %}" />
-<script type='text/javascript' src="{% static 'fullcalendar/fullcalendar.js' %}"></script>
+    <link rel='stylesheet' type='text/css' href="{% static 'fullcalendar/dist/fullcalendar.css' %}" />
+    <script type='text/javascript' src="{% static 'moment/moment.js' %}"></script>
+    <script type='text/javascript' src="{% static 'fullcalendar/dist/fullcalendar.js' %}"></script>
+<script type='text/javascript' src="{% static 'fullcalendar/dist/locale/bg.js' %}"></script>
 {% endblock %}
 
-{% block footer %}
-<div id="calendar"></div>
-<script type='text/javascript'>
-$(document).ready(function() {
-    // page is now ready, initialize the calendar...
-    $('#calendar').fullCalendar({
-        // put your options and callbacks here
-          events: '/schedule/api/occurrences?calendar_slug=test'
-    })
-});
-</script>
+{% block content %}
+
+    {% for field in form.visible_fields %}
+        {{ field.label }} : {{ field }}
+    {% endfor %}
+
+    <div id="calendar"></div>
+    <script type='text/javascript'>
+    $(document).ready(function() {
+
+        $('#id_club_field').change( function(event) {
+               $('#calendar').fullCalendar( 'refetchEvents' );
+            });
+
+        $('#calendar').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'agendaWeek,agendaDay,listWeek,month,'
+            },
+            defaultView: 'agendaWeek',
+            editable: true,
+            eventLimit: true, // allow "more" link when too many events
+            navLinks: true,
+            eventOverlap : false,
+            allDaySlot : false,
+            minTime : "08:00",
+            maxTime : "22:00",
+            locale : 'bg',
+            columnFormat: 'dddd',
+            contentHeight: 600,
+            //slotDuration: '00:30:00' ,
+            events: {
+                url: '/calendar_orders_feed',
+               data: function() {
+                  return {
+                       club_id: $('#id_club_field')[0].value
+                    };
+                }
+            },
+            eventClick: function(event) {
+               if (event.url) {
+                    window.open(event.url,"_self");
+                    return false;
+               }
+            },
+            dayClick: function(date, jsEvent, view) {
+
+                window.open('/admin/ostrovaCalendar/order/add?'+
+                 'rec_date='+ date.format('YYYY-MM-DD') +
+                 '&rec_time=' + date.format('HH:MM') +
+                 '&rec_time_end=' + new moment(date).add(2, 'H').format('HH:MM') +
+                 '&club_fk=' + $('#id_club_field')[0].value
+                ,"_self");
+
+                //alert('Clicked on: ' + date.format());
+                //alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
+                //alert('Current view: ' + view.name);
+
+                // change the day's background color just for fun
+                //$(this).css('background-color', 'red');
+
+            },
+            eventResize: function(event, delta, revertFunc) {
+                alert('Resize: ' );
+                //$ajax.get(
+                //);
+            },
+            eventDrop: function(event, delta, revertFunc) {
+                alert('Drop: ' );
+            },
+        });
+    });
+    </script>
 
 {% endblock %}
