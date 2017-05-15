@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'djangobower',
 
     'controlcenter',
+    # 'model_report',
 ]
 
 CONTROLCENTER_DASHBOARDS = (

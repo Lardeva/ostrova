@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers   import reverse
+from django.forms import BaseInlineFormSet
 
 
 def nvl(data, val=''):
@@ -17,3 +18,8 @@ class AdminURLMixin(object):
             content_type.app_label,
             content_type.model),
                        args=(self.id,))
+
+class RequiredFormSet(BaseInlineFormSet):
+    def __init__(self, *args, **kwargs):
+        super(RequiredFormSet, self).__init__(*args, **kwargs)
+        self.forms[0].empty_permitted = False

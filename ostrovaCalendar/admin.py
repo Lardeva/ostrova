@@ -1,28 +1,38 @@
 from datetime import timedelta, datetime
 
+from decimal import Decimal
+from django.contrib.admin import ModelAdmin
 from django.contrib.admin.sites import site
 from django.contrib.admin import widgets
 from django.contrib import admin
 from django.contrib import messages
+from django.contrib.admin.widgets import ForeignKeyRawIdWidget
 from django.contrib.auth.admin import UserAdmin
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
-from django.forms import ModelChoiceField, ModelForm
+from django.forms import ModelChoiceField, ModelForm, TextInput, BaseInlineFormSet, TimeInput, DateTimeInput
 from django.shortcuts import redirect
 from django_object_actions import DjangoObjectActions
 from django_select2.forms import ModelSelect2Widget
 from reversion_compare.admin import CompareVersionAdmin
+from suit.widgets import SuitTimeWidget
 
 from ostrovaCalendar.clever_select_enhanced.clever_txt_field import ChainedNumberInputField
 from ostrovaCalendar.clever_select_enhanced.form_fields import ChainedModelChoiceField
 from ostrovaCalendar.clever_select_enhanced.forms import ChainedChoicesModelForm
 
 from ostrovaCalendar.models import *
+from ostrovaweb.utils import RequiredFormSet
+
 
 class DeliveryDetailForm(ChainedChoicesModelForm):
 
     price = ChainedNumberInputField(parent_field='article_fk', ajax_url=reverse_lazy('article_ajax_chained_models'),
-                                         label=u'Цена', required=True )
+                                         label='Единична цена', required=True )
+
+    def clean_amount(self):
+        self.cleaned_data['amount'] = round(Decimal(self.cleaned_data.get('price',0)) * Decimal(self.cleaned_data.get('cnt',0)),2)
+        return self.cleaned_data['amount']
 
     class Meta:
         model = DeliveryDetail
@@ -33,16 +43,34 @@ class DeliveryDetailInline(admin.TabularInline):
     model = DeliveryDetail
     form = DeliveryDetailForm
 
-    fields = ('article_fk','cnt','price','price_final',)
+    fields = ('article_fk','cnt','price','amount',)
 
     select_related = ('group', 'article')
 
     raw_id_fields = ( 'article_fk', )
 
-    readonly_fields = ('price_final',)
+    readonly_fields = ()
 
-    def price_final(self,obj):
-        return nvl(obj.price,0)*nvl(obj.cnt,0)
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.is_closed():
+            self.form = ModelForm
+            return self.fields
+        return self.readonly_fields
+
+    def get_extra(self, request, obj=None, **kwargs):
+        if obj and obj.is_closed():
+            return 0
+        return self.extra
+
+    def get_max_num(self, request, obj=None, **kwargs):
+        if obj and obj.is_closed():
+            return 0
+        return self.max_num
+
+    def has_delete_permission(self, request, obj=None):
+        if obj and obj.is_closed():
+            return False
+        return True
 
 
 class DeliveryAdmin(CompareVersionAdmin):
@@ -50,43 +78,59 @@ class DeliveryAdmin(CompareVersionAdmin):
     # list_editable = ('club_fk','status')
     search_fields = ('club_fk','order_date','supplier_fk',)
     list_filter     = (
-        'order_date','club_fk',
+        'order_date','club_fk','supplier_fk',
     )
 
-    ordering        = ['-id']
+    ordering = ['-id']
     list_per_page = 50
     date_hierarchy = "order_date"
+
+    def get_inline_formsets(self, request, formsets, inline_instances,obj=None):
+        formsets = super(DeliveryAdmin, self).get_inline_formsets(request, formsets, inline_instances, obj)
+
+        for fm in formsets:
+            form = fm.formset.form
+            if 'amount' in form.base_fields:
+               form.base_fields['amount'].disabled = True
+               form.base_fields['amount'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})
+
+        return formsets
 
     def get_form(self, request, obj=None, **kwargs):
 
         form = super(DeliveryAdmin, self).get_form(request, obj,**kwargs)
 
-        # if edditing (obj will be filled in with the exeistin model)
         if obj:
-            # alternatives for readonly:
-            # form.base_fields['supplier_fk'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})
-            # form.base_fields['club_fk'].widget = django.forms.widgets.Select(attrs={'readonly':'True','onfocus':"this.defaultIndex=this.selectedIndex;", 'onchange':"this.selectedIndex=this.defaultIndex;"})
             form.base_fields['supplier_fk'].disabled = True
             form.base_fields['club_fk'].disabled = True
-            if obj.status in ('DELIVERED','CANCELED'):
+
+            if obj.status in ('DELIVERED', 'CANCELED'):
                 form.base_fields['status'].disabled = True
                 form.base_fields['status'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})
 
+            if obj.paid == 'Yes':
+               form.base_fields['paid'].disabled = True
+               form.base_fields['paid'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})
 
         # if club is specified for the current user (in the user model), do not allow choosing another club
         if request.user.employee.club_fk:
             form.base_fields['club_fk'].initial = request.user.employee.club_fk
             form.base_fields['club_fk'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})  # simulates readonly on the browser with the help of css
-            #form.base_fields['club_fk'].disabled = True  - does not work well on add new operation's on save
 
         return form
 
-    readonly_fields = ('id','delivery_amount','user', 'last_update_date', 'order_date', 'delivery_date')
+    readonly_fields = ('id','delivery_amount','user', 'last_update_date', 'order_date', 'delivery_date','cashdesk_fk')
+    closed_readonly_fields = ('id','delivery_amount','user', 'last_update_date', 'order_date', 'delivery_date','cashdesk_fk', 'invoice_no', 'firm_invoice_no', 'notes')
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.is_closed():
+            return self.closed_readonly_fields
+        return self.readonly_fields
 
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-provider',),
-            'fields': ['id','supplier_fk','order_date','delivery_date','invoice_no','firm_invoice_no','club_fk','status','paid','delivery_amount',]
+            'fields': ['id','supplier_fk','order_date','delivery_date','cashdesk_fk','invoice_no','firm_invoice_no','club_fk','status','paid','delivery_amount',]
         }),
 
         ('Забележки', {
@@ -104,20 +148,37 @@ class DeliveryAdmin(CompareVersionAdmin):
     def save_model(self, request, obj, form, change):
 
         ###############################################################
+        # Handle misc data
+        ###############################################################
+
+        if obj.id is None:
+            obj.delivery_date = datetime.now()
+
+        obj.last_update_date = datetime.now()
+        obj.user = request.user
+        if request.user.employee.club_fk:
+            obj.club_fk = request.user.employee.club_fk
+
+        obj.save()
+
+        ###############################################################
         # Handle payment
         ###############################################################
-        if 'paid' in form.changed_data and form.cleaned_data['paid'] == 'ДА':
-            payment_doc = Cashdesk_detail_expense()
+        if 'paid' in form.changed_data and form.cleaned_data['paid'] == 'Yes':
 
+            cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
+
+            payment_doc = Cashdesk_detail_expense()
             payment_doc.delivery_fk = obj
             payment_doc.amount = obj.delivery_amount
-            payment_doc.note = str(obj)
+            payment_doc.note = str(obj.notes)
             payment_doc.group_fk = Cashdesk_groups_expense.objects.get(name='ДОСТАВКА',sub_name='ПЛАЩАНЕ')
-            payment_doc.cashdesk = Cashdesk.objects.filter(club_fk=obj.club_fk).latest('id')
-
+            payment_doc.cashdesk = cashdesk
             payment_doc.save()
-
             messages.info(request,"Добавено плащане за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
+
+            obj.cashdesk_fk = cashdesk
+            obj.save()
 
         ###############################################################
         # Handle store record
@@ -159,16 +220,6 @@ class DeliveryAdmin(CompareVersionAdmin):
                 delivery_acc.save()
 
                 messages.info(request,"Добавен е запис за доставка в склада за %s. налични:%d, " % (str( delivery_dev.article_fk),artstore.cnt, ) )
-
-        ###############################################################
-        # Handle misc data
-        ###############################################################
-
-        obj.delivery_date = datetime.now()
-        obj.last_update_date = datetime.now()
-        obj.user = request.user
-        if request.user.employee.club_fk:
-            obj.club_fk = request.user.employee.club_fk
 
         super(DeliveryAdmin, self).save_model(request, obj, form, change)
 
@@ -308,15 +359,43 @@ admin.site.register(ArticleDelivery, ArticleDeliveryAdmin)
 #     form = ArticleForm
 #     select_related = ('group', 'article')
 
+class ArticleStoreForm(ModelForm):
 
+    def clean(self):
+        if self.cleaned_data['cnt_bl'] > self.instance.cnt:
+            raise ValidationError("Не може да се блокира количество по-голямо от наличното в склада." )
+        return self.cleaned_data
 
+    class Meta:
+        model = DeliveryDetail
+        fields = '__all__'
 
 
 class ArticleStoreAdmin(CompareVersionAdmin):
-    readonly_fields = ('id',)
+    form = ArticleStoreForm
+    readonly_fields = ('id','club_fk','article_fk','cnt','user','create_date','last_update_date')
+    fields = ('club_fk','article_fk','user','create_date','last_update_date','cnt','cnt_min', 'cnt_bl','note')
     list_display = ('id','club_fk','article_fk', 'cnt', 'cnt_min', 'cnt_bl','note')
-    search_fields = ('article_fk__name',)
+    search_fields = ('article_fk__name','article_fk__group_fk__name',)
     raw_id_fields = ('article_fk',)
+    list_filter     = (
+       'club_fk',
+    )
+
+
+    def save_model(self, request, obj, form, change):
+
+        obj.last_update_date = datetime.now()
+        obj.user = request.user
+        super(ArticleStoreAdmin, self).save_model(request, obj, form, change)
+
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin.site.register(ArticleStore, ArticleStoreAdmin)
 
@@ -329,21 +408,32 @@ class OrderDetailForm(ChainedChoicesModelForm):
         model = OrderDetail
         fields = '__all__'
 
+
 class OrderDetailInline(admin.TabularInline):
     model = OrderDetail
     form = OrderDetailForm
-#    select_related = ('group', 'article')
 
     raw_id_fields = ( 'article_fk',)
 
+class OrderForm(ModelForm):
 
-class OrderAdmin(DjangoObjectActions, CompareVersionAdmin):
+    class Meta:
+        model = Order
+        fields = '__all__'
+
+        widgets = {
+            'rec_time': DateTimeInput,
+            'rec_time_end': DateTimeInput,
+        }
+
+class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
     change_list_template = "admin/ostrovaCalendar/order/change_list.html"
-    search_fields = ('child','parent','phone',)
+    search_fields = ('locked','child','parent','phone',)
     list_filter     = (
-        'rec_date','club_fk',
+        'rec_date','club_fk','locked',
     )
+    form = OrderForm
 
     ordering        = ['-id']
     list_per_page = 50
@@ -354,7 +444,7 @@ class OrderAdmin(DjangoObjectActions, CompareVersionAdmin):
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-club',),
-            'fields': ['club_fk','rec_date','rec_time','rec_time_end','rec_time_slot','locked','store_status','user']
+            'fields': ['club_fk','rec_date','rec_time','rec_time_end','locked','store_status','user']
         }),
 
         ('Клиент', {
@@ -408,15 +498,18 @@ class OrderAdmin(DjangoObjectActions, CompareVersionAdmin):
     ]
 
     def save_model(self, request, obj, form, change):
+        obj.save()
 
         if 'deposit' in form.changed_data and form.cleaned_data['deposit'] > 0:
             payment_doc = Cashdesk_detail_income()
 
+            cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
+
             payment_doc.order_fk = obj
             payment_doc.amount = obj.deposit
-            payment_doc.note = str(obj)
-            payment_doc.cashdesk_groups_income_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
-            payment_doc.cashdesk = Cashdesk.objects.filter(club_fk=obj.club_fk).latest('id')
+            payment_doc.note = None
+            payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
+            payment_doc.cashdesk = cashdesk
 
             payment_doc.save()
 
@@ -425,11 +518,13 @@ class OrderAdmin(DjangoObjectActions, CompareVersionAdmin):
         if 'deposit2' in form.changed_data and form.cleaned_data['deposit2'] > 0:
             payment_doc = Cashdesk_detail_income()
 
+            cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
+
             payment_doc.order_fk = obj
             payment_doc.amount = obj.deposit2
-            payment_doc.note = str(obj)
-            payment_doc.cashdesk_groups_income_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
-            payment_doc.cashdesk = Cashdesk.objects.filter(club_fk=obj.club_fk).latest('id')
+            payment_doc.note = None
+            payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
+            payment_doc.cashdesk = cashdesk
 
             payment_doc.save()
 
@@ -438,11 +533,13 @@ class OrderAdmin(DjangoObjectActions, CompareVersionAdmin):
         if 'payed_final' in form.changed_data and form.cleaned_data['payed_final'] > 0:
             payment_doc = Cashdesk_detail_income()
 
+            cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
+
             payment_doc.order_fk = obj
             payment_doc.amount = obj.payed_final
-            payment_doc.note = str(obj)
-            payment_doc.cashdesk_groups_income_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
-            payment_doc.cashdesk = Cashdesk.objects.filter(club_fk=obj.club_fk).latest('id')
+            payment_doc.note = None
+            payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
+            payment_doc.cashdesk = cashdesk
 
             payment_doc.save()
 
@@ -730,12 +827,12 @@ class CashdeskAdmin(DjangoObjectActions, CompareVersionAdmin):
 
         ('Каса в началото на деня', {
             'classes': ('suit-tab', 'suit-tab-Cashdesk_begin',),
-            'fields': [('beg_bank_100','beg_coin_100'), 'beg_bank_50', 'beg_bank_20', 'beg_bank_10', 'beg_bank_5', 'beg_bank_2', 'beg_coin_50', 'beg_coin_20', 'beg_coin_10', 'beg_coin_5',]
+            'fields': ['beg_bank_100', 'beg_bank_50', 'beg_bank_20', 'beg_bank_10', 'beg_bank_5', 'beg_bank_2', 'beg_coin_100', 'beg_coin_50', 'beg_coin_20', 'beg_coin_10', 'beg_coin_5',]
         }),
 
         ('Каса в края на деня', {
             'classes': ('suit-tab', 'suit-tab-Cashdesk_end',),
-            'fields': [('end_bank_100','end_coin_100'), ('end_bank_50','end_coin_50'), ('end_bank_20', 'end_coin_20'),('end_bank_10', 'end_coin_10'),('end_bank_5', 'end_coin_5'),'end_bank_2',]
+            'fields': ['end_bank_100', 'end_bank_50', 'end_bank_20', 'end_bank_10', 'end_bank_5', 'end_coin_100', 'end_coin_50', 'end_coin_20', 'end_coin_10', 'end_coin_5','end_bank_2',]
         }),
 
         ('Други', {
@@ -832,53 +929,6 @@ class CashdeskAdmin(DjangoObjectActions, CompareVersionAdmin):
         return False
 
 admin.site.register(Cashdesk, CashdeskAdmin)
-
-
-class ScheduleAdmin(CompareVersionAdmin):
-    list_display =('schedule_date','times_fk','order_fk',)
-    fields =('schedule_date','times_fk','order_fk',)
-    list_display_links = ('schedule_date','times_fk','order_fk',)
-    raw_id_fields = ("order_fk",)
-    # list_editable = ("order_fk",)
-
-    ordering = ( 'schedule_date', 'times_fk__time_slot' )
-    list_filter = (
-        'schedule_date', 'club_fk','times_fk',
-    )
-
-    list_per_page = 35
-
-    def suit_row_attributes(self, obj, request=None):
-        return {'class': 'ostrova_cal_row'}
-
-    # def suit_cell_attributes(self, obj, column):
-        #     if column == 'order_fk':
-        #
-        #         if not obj.order_fk:
-        #             css_class = 'ostrova_free'
-        #         else:
-        #             if obj.order_fk.deposit_date:
-        #                 css_class = 'ostrova_deposit'
-        #             else:
-        #                 css_class = 'ostrova_no_deposit'
-        #
-        #         if css_class:
-        #             return {'class': css_class}
-
-
-    def suit_cell_attributes(self, obj, column):
-        if column == 'order_fk':
-
-            if obj.order_fk:
-                if obj.order_fk.deposit_date:
-                     css_class = 'ostrova_deposit'
-                else:
-                     css_class = 'ostrova_no_deposit'
-
-                if css_class:
-                     return {'class': css_class}
-
-admin.site.register(Schedule, ScheduleAdmin)
 
 
 # Define an inline admin descriptor for Employee model

@@ -47,6 +47,8 @@ class ChainedChoicesMixin(object):
                     self.fields[oldest_parent_field_name].initial = getattr(self.instance, '%s' % oldest_parent_field_name)
                 except AttributeError:
                     pass
+                except KeyError:
+                    pass
 
             self.set_choices_via_ajax()
 

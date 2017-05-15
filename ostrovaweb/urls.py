@@ -24,6 +24,10 @@ from ostrovaCalendar.article_views import ArticleAjaxChainedView, ArticleAjaxOrd
 
 #from ostrovaCalendar.orderview import get_order_list, calendar_view
 
+#from model_report import report
+#report.autodiscover()
+from ostrovaCalendar import reports
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
@@ -36,10 +40,10 @@ urlpatterns = [
 
     url(r'^article_name_lookup/', article_views.article_name_lookup, name='article_name_lookup'),
 
+    url(r'^select2/', include('django_select2.urls')),
 
     url(r'^admin/dashboard/', controlcenter.urls),
-
     url(r'^report_builder/', include('report_builder.urls')),
+    #url(r'', include('model_report.urls')),
 
-    url(r'^select2/', include('django_select2.urls')),
 ]
