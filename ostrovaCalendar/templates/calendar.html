@@ -40,8 +40,8 @@
             navLinks: true,
             eventOverlap : false,
             allDaySlot : false,
-            minTime : "08:00",
-            maxTime : "22:00",
+            minTime : "10:00",
+            maxTime : "21:00",
             locale : 'bg',
             columnFormat: 'dddd',
             contentHeight: 600,
@@ -64,8 +64,8 @@
 
                 window.open('/admin/ostrovaCalendar/order/add?'+
                  'rec_date='+ date.format('YYYY-MM-DD') +
-                 '&rec_time=' + date.format('HH:MM') +
-                 '&rec_time_end=' + new moment(date).add(2, 'H').format('HH:MM') +
+                 '&rec_time=' + date.format('HH')  + ':15:00' +
+                 '&rec_time_end=' + new moment(date).add(2, 'H').format('HH')+ ':15:00' +
                  '&club_fk=' + $('#id_club_field')[0].value
                 ,"_self");
 

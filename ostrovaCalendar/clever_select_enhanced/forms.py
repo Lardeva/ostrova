@@ -81,7 +81,7 @@ class ChainedChoicesMixin(object):
 
                         if hasattr(field, 'additional_related_field'):
                             additional_related_field = field.additional_related_field
-                            if '__' in additional_related_field:
+                            if additional_related_field and '__' in additional_related_field:
                                 # handle reference from inline field
                                 additional_related_value = kwargs.get('%s' % (field.additional_related_field.split('__')[-1]), None)
                             else:
@@ -101,7 +101,7 @@ class ChainedChoicesMixin(object):
                             additional_related_field = field.additional_related_field
 
                             # a rather clumsy way to support master field lookup
-                            if '__' in additional_related_field:
+                            if additional_related_field and '__' in additional_related_field:
                                 # handle reference from inline field
                                 additional_related_value = kwargs.get('%s' % (field.additional_related_field.split('__')[-1]), None)
                             else:

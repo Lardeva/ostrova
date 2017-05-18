@@ -124,7 +124,7 @@ SUIT_CONFIG = {
     #'MENU_EXCLUDE': ('sites',),
     'MENU_OPEN_FIRST_CHILD': True,
     'MENU': (
-#        {'label': 'xxx', 'url': '/admin/ostrovaCalendar/', },
+#        {'label': 'Острова календар', 'url': '/admin/ostrovaCalendar/', },
         { # 'app': 'ostrovaCalendar',
          'label': 'Документи',
          'models': (

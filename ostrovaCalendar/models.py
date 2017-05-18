@@ -58,7 +58,7 @@ class Delivery(models.Model):
     # Computes dynamically total price of delivery, based on all detail models
     @property
     def delivery_amount(self):
-        result = DeliveryDetail.objects.filter(delivery_fk=self).aggregate(amount=Sum(F('amount')))
+        result = DeliveryDetail.objects.filter(delivery_fk=self).aggregate(amount=Sum(F('price')*F('cnt')))
         return nvl(result['amount'],0)
     delivery_amount.fget.short_description = 'Крайна цена'
 
@@ -167,7 +167,7 @@ class ArticleStore(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     create_date = models.DateTimeField(default=timezone.now, verbose_name="Дата на създаване")
     last_update_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата на промяна")
-    user = models.ForeignKey(User, verbose_name="Служител")
+    user = models.ForeignKey(User, blank=True, null=True, verbose_name="Служител")
     club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
     article_fk = models.ForeignKey('Article', blank=False, null=True, verbose_name="Артикул")
     cnt = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Налично кол.")
@@ -215,9 +215,9 @@ class Saloon(models.Model):
 
 class Order(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
-    rec_date = models.DateField(blank=True, null=True, verbose_name="Дата на р.д.")
-    rec_time = models.CharField(max_length=80, blank=True, verbose_name="Начало")
-    rec_time_end = models.CharField(max_length=40, blank=True, verbose_name="Край")
+    rec_date = models.DateField(verbose_name="Дата на р.д.")
+    rec_time = models.CharField(max_length=80, verbose_name="Начало")
+    rec_time_end = models.CharField(max_length=40,verbose_name="Край")
     phone = models.CharField(max_length=100, blank=True, verbose_name="Телефон")
     parent = models.CharField(max_length=240, blank=True, verbose_name="Родител")
     child = models.CharField(max_length=200, blank=True, verbose_name="Дете")
@@ -229,13 +229,12 @@ class Order(models.Model):
     hall_price = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Цена на зала")
     deposit = models.DecimalField( max_digits=8, decimal_places=2,blank=True, null=True, verbose_name="Капаро")
     discount = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Отстъпка")
-    price_final = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Крайна цена")
+    #price_final = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Крайна цена")
     deposit_date = models.DateField(blank=True, null=True, verbose_name="Дата на капаро")
     payment_date = models.DateField(blank=True, null=True, verbose_name="Дата на плащане")
     validity_date = models.DateField(blank=True, null=True, verbose_name="Дата на валидност")
     refusal_date = models.DateField(blank=True, null=True, verbose_name="Дата на отказ")
     refusal_reason = models.CharField(max_length=400, blank=True, verbose_name="Причина за отказ")
-    order_date = models.DateField(blank=True, null=True, verbose_name="Дата на поръчка")
     notes = models.TextField(max_length=12000, blank=True, verbose_name="Забележка")
     address = models.CharField(max_length=1024, blank=True, verbose_name="Адрес")
     user = models.ForeignKey(User, verbose_name="Служител")
@@ -243,17 +242,34 @@ class Order(models.Model):
     club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
     create_date = models.DateTimeField(default=timezone.now, verbose_name="Дата на създаване")
     last_update_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата на промяна")
-    changes = models.TextField(max_length=12000, blank=True, verbose_name="Промени")
+    # changes = models.TextField(max_length=12000, blank=True, verbose_name="Промени")
     deposit2 = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Капаро 2")
     deposit2_date = models.DateField(blank=True, null=True, verbose_name="Дата на капаро2")
-    update_state = models.CharField(max_length=80, blank=True, verbose_name="Актуализация на състоянието")
     locked = models.BooleanField(default=False, max_length=4,  verbose_name="Приключено")
     payed_final = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Финално плащане")
     notes_torta = models.TextField(max_length=2000, blank=True, verbose_name="Забележка за тортата")
     notes_kitchen = models.TextField(max_length=2000, blank=True, verbose_name="Забележка за кухнята")
     store_status = models.BooleanField(default=False, verbose_name=" Изписано от склада")
+
+    @property
+    def priceDetail(self):
+        result = OrderDetail.objects.filter(order_fk=self).aggregate(agg_Result=Sum(F('cnt')*F('price')))
+        return Decimal(nvl(result['agg_Result'],0))
+    priceDetail.fget.short_description = 'Цена'
+
+    @property
+    def priceFinal(self):
+        return  Decimal(nvl(self.priceDetail,0)) - Decimal(nvl(self.priceDetail,0)) * Decimal(nvl(self.discount,0)) / Decimal(100)
+    priceFinal.fget.short_description = 'Крайна цена'
+
+    @property
+    def dueAmount(self):
+        return Decimal(nvl(self.priceFinal,0)) - Decimal(nvl(self.deposit2,0)) - Decimal(nvl(self.deposit,0)) - Decimal(nvl(self.payed_final,0))
+    dueAmount.fget.short_description = 'Сума за доплащане'
+
     def __str__(self):
         return str(self.parent) + ":" + str(self.phone) + ":" + str(self.child) + " :" + str(self.deposit) + " лв."
+
 
     class Meta:
         managed = True
@@ -268,6 +284,7 @@ class OrderDetail(models.Model):
     article_fk = models.ForeignKey('ArticleOrder', blank=False, null=False, verbose_name="Артикул")
     cnt = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Количество")
     price = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Единична цена")
+    amount = models.DecimalField( max_digits=8, decimal_places=2, verbose_name="Цена",blank=True, null=False)
 
     def __str__( self ):
         return self.article_fk.group_fk.name + ":" + self.article_fk.name + ":" + str(self.cnt) + " " + self.article_fk.measure + " :" + str(self.price) + " лв."
@@ -358,6 +375,8 @@ class Cashdesk(AdminURLMixin, models.Model):
     beg_coin_20 = models.DecimalField( max_digits=8, decimal_places=0,  blank=True, null=True, verbose_name="Стотинки по 20")
     beg_coin_10 = models.DecimalField( max_digits=8, decimal_places=0,blank=True, null=True, verbose_name="Стотинки по 10")
     beg_coin_5 = models.DecimalField( max_digits=8, decimal_places=0, blank=True, null=True, verbose_name="Стотинки по 5")
+    beg_coin_2 = models.DecimalField( max_digits=8, decimal_places=0, blank=True, null=True, verbose_name=" Стотинки по 2")
+    beg_coin_1 = models.DecimalField( max_digits=8, decimal_places=0, blank=True, null=True, verbose_name=" Стотинки по 1")
     beg_close = models.ForeignKey(User, blank=True, null=True,related_name='beg_close', verbose_name="Предал")
     beg_open = models.ForeignKey(User, blank=True, null=True, related_name='beg_open', verbose_name="Приел")
     beg_close_date = models.DateField(blank=True, null=True, verbose_name="Дата на предаване")
@@ -373,6 +392,8 @@ class Cashdesk(AdminURLMixin, models.Model):
     end_coin_20 = models.DecimalField( max_digits=8, decimal_places=0, blank=True, null=True, verbose_name="Стотинки по 20")
     end_coin_10 = models.DecimalField( max_digits=8, decimal_places=0, blank=True, null=True, verbose_name="Стотинки по 10")
     end_coin_5 = models.DecimalField( max_digits=8, decimal_places=0, blank=True, null=True, verbose_name=" Стотинки по 5")
+    end_coin_2 = models.DecimalField( max_digits=8, decimal_places=0, blank=True, null=True, verbose_name=" Стотинки по 2")
+    end_coin_1 = models.DecimalField( max_digits=8, decimal_places=0, blank=True, null=True, verbose_name=" Стотинки по 1")
     club_fk = models.ForeignKey('Club', null=True, verbose_name="Обект")
     create_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата на създавне")
     last_update_date = models.DateTimeField(blank=True, null=True,verbose_name="Дата на промяна")
@@ -384,7 +405,9 @@ class Cashdesk(AdminURLMixin, models.Model):
 
     @property
     def beg_amount(self):
-        return round(nvl(self.beg_coin_5,0) * Decimal(0.05) +
+        return round(nvl(self.beg_coin_1,0 * Decimal(0.01)) +
+                nvl(self.beg_coin_2,0 * Decimal(0.02)) +
+                nvl(self.beg_coin_5,0 * Decimal(0.05)) +
                 nvl(self.beg_coin_10,0) * Decimal(0.1)+
                 nvl(self.beg_coin_20,0) * Decimal(0.2) +
                 nvl(self.beg_coin_50,0) * Decimal(0.5) +
@@ -399,7 +422,9 @@ class Cashdesk(AdminURLMixin, models.Model):
 
     @property
     def end_amount(self):
-        return round(nvl(self.end_coin_5,0) * Decimal(0.05) +
+        return round(nvl(self.end_coin_1,0) * Decimal(0.01) +
+                nvl(self.end_coin_2,0) * Decimal(0.02) +
+                nvl(self.end_coin_5,0) * Decimal(0.05) +
                 nvl(self.end_coin_10,0) * Decimal(0.1) +
                 nvl(self.end_coin_20,0) * Decimal(0.2) +
                 nvl(self.end_coin_50,0) * Decimal(0.5) +

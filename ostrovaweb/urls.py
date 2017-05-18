@@ -27,6 +27,7 @@ from ostrovaCalendar.article_views import ArticleAjaxChainedView, ArticleAjaxOrd
 #from model_report import report
 #report.autodiscover()
 from ostrovaCalendar import reports
+from ostrovaCalendar.clubview import SaloonAjaxClubChainedView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -35,6 +36,7 @@ urlpatterns = [
     url(r'^calendar_orders_feed/', calendarview.calendar_order_data, name='calendar_orders_feed'),
 
 
+    url(r'^admin/ajax/saloon-chained/$', SaloonAjaxClubChainedView.as_view(), name='saloon_ajax_chained_models'),
     url(r'^admin/ajax/article-chained/$', ArticleAjaxChainedView.as_view(), name='article_ajax_chained_models'),
     url(r'^admin/ajax/article-chained-order/$', ArticleAjaxOrderChainedView.as_view(), name='article_ajax_chained_order_models'),
 
