@@ -28,6 +28,7 @@ from ostrovaCalendar.article_views import ArticleAjaxChainedView, ArticleAjaxOrd
 #report.autodiscover()
 from ostrovaCalendar import reports
 from ostrovaCalendar.clubview import SaloonAjaxClubChainedView
+from ostrovaCalendar.siteorder import siteorder
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -45,7 +46,20 @@ urlpatterns = [
     url(r'^select2/', include('django_select2.urls')),
 
     url(r'^admin/dashboard/', controlcenter.urls),
-    url(r'^report_builder/', include('report_builder.urls')),
+    #url(r'^report_builder/', include('report_builder.urls')),
     #url(r'', include('model_report.urls')),
+#    url(r'^accounts/', include('allauth.urls')),
+
+    url(r'^$', siteorder.index, name='index'),
+    url(r'^siteorder/', siteorder.siteorder_view, name='siteorder'),
+    url(r'^siteorderconfirm/', siteorder.siteorder_confirm_view, name='siteorder_confirm_view'),
+    url(r'^accounts/profile/', siteorder.siteorder_list, name='siteorder_list'),
+    url(r'^siteorderpaydeposit/', siteorder.siteorder_pay_deposit, name='siteorder_pay_deposit'),
+    url(r'^siteorderpayfinal/', siteorder.siteorder_pay_final, name='siteorder_pay_final'),
+
+    url(r'^paypal/', include('paypal.standard.ipn.urls')),
+
+    #url(r'^accounts/', include('registration.backends.default.urls')),
+    url(r'^accounts/', include('registration.backends.simple.urls')),
 
 ]

@@ -1,6 +1,8 @@
 from datetime import timedelta, datetime
 
 from decimal import Decimal
+
+from adminextensions.list_display import related_field
 from django.contrib.admin import ModelAdmin
 from django.contrib.admin.sites import site
 from django.contrib.admin import widgets
@@ -74,7 +76,7 @@ class DeliveryDetailInline(admin.TabularInline):
         return True
 
 
-class DeliveryAdmin(CompareVersionAdmin):
+class DeliveryAdmin(DjangoObjectActions, CompareVersionAdmin):
     list_display = ('id','club_fk','order_date', 'delivery_date', 'supplier_fk', 'invoice_no','firm_invoice_no','status', 'paid','delivery_amount',)
     # list_editable = ('club_fk','status')
     search_fields = ('club_fk__name','order_date','supplier_fk__name',)
@@ -105,14 +107,6 @@ class DeliveryAdmin(CompareVersionAdmin):
             form.base_fields['supplier_fk'].disabled = True
             form.base_fields['club_fk'].disabled = True
 
-            if obj.status in ('DELIVERED', 'CANCELED'):
-                form.base_fields['status'].disabled = True
-                form.base_fields['status'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})
-
-            if obj.paid == 'Yes':
-               form.base_fields['paid'].disabled = True
-               form.base_fields['paid'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})
-
         # if club is specified for the current user (in the user model), do not allow choosing another club
         if request.user.employee.club_fk:
             form.base_fields['club_fk'].initial = request.user.employee.club_fk
@@ -120,8 +114,8 @@ class DeliveryAdmin(CompareVersionAdmin):
 
         return form
 
-    readonly_fields = ('id','delivery_amount','user', 'last_update_date', 'order_date', 'delivery_date','cashdesk_fk')
-    closed_readonly_fields = ('id','delivery_amount','user', 'last_update_date', 'order_date', 'delivery_date','cashdesk_fk', 'invoice_no', 'firm_invoice_no', 'notes')
+    readonly_fields = ('id','delivery_amount','user', 'last_update_date', 'order_date', 'delivery_date','cashdesk_fk','status','paid')
+    closed_readonly_fields = readonly_fields + ( 'invoice_no', 'firm_invoice_no', 'notes')
 
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.is_closed():
@@ -148,10 +142,6 @@ class DeliveryAdmin(CompareVersionAdmin):
 
     def save_model(self, request, obj, form, change):
 
-        ###############################################################
-        # Handle misc data
-        ###############################################################
-
         if obj.id is None:
             obj.delivery_date = datetime.now()
 
@@ -162,71 +152,95 @@ class DeliveryAdmin(CompareVersionAdmin):
 
         obj.save()
 
-        ###############################################################
-        # Handle payment
-        ###############################################################
-        if form.base_fields['paid'].disabled != True and form.cleaned_data['paid'] == 'Yes':
-
-            try:
-                cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
-            except Cashdesk.DoesNotExist:
-                messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
-                obj.paid = 'No'
-                obj.save()
-            else:
-                payment_doc = Cashdesk_detail_expense()
-                payment_doc.delivery_fk = obj
-                payment_doc.amount = obj.delivery_amount
-                payment_doc.note = str(obj.notes)
-                payment_doc.group_fk = Cashdesk_groups_expense.objects.get(name='ДОСТАВКА',sub_name='ПЛАЩАНЕ')
-                payment_doc.cashdesk = cashdesk
-                payment_doc.save()
-                messages.info(request,"Добавено плащане за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
-
-                obj.cashdesk_fk = cashdesk
-                obj.save()
-
-        ###############################################################
-        # Handle store record
-        ###############################################################
-        if form.base_fields['status'].disabled != True and form.cleaned_data['status'] == 'DELIVERED':
-
-            # add stock_receipt_protocol
-            delivery_doc = stock_receipt_protocol()
-            delivery_doc.delivery_fk = obj
-            delivery_doc.club_fk = obj.club_fk
-            delivery_doc.delivery_date = datetime.now()
-            delivery_doc.type = 'DELIVERY'
-            delivery_doc.note = 'Протокол към доставка Номер %d Дата:%s' % (obj.id,obj.delivery_date)
-            delivery_doc.closed = True
-            delivery_doc.save()
-
-            for delivery_dev in obj.deliverydetail_set.all():
-
-                # lookup store from the other side
-                try:
-                    artstore = ArticleStore.objects.get(club_fk = obj.club_fk, article_fk = delivery_dev.article_fk)
-                except ArticleStore.DoesNotExist:
-                    artstore = ArticleStore()
-                    artstore.club_fk = obj.club_fk
-                    artstore.article_fk = delivery_dev.article_fk
-                    artstore.cnt = 0
-                    artstore.cnt_min = 0
-                    artstore.cnt_bl = 0
-
-                artstore.cnt +=  delivery_dev.cnt
-                artstore.save()
-
-                # add stock_acceptance_detail for each deliveydetail
-                delivery_acc = stock_acceptance_detail()
-                delivery_acc.stock_protocol_fk = delivery_doc
-                delivery_acc.article_store_fk = artstore
-                delivery_acc.cnt = delivery_dev.cnt
-                delivery_acc.save()
-
-                messages.info(request,"Добавен е запис за доставка в склада за %s. налични:%d, " % (str( delivery_dev.article_fk),artstore.cnt, ) )
-
         super(DeliveryAdmin, self).save_model(request, obj, form, change)
+
+    def deliver(self, request, obj):
+
+        if obj.status != 'ORDERED':
+            messages.error(request,"Грешка: Може да доставите само отворена доставка." )
+            return
+
+        # add stock_receipt_protocol
+        delivery_doc = stock_receipt_protocol()
+        delivery_doc.delivery_fk = obj
+        delivery_doc.club_fk = obj.club_fk
+        delivery_doc.delivery_date = datetime.now()
+        delivery_doc.type = 'DELIVERY'
+        delivery_doc.note = 'Протокол към доставка Номер %d Дата:%s' % (obj.id,obj.delivery_date)
+        delivery_doc.closed = True
+        delivery_doc.save()
+
+        for delivery_dev in obj.deliverydetail_set.all():
+
+            # lookup store from the other side
+            try:
+                artstore = ArticleStore.objects.get(club_fk = obj.club_fk, article_fk = delivery_dev.article_fk)
+            except ArticleStore.DoesNotExist:
+                artstore = ArticleStore()
+                artstore.club_fk = obj.club_fk
+                artstore.article_fk = delivery_dev.article_fk
+                artstore.cnt = 0
+                artstore.cnt_min = 0
+                artstore.cnt_bl = 0
+
+            artstore.cnt +=  delivery_dev.cnt
+            artstore.save()
+
+            # add stock_acceptance_detail for each deliveydetail
+            delivery_acc = stock_acceptance_detail()
+            delivery_acc.stock_protocol_fk = delivery_doc
+            delivery_acc.article_store_fk = artstore
+            delivery_acc.cnt = delivery_dev.cnt
+            delivery_acc.save()
+
+            messages.info(request,"Добавен е запис за доставка в склада за %s. налични:%d, " % (str( delivery_dev.article_fk),artstore.cnt, ) )
+
+        obj.status = 'DELIVERED'
+        obj.save()
+
+    def cancel(self, request, obj):
+
+        if obj.status != 'ORDERED':
+            messages.error(request,"Грешка: Може да откажете само отворена доставка.")
+            return
+
+        obj.status = 'CANCELED'
+        obj.save()
+
+    def pay(self, request, obj):
+
+        if obj.paid != 'No':
+            messages.error(request,"Грешка: Може да платите само неплатена доставка.")
+            return
+
+        try:
+            cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
+        except Cashdesk.DoesNotExist:
+            messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
+        else:
+            payment_doc = Cashdesk_detail_expense()
+            payment_doc.delivery_fk = obj
+            payment_doc.amount = obj.delivery_amount
+            payment_doc.note = str(obj.notes)
+            payment_doc.group_fk = Cashdesk_groups_expense.objects.get(name='ДОСТАВКА',sub_name='ПЛАЩАНЕ')
+            payment_doc.cashdesk = cashdesk
+            payment_doc.save()
+            messages.info(request,"Добавено плащане за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
+
+            obj.cashdesk_fk = cashdesk
+            obj.paid = 'Yes'
+            obj.save()
+
+    deliver.label = "Доставяне"
+    deliver.short_description = "Доставяне"
+
+    cancel.label = "Отказ"
+    cancel.short_description = "Отказ"
+
+    pay.label = "Плащане"
+    pay.short_description = "Плащане"
+
+    change_actions = ('deliver', 'cancel','pay')
 
 admin.site.register(Delivery, DeliveryAdmin)
 
@@ -383,12 +397,13 @@ class ArticleStoreAdmin(CompareVersionAdmin):
     readonly_fields = ('id','club_fk','article_fk','cnt','user','create_date','last_update_date')
     fields = ('club_fk','article_fk','user','create_date','last_update_date','cnt','cnt_min', 'cnt_bl','note')
     list_display = ('id','club_fk','article_fk', 'cnt', 'cnt_min', 'cnt_bl','note')
-    search_fields = ('article_fk__name','article_fk__group_fk__name',)
+    search_fields = ('article_fk','article_fk__name','article_fk__group_fk__name',)
     raw_id_fields = ('article_fk',)
     list_filter     = (
        'club_fk',
+       # 'article_fk__group_fk__name',
     )
-
+    list_per_page = 50
 
     def save_model(self, request, obj, form, change):
 
@@ -525,9 +540,9 @@ class OrderForm(ChainedChoicesModelForm):
 class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
     change_list_template = "admin/ostrovaCalendar/order/change_list.html"
-    search_fields = ('locked','child','parent','phone',)
+    search_fields = ('locked','status','child','parent','phone',)
     list_filter     = (
-        'rec_date','club_fk','locked',
+        'rec_date','club_fk','locked','status',
     )
     form = OrderForm
 
@@ -535,11 +550,11 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
     list_per_page = 50
 
     date_hierarchy = "rec_date"
-    list_display = ('rec_date', 'club_fk', 'rec_time', 'rec_time_end','parent', 'child', 'locked', 'priceFinal',)
+    list_display = ('rec_date', 'club_fk', 'rec_time', 'rec_time_end','parent', 'child', 'status', 'locked', 'priceFinal',)
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-club',),
-            'fields': ('club_fk','rec_date','rec_time','rec_time_end','locked','store_status',)
+            'fields': ('club_fk','rec_date','rec_time','rec_time_end','locked','store_status','status',)
         }),
 
         ('Клиент', {
@@ -566,7 +581,9 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
     suit_form_tabs = (('club', 'Поръчка за парти'),
                       ('notes', 'Забележки'))
 
+
     readonly_fields = ('store_status','locked','create_date','last_update_date','user','priceDetail','dueAmount', 'priceFinal','payment_date','payment_date',)
+
     # closed_readonly_fields =  tuple(fieldsets[0][1].get('fields')) + tuple(fieldsets[1][1].get('fields')) + tuple(fieldsets[2][1].get('fields')) + tuple(fieldsets[3][1].get('fields')) + tuple(fieldsets[4][1].get('fields'))
     closed_readonly_fields = flatten(x[1].get('fields') for x in fieldsets) # all fields
 
@@ -624,10 +641,11 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
         obj.last_update_date = datetime.now()
         obj.user = request.user
+
         if request.user.employee.club_fk:
             obj.club_fk = request.user.employee.club_fk
 
-            obj.save()
+        obj.save()
 
         if 'deposit' in form.changed_data and form.cleaned_data['deposit'] > 0:
             payment_doc = Cashdesk_detail_income()
@@ -761,7 +779,7 @@ admin.site.register(Order, OrderAdmin)
 
 
 class SaloonAdmin(CompareVersionAdmin):
-    fields = ('club_fk', 'name')
+    fields = ('club_fk', 'name','default')
 
 admin.site.register(Saloon, SaloonAdmin)
 
@@ -783,11 +801,13 @@ admin.site.register(Supplier, SupplierAdmin)
 
 class Cashdesk_detail_incomeAdmin(admin.ModelAdmin):
     fields = ('cashdesk', 'group_fk', 'note','amount','order_fk')
-    list_display =('cashdesk', 'group_fk', 'note','amount',)
+    list_display =(related_field('cashdesk__rec_date', None, 'Дата'),'cashdesk', 'group_fk', 'note','amount',)
     readonly_fields = ('cashdesk', 'group_fk', 'note','amount','order_fk')
-    list_filter = ('cashdesk', 'group_fk','note',)
+    list_filter = ('cashdesk__rec_date','cashdesk__club_fk','cashdesk', 'group_fk','note',)
     #search_fields = ('cashdesk', 'group_fk__name','group_fk__sub_name')
-
+    list_per_page = 50
+    #date_hierarchy = "('cashdesk__rec_date', None, 'Дата')"
+    search_fields = ('note','group_fk__name','group_fk__sub_name')
     def has_delete_permission(self, request, obj=None):
         return False
 
@@ -801,10 +821,12 @@ admin.site.register(Cashdesk_detail_income, Cashdesk_detail_incomeAdmin)
 
 class Cashdesk_detail_expenseAdmin(admin.ModelAdmin):
     fields = ('cashdesk', 'group_fk','note','amount','delivery_fk')
-    list_display =('cashdesk', 'get_club_name', 'group_fk', 'note','amount',)
+    list_display =(related_field('cashdesk__rec_date', None, 'Дата'),'cashdesk', 'get_club_name', 'group_fk', 'note','amount',)
     readonly_fields = ('cashdesk', 'group_fk','note','amount','delivery_fk')
-    list_filter = ('cashdesk', 'group_fk',)
+    list_filter = ('cashdesk__rec_date','cashdesk__club_fk','cashdesk', 'group_fk',)
     search_fields = ('note','group_fk__name','group_fk__sub_name')
+    list_per_page = 50
+    # date_hierarchy = "rec_date"
 
     def get_queryset(self, request):
         qs = super(Cashdesk_detail_expenseAdmin, self).get_queryset(request)
@@ -831,10 +853,12 @@ admin.site.register(Cashdesk_detail_expense, Cashdesk_detail_expenseAdmin)
 
 class Cashdesk_detail_transferAdmin(admin.ModelAdmin):
     fields = ('cashdesk', 'group_fk','note','amount','transfer_club_fk')
-    list_display =('cashdesk', 'get_club_name', 'group_fk', 'note','amount',)
+    list_display =(related_field('cashdesk__rec_date', None, 'Дата'),'cashdesk', 'get_club_name', 'group_fk', 'note','amount',)
     readonly_fields = ('cashdesk', 'group_fk','note','amount','transfer_club_fk')
-    list_filter = ('cashdesk', 'group_fk',)
+    list_filter = ('cashdesk__rec_date','cashdesk', 'group_fk',)
     search_fields = ('note','group_fk__name','group_fk__sub_name')
+    list_per_page = 50
+    # date_hierarchy = "rec_date"
 
     def get_queryset(self, request):
         qs = super(Cashdesk_detail_transferAdmin, self).get_queryset(request)
@@ -963,13 +987,15 @@ admin.site.register(Cashdesk_groups_expense, Cashdesk_Groups__expenseAdmin)
 
 
 class CashdeskAdmin(DjangoObjectActions, CompareVersionAdmin):
-    list_display = ( 'rec_date','status','club_fk','beg_open', 'income_amount','expense_amount', 'total_amount','beg_close',)
+    list_display = ('rec_date','status','club_fk','beg_open', 'income_amount','expense_amount', 'total_amount','beg_close',)
     readonly_fields = (
         'amt_header','expense_amount','total_amount','beg_amount','end_amount','income_amount','status',
         'id','rec_date','create_date', 'beg_close', 'beg_open', 'club_fk', 'beg_close_date', 'beg_open_date','last_update_date','beg_bank_100', 'beg_bank_50', 'beg_bank_20', 'beg_bank_10', 'beg_bank_5', 'beg_bank_2', 'beg_coin_100', 'beg_coin_50', 'beg_coin_20', 'beg_coin_10', 'beg_coin_5','beg_coin_2','beg_coin_1')
 
-    list_filter = ( 'club_fk',)
+    list_filter = ('rec_date','status', 'club_fk',)
+    list_per_page = 50
 
+    date_hierarchy = "rec_date"
     fieldsets = [
 
         (None, {
@@ -1179,6 +1205,11 @@ class stock_receipt_protocolAdmin(DjangoObjectActions, CompareVersionAdmin):
     list_display =('type','id','receipt_date', 'club_fk','transfer_club_fk' )
     readonly_fields = ('id','order_fk' ,'delivery_fk','transfer_fk','receipt_date', 'closed')
     form = stock_receipt_protocolForm
+    fields = ('cashdesk', 'group_fk','note','amount','transfer_club_fk')
+    list_filter = ('receipt_date','type','club_fk','closed')
+    search_fields = ('note','group_fk__name','group_fk__sub_name')
+    list_per_page = 50
+    date_hierarchy = "receipt_date"
 
     def get_fields(self, request, obj=None):
         if obj and obj.type == 'ORDER':

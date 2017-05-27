@@ -17,8 +17,8 @@
 {% block content %}
 
     {% for field in form.visible_fields %}
-        {{ field.label }} : {{ field }}
-    {% endfor %}
+{{ field.label }} : {{ field }}
+{% endfor %}
 
     <div id="calendar"></div>
     <script type='text/javascript'>

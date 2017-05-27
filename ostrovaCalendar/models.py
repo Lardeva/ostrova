@@ -203,6 +203,7 @@ class Saloon(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
     name = models.CharField(max_length=200, blank=True,  verbose_name="Име")
+    default = models.BooleanField("Основен", default=False)
 
     def __str__(self):
         return self.club_fk.name + ":" + self.name
@@ -250,6 +251,13 @@ class Order(models.Model):
     notes_torta = models.TextField(max_length=2000, blank=True, verbose_name="Забележка за тортата")
     notes_kitchen = models.TextField(max_length=2000, blank=True, verbose_name="Забележка за кухнята")
     store_status = models.BooleanField(default=False, verbose_name=" Изписано от склада")
+    status = models.CharField(max_length=80, verbose_name="Статус", choices = (
+        ('REQUESTED', 'ЗАЯВЕНА'),
+        ('CONFIRMED', 'ПОТВЪРДЕНА'),
+        ('ORDERED', 'ПОРЪЧАНА'),
+        ('CANCELED', 'ОТКАЗАНА'),
+    ), default='REQUIRED')
+
 
     @property
     def priceDetail(self):

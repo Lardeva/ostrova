@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+
+<h1>Поръчка за детско парти</h1>
+
+<form action="/siteorderconfirm/" method="POST">
+{{ form }}
+    {% csrf_token %}
+    <br>
+    <input type="submit" class="submit" value="Добави">
+</form>
+
+{% endblock %}
+
+

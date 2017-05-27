@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+
+{% endblock %}
+
+{% block content %}
+
+<a href="/siteorder">Нова поръчка</a>
+
+<h2>Вашите поръчки:</h2>
+<br>
+
+<table border="1">
+    <tr>
+        <th>Номер</th>
+        <th>Дата на р.д.</th>
+        <th>Начало</th>
+        <th>Край</th>
+        <th>Родител</th>
+        <th>Телефон</th>
+        <th>Дете</th>
+        <th>Години</th>
+        <th>Брой деца</th>
+        <th>Брой възрастни</th>
+        <th>Статус</th>
+        <th>Сума за плащане</th>
+        <th>Капаро</th>
+        <th>Финално плащане</th>
+
+    </tr>
+
+{% for order in orders %}
+
+    <tr>
+        <td>    {{ order.id }} </td>
+        <td>    {{ order.rec_date }} </td>
+        <td>    {{ order.rec_time }} </td>
+        <td>    {{ order.rec_time_end }} </td>
+        <td>    {{ order.parent }} </td>
+        <td>    {{ order.phone }} </td>
+        <td>    {{ order.child }} </td>
+        <td>    {{ order.age }} </td>
+        <td>    {{ order.child_count }} </td>
+        <td>    {{ order.adult_count }} </td>
+        <td>    {{ order.get_status_display }} </td>
+        <td>    {{ order.dueAmount }} </td>
+
+        <td>
+             {% if order.status == 'CONFIRMED' and not order.deposit %}
+                 <a href="/siteorderpaydeposit/?id={{order.id}}">Плащане капаро 50лв.</a>
+             {% endif %}
+        </td>
+        <td>
+            {% if order.status == 'ORDERED' and order.locked and order.dueAmount%}
+                <a href="/siteorderpayfinal/?id={{order.id}}">Финално плащане</a>
+            {% endif %}
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+
+{% endblock %}
+

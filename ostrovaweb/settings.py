@@ -43,17 +43,17 @@ ALLOWED_HOSTS = ['192.168.6.132','127.0.0.1','localhost','testserver']
 INSTALLED_APPS = [
     'ostrovaCalendar',
     'suit',
-
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'mod_wsgi.server',
+  #  'mod_wsgi.server',
 
     # Report builder
-    'report_builder',
+   # 'report_builder',
 
     'django_object_actions',
 
@@ -69,7 +69,30 @@ INSTALLED_APPS = [
 
     'controlcenter',
     # 'model_report',
+
+    # 'allauth',
+    # 'allauth.account',
+    # 'allauth.socialaccount',
+    # 'allauth.socialaccount.providers.facebook',
+    # 'allauth.socialaccount.providers.google',
+
+    'registration',
+    'paypal.standard.ipn',
+
+
 ]
+SITE_ID = 1
+ACCOUNT_ACTIVATION_DAYS = 10
+
+PAYPAL_TEST = True
+DEFAULT_FROM_EMAIL = 'ostrovaweb@sparkpostbox.com'
+EMAIL_USE_TLS = True
+EMAIL_HOST = '52.10.157.129'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'SMTP_Injection'
+EMAIL_HOST_PASSWORD = '2807fa94d51cf54eb5a10a335aa122f894641592'
+
+SIMPLE_BACKEND_REDIRECT_URL='/siteorder'
 
 CONTROLCENTER_DASHBOARDS = (
     'ostrovaCalendar.dashboard.MyDashboard',
@@ -116,6 +139,15 @@ TEMPLATES = [
         },
     },
 ]
+# AUTHENTICATION_BACKENDS = (
+#      # Needed to login by username in Django admin, regardless of `allauth`
+#     'django.contrib.auth.backends.ModelBackend',
+#
+#     # `allauth` specific authentication methods, such as login by e-mail
+#     'allauth.account.auth_backends.AuthenticationBackend',
+#
+# )
+
 
 WSGI_APPLICATION = 'ostrovaweb.wsgi.application'
 
@@ -232,6 +264,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOCALE_PATHS = [
+    BASE_DIR + '/locale'
+]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/

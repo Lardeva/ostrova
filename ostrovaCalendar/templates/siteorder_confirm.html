@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+    {{ block.super }}
+
+{% endblock %}
+
+{% block content %}
+
+<h1>Вие заявихте поръчка за парти успешно. Ще се свържем с вас за потвърждение.</h1>
+
+<h2>Данни за поръчката:</h2>
+<br>
+
+    {% for field in form %}
+       <h3>
+            {{ field.label }} : {{ field.value }}
+       </h3>
+    {% endfor %}
+
+    {% endblock %}
+
+

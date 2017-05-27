@@ -1,0 +1,23 @@
+ body img {
+    opacity: 0.6;
+    min-height: 100%;
+    min-width: 1024px;
+    width: 100%;
+    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+div#master {
+    background-color: rgba(230, 255, 247,0.7);
+    margin: 10px 0 10px 10px;
+    padding: 20px;
+    border-radius: 4px;
+    width:880px;
+}
+
+select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {
+  height:auto;
+}
