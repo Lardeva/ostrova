@@ -13,22 +13,14 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from controlcenter.views import controlcenter
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic import TemplateView
 
-from ostrovaCalendar import article_views
-from ostrovaCalendar import calendarview
-from ostrovaCalendar.article_views import ArticleAjaxChainedView, ArticleAjaxOrderChainedView
-
-#from ostrovaCalendar.orderview import get_order_list, calendar_view
-
-#from model_report import report
-#report.autodiscover()
-from ostrovaCalendar import reports
-from ostrovaCalendar.clubview import SaloonAjaxClubChainedView
-from ostrovaCalendar.siteorder import siteorder
+from nomenclature.article_views import ArticleAjaxChainedView, ArticleAjaxOrderChainedView, article_name_lookup
+from order import calendarview
+from nomenclature.clubview import SaloonAjaxClubChainedView
+from siteorder import siteorder
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -41,7 +33,7 @@ urlpatterns = [
     url(r'^admin/ajax/article-chained/$', ArticleAjaxChainedView.as_view(), name='article_ajax_chained_models'),
     url(r'^admin/ajax/article-chained-order/$', ArticleAjaxOrderChainedView.as_view(), name='article_ajax_chained_order_models'),
 
-    url(r'^article_name_lookup/', article_views.article_name_lookup, name='article_name_lookup'),
+    url(r'^article_name_lookup/', article_name_lookup, name='article_name_lookup'),
 
     url(r'^select2/', include('django_select2.urls')),
 

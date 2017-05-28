@@ -1,0 +1,19 @@
+{% extends "suit:admin/base_site.html" %}
+{% load admin_static suit_tags %}
+
+{% block extrahead %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/ostrova.css' %}" media="all">
+    <script type='text/javascript' src="{% static 'js/ostrova.js' %}"></script>
+    <script type='text/javascript' src="{% static 'js/suit_menu_show_hide.js' %}"></script>
+{% endblock %}
+
+{% block header_time %}
+<div class="header-content header-content-first">
+    <a style="cursor:pointer" id="myButton" onClick="clickCounter();">Скрий Меню</a>
+    <br>
+    <span class="date"> {% suit_date %}</span>
+    <span class="time" id="clock">{% suit_time %}</span>
+
+</div>
+
+{% endblock %}

@@ -18,15 +18,6 @@ import logging
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-BOWER_COMPONENTS_ROOT = BASE_DIR + '/components/'
-
-BOWER_INSTALLED_APPS = (
-   'jquery',
-   'jquery-ui',
-   'bootstrap',
-   'fullcalendar',
-)
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -38,11 +29,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.6.132','127.0.0.1','localhost','testserver']
 
-# Application definition
-
 INSTALLED_APPS = [
     'registration',
-    'ostrovaCalendar',
+    'order',
+    'delivery',
+    'cashdesk',
+    'store',
+    'nomenclature',
     'suit',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -51,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-  #  'mod_wsgi.server',
+    #'mod_wsgi.server',
 
     'django_object_actions',
 
@@ -91,10 +84,6 @@ EMAIL_HOST_PASSWORD = '2807fa94d51cf54eb5a10a335aa122f894641592'
 
 SIMPLE_BACKEND_REDIRECT_URL='/siteorder'
 
-# CONTROLCENTER_DASHBOARDS = (
-#     'ostrovaCalendar.dashboard.MyDashboard',
-# )
-
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -113,8 +102,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR + '/ostrovaCalendar/templates',
-            'ostrovaCalendar/templates'  # needed for debug mode only
+            PROJECT_ROOT + '/templates',
+            'templates'  # needed for debug mode only
         ],
         'APP_DIRS': False,
         'OPTIONS': {
@@ -131,21 +120,12 @@ TEMPLATES = [
             'loaders': [
                 'django.template.loaders.app_directories.Loader',
                 'ostrovaweb.overridingLoader.Loader',
-#                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.filesystem.Loader',
                 #    'django.template.loaders.eggs.Loader',
             ]
         },
     },
 ]
-# AUTHENTICATION_BACKENDS = (
-#      # Needed to login by username in Django admin, regardless of `allauth`
-#     'django.contrib.auth.backends.ModelBackend',
-#
-#     # `allauth` specific authentication methods, such as login by e-mail
-#     'allauth.account.auth_backends.AuthenticationBackend',
-#
-# )
-
 
 WSGI_APPLICATION = 'ostrovaweb.wsgi.application'
 
@@ -154,58 +134,41 @@ SUIT_CONFIG = {
     #'MENU_EXCLUDE': ('sites',),
     'MENU_OPEN_FIRST_CHILD': True,
     'MENU': (
-#        {'label': 'Острова календар', 'url': '/admin/ostrovaCalendar/', },
-        { # 'app': 'ostrovaCalendar',
-         'label': 'Документи',
-         'models': (
-#              {'url': '/admin/ostrovaCalendar/schedule', 'label': 'Календар', },
+        { 'app': 'order',
+          'label': 'Поръчки за парти',
+          'models': (
               {'url': '/fullcalendar', 'label': 'Календар', },
-              {'url': '/admin/ostrovaCalendar/delivery', 'label': 'Доставка', },
-              {'url': '/admin/ostrovaCalendar/order', 'label': 'Поръчка', },
-              {'url': '/admin/ostrovaCalendar/cashdesk', 'label': 'Каса', },
-              {'url': '/admin/ostrovaCalendar/cashdesk_detail_expense', 'label': 'Разходни касови ордери', },
-              {'url': '/admin/ostrovaCalendar/cashdesk_detail_income', 'label': 'Приходни касови ордери', },
-              {'url': '/admin/ostrovaCalendar/cashdesk_detail_transfer', 'label': 'Касови трансфери', },
-              {'url': '/admin/ostrovaCalendar/stock_receipt_protocol', 'label': 'Приемо Предавателни Протоколи', },
-              {'url': '/admin/ostrovaCalendar/articlestore', 'label': 'Склад Артикули', },
-              {'url': '/cubesviewer/', 'label': 'Аналитични справки', },
-                         # 'ostrovaCalendar.delivery',
-            # 'ostrovaCalendar.order',
-            # 'ostrovaCalendar.cash_desk',
-            # 'ostrovaCalendar.store',
-            ),
-
+              'order', ),
         },
-        'schedule',
 
+        {   'app': 'delivery',
+            'label': 'Доставки',
+            'models': ( 'delivery', ),
+        },
 
-        {'label': 'Номенклатури', 'models': (
-            {'url': '/admin/ostrovaCalendar/supplier', 'label': 'Досавчик', },
-            {'url': '/admin/ostrovaCalendar/articlegroup', 'label': 'Артикулна група', },
-            {'url': '/admin/ostrovaCalendar/article', 'label': 'Артикул', },
-            {'url': '/admin/ostrovaCalendar/club', 'label': 'Клуб', },
-            {'url': '/admin/ostrovaCalendar/saloon', 'label': 'Салон', },
-            {'url': '/admin/ostrovaCalendar/times', 'label': 'Времеви слотове', },
-            {'url': '/admin/ostrovaCalendar/cashdesk_groups_income', 'label': 'Групи каса приход', },
-            {'url': '/admin/ostrovaCalendar/cashdesk_groups_expense', 'label': 'Групи каса разход', },
+        {   'app': 'cashdesk',
+            'label': 'Каса',
+            'models': ( 'cashdesk', 'cashdesk_detail_expense', 'cashdesk_detail_income', 'cashdesk_detail_transfer' ),
+        },
 
-            #'ostrovaCalendar.supplier',
-            # 'ostrovaCalendar.articleGroup',
-            # 'ostrovaCalendar.article',
-            # 'ostrovaCalendar.club',
-            # 'ostrovaCalendar.saloon',
-            # 'ostrovaCalendar.times',
-            # 'ostrovaCalendar.cash_desk_Groups',
-        )},
-        {'label': 'Контрол на достъпа', 'models': (
-            'auth.user',
-            'auth.group',
-        )},
+        {   'app': 'store',
+            'label': 'Склад',
+            'models': ( 'stock_receipt_protocol', 'articlestore',  ),
+        },
+
+        {   'app': 'nomenclature',
+            'label': 'Номенклатури',
+            'models': ( 'supplier', 'articlegroup', 'article', 'club', 'saloon', 'cashdesk_groups_income', 'cashdesk_groups_expense' ),
+        },
+
+        {   'app': 'auth',
+            'label': 'Контрол на достъпа',
+            'models': ( 'user', 'group',)
+        },
     )
 }
 
 # Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 # check for HEROKU presence (must MANUALLY add ON_HEROKU as a configuration variable)
 if 'ON_HEROKU' in os.environ:
@@ -273,10 +236,9 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATIC_URL = '/static/'
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
-#    os.path.join(PROJECT_ROOT, 'static'),
+    os.path.join(PROJECT_ROOT, 'static'),
 )
-# Simplified static file serving.
-# https://warehouse.python.org/project/whitenoise/
+
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 
