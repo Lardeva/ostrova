@@ -45,7 +45,7 @@ urlpatterns = [
 
     url(r'^select2/', include('django_select2.urls')),
 
-    url(r'^admin/dashboard/', controlcenter.urls),
+    #url(r'^admin/dashboard/', controlcenter.urls),
     #url(r'^report_builder/', include('report_builder.urls')),
     #url(r'', include('model_report.urls')),
 #    url(r'^accounts/', include('allauth.urls')),
@@ -61,5 +61,7 @@ urlpatterns = [
 
     #url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^accounts/', include('registration.backends.simple.urls')),
+
+    url(r'^cubesviewer/', include('cubesviewer.urls')),
 
 ]

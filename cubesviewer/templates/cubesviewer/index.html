@@ -1,0 +1,78 @@
+{% extends "suit:admin/base.html" %}
+{% load i18n %}
+
+{% block extrahead %}
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="icon" type="image/png" href="{{ STATIC_URL }}img/favicon/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="{{ STATIC_URL }}img/favicon/favicon-194x194.png" sizes="194x194">
+<link rel="icon" type="image/png" href="{{ STATIC_URL }}img/favicon/favicon-96x96.png" sizes="96x96">
+<link rel="icon" type="image/png" href="{{ STATIC_URL }}img/favicon/android-chrome-192x192.png" sizes="192x192">
+<link rel="icon" type="image/png" href="{{ STATIC_URL }}img/favicon/favicon-16x16.png" sizes="16x16">
+<link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon/favicon.ico">
+
+<link rel="stylesheet" href="{{ STATIC_URL }}lib/font-awesome/css/font-awesome.css" />
+
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}cvapp.css" />
+
+<link rel="stylesheet" href="{{ STATIC_URL }}lib/angular-ui-grid/ui-grid.css" />
+<link rel="stylesheet" href="{{ STATIC_URL }}lib/nvd3/nv.d3.css" />
+<link rel="stylesheet" href="{{ STATIC_URL }}lib/cubesviewer/cubesviewer.css" />
+<link rel="stylesheet" href="{{ STATIC_URL }}lib/bootstrap-submenu/css/bootstrap-submenu.css" /> <!-- after cubesviewer.css! -->
+
+<script src="{{ STATIC_URL }}lib/bootstrap-submenu/js/bootstrap-submenu.js"></script>
+<script src="{{ STATIC_URL }}lib/angular/angular.js"></script>
+<script src="{{ STATIC_URL }}lib/angular-cookies/angular-cookies.js"></script>
+<script src="{{ STATIC_URL }}lib/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+
+<script src="{{ STATIC_URL }}lib/angular-ui-grid/ui-grid.js"></script>
+<script src="{{ STATIC_URL }}lib/d3/d3.js"></script>
+<script src="{{ STATIC_URL }}lib/nvd3/nv.d3.js"></script>
+<script src="{{ STATIC_URL }}lib/flotr2/flotr2.min.js"></script>
+<script src="{{ STATIC_URL }}lib/masonry/masonry.pkgd.min.js"></script>  <!-- needed for CubesViewer Studio only, not embedded views -->
+<script src="{{ STATIC_URL }}lib/cubesviewer/cubesviewer.js"></script>
+
+<script type="text/javascript">
+
+//Initialize CubesViewer when document is ready
+$(document).ready(function() {
+
+    cubesviewerStudio.init({
+        container: $('#cubesviewer').get(0),
+        cubesUrl: "{{ cubesviewer_cubes_url }}",
+        backendUrl: "{{ cubesviewer_backend_url }}",
+        user: "{{ user.id }}"
+    });
+
+    /*
+    setTimeout(function() {
+        $('.cv-gui-panel').first().appendTo($('.header').parents('.row'));
+        $('.cv-gui-panel').first().addClass('cv-bootstrap');
+        $('.header').parents('.row').css('position', 'fixed');
+        $('.header').parents('.row').css('display', 'inline-block');
+        $('.header').parents('.row').css('padding-left', '20px');
+        $('.header').parents('.row').css('padding-right', '20px');
+        $('.header').parents('.row').css('top', '0px');
+        $('.header').parents('.row').css('left', '0px');
+        $('.header').parents('.row').css('right', '0px');
+        $('.header').parents('.row').css('z-index', '9999');
+        $('.header').parents('.row').css('background-color', 'white');
+        $('.cv-gui-workspace').css('margin-top', '105px');
+    }, 2000);
+    */
+
+});
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+    <!-- Cubes Viewer container -->
+    <div id="cubesviewer">
+    </div>
+
+{% endblock %}
+

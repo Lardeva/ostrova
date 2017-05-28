@@ -1,0 +1,43 @@
+{
+    "dimensions": [
+        {
+         "name":"item",
+         "levels": [
+                {
+                    "name":"category",
+                    "label":"Category",
+                    "attributes": ["club_fk_id"]
+                }
+            ]
+        },
+        {"name":"year", "role": "time"}
+    ],
+    "cubes": [
+        {
+            "name": "ORDER",
+            "dimensions": ["item", "year"],
+            "measures": [
+                {"name":"deposit", "label":"Amount"}
+            ],
+            "aggregates": [
+                    {
+                        "name": "amount_sum",
+                        "function": "sum",
+                        "measure": "deposit"
+                    },
+                    {
+                        "name": "record_count",
+                        "function": "count"
+                    }
+                ],
+            "mappings": {
+                          "item.club_fk_id": "club_fk_id",
+                          "year": {"column":"rec_date", "extract":"year"}
+                         },
+            "info": {
+                "min_date": "2010-01-01",
+                "max_date": "2018-12-31"
+            }
+        }
+    ]
+}

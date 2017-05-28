@@ -55,7 +55,7 @@ class Form_SiteOrder(forms.Form):
     adult_count = forms.IntegerField(label="Брой възрастни")
 
     def clean(self):
-        if self.cleaned_data['rec_time'] > self.cleaned_data['rec_time_end']:
+        if self.cleaned_data['rec_time'] >= self.cleaned_data['rec_time_end']:
             raise ValidationError("Моля изберете по-малък начален час от крайният")
 
         return self.cleaned_data

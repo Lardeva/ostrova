@@ -52,9 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
   #  'mod_wsgi.server',
 
-    # Report builder
-   # 'report_builder',
-
     'django_object_actions',
 
     # Object history
@@ -67,24 +64,22 @@ INSTALLED_APPS = [
     # 'bootstrap',
     'djangobower',
 
-    'controlcenter',
-    # 'model_report',
-
-    # 'allauth',
-    # 'allauth.account',
-    # 'allauth.socialaccount',
-    # 'allauth.socialaccount.providers.facebook',
-    # 'allauth.socialaccount.providers.google',
+    'corsheaders',
+    'cubesviewer',
 
     'registration',
     'paypal.standard.ipn',
-
-
+    'rest_framework',
 ]
+
+# django-registration-redux settings
 SITE_ID = 1
 ACCOUNT_ACTIVATION_DAYS = 10
 
+# Django - paypal settings
 PAYPAL_TEST = True
+
+# E-mail send settings
 DEFAULT_FROM_EMAIL = 'ostrovaweb@sparkpostbox.com'
 EMAIL_USE_TLS = True
 EMAIL_HOST = '52.10.157.129'
@@ -94,12 +89,13 @@ EMAIL_HOST_PASSWORD = '2807fa94d51cf54eb5a10a335aa122f894641592'
 
 SIMPLE_BACKEND_REDIRECT_URL='/siteorder'
 
-CONTROLCENTER_DASHBOARDS = (
-    'ostrovaCalendar.dashboard.MyDashboard',
-)
+# CONTROLCENTER_DASHBOARDS = (
+#     'ostrovaCalendar.dashboard.MyDashboard',
+# )
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -170,7 +166,7 @@ SUIT_CONFIG = {
               {'url': '/admin/ostrovaCalendar/cashdesk_detail_transfer', 'label': 'Касови трансфери', },
               {'url': '/admin/ostrovaCalendar/stock_receipt_protocol', 'label': 'Приемо Предавателни Протоколи', },
               {'url': '/admin/ostrovaCalendar/articlestore', 'label': 'Склад Артикули', },
-
+              {'url': '/cubesviewer/', 'label': 'Аналитични справки', },
                          # 'ostrovaCalendar.delivery',
             # 'ostrovaCalendar.order',
             # 'ostrovaCalendar.cash_desk',
@@ -179,6 +175,7 @@ SUIT_CONFIG = {
 
         },
         'schedule',
+
 
         {'label': 'Номенклатури', 'models': (
             {'url': '/admin/ostrovaCalendar/supplier', 'label': 'Досавчик', },
@@ -236,18 +233,18 @@ else:
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    # },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    # },
+    # {
+    #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    # },
 ]
 
 
@@ -255,40 +252,27 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
 LANGUAGE_CODE = 'bg'
-
 TIME_ZONE = 'Europe/Sofia'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
-
 LOCALE_PATHS = [
     BASE_DIR + '/locale'
 ]
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
-
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'djangobower.finders.BowerFinder'
     # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 ]
-
-
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
 STATIC_URL = '/static/'
-
 # Extra places for collectstatic to find static files.
 STATICFILES_DIRS = (
 #    os.path.join(PROJECT_ROOT, 'static'),
 )
-
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
@@ -312,3 +296,30 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 #         },
 #     },
 # }
+
+##
+# 2. Configuration of CubesViewer Server
+##
+
+# Base Cubes Server URL.
+# Your Cubes Server needs to be running and listening on this URL, and it needs
+# to be accessible to clients of the application.
+CUBESVIEWER_CUBES_URL = "http://192.168.6.132:5000"
+
+# CubesViewer Store backend URL. It should point to this application.
+# Note that this must match the URL that you use to access the application,
+# otherwise you may hit security issues. If you access your server
+# via http://localhost:8000, use the same here. Note that 127.0.0.1 and
+# 'localhost' are different strings for this purpose. (If you wish to accept
+# requests from different URLs, you may need to add CORS support).
+CUBESVIEWER_BACKEND_URL = "http://192.168.6.132/cubesviewer"
+
+# Optional user and password tuple to access the backend, or False
+# (only applies when CubesViewer Cubes proxy is used)
+#CUBESVIEWER_CUBES_PROXY_USER = ('user', 'password')
+CUBESVIEWER_CUBES_PROXY_USER = None
+
+# CubesViewer Proxy ACL
+# (only applies when CubesViewer Cubes proxy is used)
+# ie. CUBESVIEWER_PROXY_ACL = [ { "cube": "my_cube", "group": "my_group" } ]
+CUBESVIEWER_PROXY_ACL = [ ]

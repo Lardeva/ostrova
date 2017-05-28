@@ -19,7 +19,7 @@ def calendar_order_data(request):
     end_date = datetime.strptime(end_parameter,'%Y-%m-%d')
     club_id = request.GET['club_id']
 
-    orders=Order.objects.filter(rec_date__gt=start_date,rec_date__lt=end_date,club_fk = club_id)
+    orders=Order.objects.filter(rec_date__gt=start_date,rec_date__lt=end_date,club_fk = club_id).exclude(status='CANCELED')
 
     json_ins = []
     for order in orders:
@@ -30,8 +30,19 @@ def calendar_order_data(request):
         inp['end'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + order.rec_time_end
         inp['id'] = order.id
         inp['url'] = '/admin/ostrovaCalendar/order/'+str(order.id)+'/change/'
-        inp['color'] = '#FFCBA4'
         inp['textColor'] = 'black'
+
+        if order.status == 'REQUESTED':
+            inp['color'] = '#85e085'
+        elif order.status == 'CONFIRMED':
+            inp['color'] = '#ffff99'
+        elif order.status == 'ORDERED':
+            inp['color'] = '#ff8566'
+        elif order.status == 'CANCELED':
+            inp['color'] = '#00ff00'
+        else:
+            inp['color'] = '#85e085'
+
         json_ins.append(inp)
 
     json_txt = json.dumps(json_ins)

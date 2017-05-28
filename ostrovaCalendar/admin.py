@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, time
 
 from decimal import Decimal
 
@@ -13,7 +13,8 @@ from django.contrib.admin.widgets import ForeignKeyRawIdWidget, AdminDateWidget,
 from django.contrib.auth.admin import UserAdmin
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
-from django.forms import ModelChoiceField, ModelForm, TextInput, BaseInlineFormSet, TimeInput, DateTimeInput
+from django.forms import ModelChoiceField, ModelForm, TextInput, BaseInlineFormSet, TimeInput, DateTimeInput, DateField, \
+    TimeField
 from django.shortcuts import redirect
 from django_object_actions import DjangoObjectActions
 from django_select2.forms import ModelSelect2Widget
@@ -23,6 +24,8 @@ from suit.widgets import SuitTimeWidget
 from ostrovaCalendar.clever_select_enhanced.clever_txt_field import ChainedNumberInputField
 from ostrovaCalendar.clever_select_enhanced.form_fields import ChainedModelChoiceField
 from ostrovaCalendar.clever_select_enhanced.forms import ChainedChoicesModelForm
+from ostrovaCalendar.datetimewidget.widgets import DateWidget
+from ostrovaCalendar.datetimewidget.widgets import TimeWidget
 
 from ostrovaCalendar.models import *
 from ostrovaweb.utils import RequiredFormSet
@@ -482,40 +485,53 @@ class OrderForm(ChainedChoicesModelForm):
     saloon_fk = ChainedModelChoiceField(parent_field='club_fk', ajax_url=reverse_lazy('saloon_ajax_chained_models'),
                                     label=u'Салон', required=True, model=Saloon )
 
+    rec_date = DateField(label="Дата на р.д.", required=True, widget=DateWidget(
+        options = {
+            'format': 'yyyy-mm-dd',
+            'startDate': (datetime.now()+ timedelta(days=1)).strftime('%Y-%m-%d'),
+            'initialDate': (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d'),
+            'minView':2,
+            #        'hoursDisabled': '"0,1,2,3,4,5,6,7,8,20,21,22,23"',
+            'language':'bg'
+        }
+    ))
+    rec_time = TimeField(label="Начало",  required=True, widget=TimeWidget(
+        options = {
+            'format': 'hh:ii',
+            'minView':0,
+            'maxView':2,
+            'minuteStep':15,
+            'hoursDisabled': '"0,1,2,3,4,5,6,7,8,20,21,22,23"',
+            'language':'bg'
+        }
+    ))
+    rec_time_end = TimeField(label="Край",  required=True, widget=TimeWidget(
+        options = {
+            'format': 'hh:ii',
+            'minView':0,
+            'maxView':2,
+            'minuteStep':15,
+            'hoursDisabled': '"0,1,2,3,4,5,6,7,8,20,21,22,23"',
+            'language':'bg'
+        }
+    ))
     def clean(self):
 
-        if ':' not in self.cleaned_data['rec_time']:
-            self.cleaned_data['rec_time'] += ':00'
-        if ':' not in self.cleaned_data['rec_time_end']:
-            self.cleaned_data['rec_time_end'] += ':00'
-
-        if self.cleaned_data['rec_time'].count(':') == 2:
-            self.cleaned_data['rec_time'] = self.cleaned_data['rec_time'].rsplit(':',1)[0]
-        if self.cleaned_data['rec_time_end'].count(':') == 2:
-            self.cleaned_data['rec_time_end'] = self.cleaned_data['rec_time_end'].rsplit(':',1)[0]
-
-        try:
-            datetime.strptime(self.cleaned_data['rec_time'], '%H:%M')
-        except ValueError:
-            raise ValueError("Невалиден формат за начален час. Трябва да бъде час, час:минути или час:минути:секунди")
-
-        try:
-            datetime.strptime(self.cleaned_data['rec_time_end'], '%H:%M')
-        except ValueError:
-            raise ValueError("Невалиден формат за краен час. Трябва да бъде час, час:минути или час:минути:секунди")
-
         # rec_time triabva da e po-malko ot rec_time_end
-        if datetime.strptime(self.cleaned_data['rec_time'], '%H:%M') > datetime.strptime(self.cleaned_data['rec_time_end'], '%H:%M'):
+        if self.cleaned_data['rec_time'] > self.cleaned_data['rec_time_end']:
                 raise ValidationError("Моля изберете по-малък начален час от крайният")
 
-        if datetime.strptime(self.cleaned_data['rec_time'], '%H:%M').hour < 10:
+        if self.cleaned_data['rec_time'].hour < 10:
             raise ValidationError("Моля изберете по-голям начален час от 10 часа")
 
-        if datetime.strptime(self.cleaned_data['rec_time_end'], '%H:%M').hour > 21:
+        if self.cleaned_data['rec_time_end'].hour > 21:
             raise ValidationError("Моля изберете по-малък начален час от 21 часа")
 
+        self.cleaned_data['rec_time'] = time.strftime(self.cleaned_data ['rec_time'],'%H:%M' )
+        self.cleaned_data['rec_time_end'] = time.strftime(self.cleaned_data ['rec_time_end'],'%H:%M' )
+
         # da se proveri (sas filter ot bazata) dali ima veche rojden den za tazi data i chas i klub
-        orders = Order.objects.filter(rec_date= self.cleaned_data['rec_date'], club_fk=self.cleaned_data['club_fk']).exclude(id=self.instance.id)
+        orders = Order.objects.filter(rec_date= self.cleaned_data['rec_date'], club_fk=self.cleaned_data['club_fk']).exclude(id=self.instance.id).exclude(status='CANCELED')
         for order in orders:
             if datetime.strptime(self.cleaned_data ['rec_time'],'%H:%M' )<= datetime.strptime(order.rec_time_end,'%H:%M') and datetime.strptime(self.cleaned_data['rec_time'],'%H:%M')>= datetime.strptime(order.rec_time,'%H:%M'):
                 raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в  ' +order.rec_time + ' и ' + order.rec_time_end +'.' )
