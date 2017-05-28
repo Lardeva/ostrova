@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
+{% load bootstrap_tags %}
+
 {% block extrahead %}
-    {{ block.super }}
-    {{ form.media }}
+{{ block.super }}
+{{ form.media }}
 {% endblock %}
 
 {% block content %}
 
-<h1>Поръчка за детско парти</h1>
+<div class="wordart slate"><h2 class="text">Поръчка за детско парти:</h2></div>
+
 
 <form action="/siteorderconfirm/" method="POST">
-{{ form }}
-    {% csrf_token %}
-    <br>
-    <input type="submit" class="submit" value="Добави">
+        {% csrf_token %}
+        {{ form|as_bootstrap_inline }}
+        <br>
+        <div>
+            <input type="submit" class="submit btn btn-info" value="Добави">
+        </div>
 </form>
 
 {% endblock %}

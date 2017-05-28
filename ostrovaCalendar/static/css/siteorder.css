@@ -15,7 +15,91 @@ div#master {
     margin: 10px 0 10px 10px;
     padding: 20px;
     border-radius: 4px;
-    width:880px;
+    width:auto;
+    word-wrap: break-word;
+}
+
+.wordart {
+  font-family: Arial, sans-serif;
+  font-size: 4em;
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+}
+
+.wordart.rainbow {
+  transform: scale(1, 1.5);
+  -webkit-transform: scale(1, 1.5);
+  -moz-transform: scale(1, 1.5);
+  -o-transform: scale(1, 1.5);
+  -ms-transform: scale(1, 1.5);
+}
+
+.wordart.rainbow .text {
+  background: red;
+  background: -webkit-linear-gradient(left, #b306a9, #ef2667, #f42e2c, #ffa509, #fdfc00, #55ac2f, #0b13fd, #a804af);
+  background: -o-linear-gradient(left, #b306a9, #ef2667, #f42e2c, #ffa509, #fdfc00, #55ac2f, #0b13fd, #a804af);
+  background: -moz-linear-gradient(left, #b306a9, #ef2667, #f42e2c, #ffa509, #fdfc00, #55ac2f, #0b13fd, #a804af);
+  background: linear-gradient(to right, #b306a9, #ef2667, #f42e2c, #ffa509, #fdfc00, #55ac2f, #0b13fd, #a804af);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+.wordart.radial .text {
+    background: #fffa28;
+    background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJod…BoZWlnaHQ9IjEwMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+    background: -moz-radial-gradient(center, ellipse cover, #fffa28 0%, #ec8a39 100%);
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, #fffa28), color-stop(100%, #ec8a39));
+    background: -webkit-radial-gradient(center, ellipse cover, #fffa28 0%, #ec8a39 100%);
+    background: -o-radial-gradient(center, ellipse cover, #fffa28 0%, #ec8a39 100%);
+    background: -ms-radial-gradient(center, ellipse cover, #fffa28 0%, #ec8a39 100%);
+    background: radial-gradient(ellipse at center, #fffa28 0%, #ec8a39 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fffa28', endColorstr='#ec8a39', GradientType=1);
+    font-family: Impact, sans-serif;
+    font-weight: bold;
+}
+
+.wordart.slate {
+    transform: scale(1, 1.5);
+    -webkit-transform: scale(1, 1.5);
+    -moz-transform: scale(1, 1.5);
+    -o-transform: scale(1, 1.5);
+    -ms-transform: scale(1, 1.5);
+}
+
+.wordart.slate .text {
+    font-family: Times, 'Times New Roman', serif;
+    font-weight: normal;
+    color: #2F5485;
+    text-shadow: 0.03em 0.03em 0px #B3B3B3;
+}
+
+.container-large {
+    width:1300px;
+}
+
+.span1_1 {
+  width: 85px;
+}
+
+form label {
+    font-size: 16px;
+}
+
+form input, form textarea, form select {
+     font-size: 16px;
+}
+
+form input[type="submit"] {
 }
 
 select, textarea, input[type="text"], input[type="password"], input[type="datetime"], input[type="datetime-local"], input[type="date"], input[type="month"], input[type="time"], input[type="week"], input[type="number"], input[type="email"], input[type="url"], input[type="search"], input[type="tel"], input[type="color"], .uneditable-input {

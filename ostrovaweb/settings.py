@@ -41,6 +41,7 @@ ALLOWED_HOSTS = ['192.168.6.132','127.0.0.1','localhost','testserver']
 # Application definition
 
 INSTALLED_APPS = [
+    'registration',
     'ostrovaCalendar',
     'suit',
     'django.contrib.admin',
@@ -67,9 +68,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'cubesviewer',
 
-    'registration',
     'paypal.standard.ipn',
     'rest_framework',
+
+    'django_forms_bootstrap',
 ]
 
 # django-registration-redux settings

@@ -225,7 +225,7 @@ class Order(models.Model):
     age = models.IntegerField(blank=True, null=True, verbose_name="Години")
     child_count = models.IntegerField(blank=True, null=True, verbose_name="Брой деца")
     adult_count = models.IntegerField(blank=True, null=True, verbose_name="Брой възрастни")
-    saloon_fk = models.ForeignKey('Saloon', verbose_name="Салон за възрастни")
+    saloon_fk = models.ForeignKey('Saloon', verbose_name="Салон за възрастни",blank=False, null=True)
     hall_count = models.IntegerField(blank=True, null=True, verbose_name="Брой зала")
     hall_price = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Цена на зала")
     deposit = models.DecimalField( max_digits=8, decimal_places=2,blank=True, null=True, verbose_name="Капаро")

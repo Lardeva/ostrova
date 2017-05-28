@@ -16,11 +16,11 @@ from ostrovaweb.utils import nvl
 
 
 class Form_SiteOrder(forms.Form):
-    club_field = forms.ModelChoiceField(label='Клуб', required=True, queryset=Club.objects.all())
     parent = forms.CharField(label='Родител',  required=True, max_length=240)
     phone = forms.CharField(label="Телефон",  required=True, max_length=100)
-    child = forms.CharField(label="Дете",max_length=200)
-    age = forms.IntegerField(label="Години")
+    child = forms.CharField(label="Дете",max_length=200,required=False)
+    age = forms.IntegerField(label="Години",required=False)
+
     rec_date = forms.DateField(label="Дата на р.д.", required=True, widget=DateWidget(
         options = {
         'format': 'yyyy-mm-dd',
@@ -51,12 +51,15 @@ class Form_SiteOrder(forms.Form):
             'language':'bg'
         }
     ))
-    child_count = forms.IntegerField(label="Брой деца")
-    adult_count = forms.IntegerField(label="Брой възрастни")
+    child_count = forms.IntegerField(label="Брой деца",required=False)
+    adult_count = forms.IntegerField(label="Брой възрастни",required=False)
+
+    club_field = forms.ModelChoiceField(label='Клуб', required=False, queryset=Club.objects.all())
 
     def clean(self):
-        if self.cleaned_data['rec_time'] >= self.cleaned_data['rec_time_end']:
-            raise ValidationError("Моля изберете по-малък начален час от крайният")
+        if 'rec_time' in self.cleaned_data and 'rec_time_end' in self.cleaned_data:
+            if self.cleaned_data['rec_time'] >= self.cleaned_data['rec_time_end']:
+                raise ValidationError("Моля изберете по-малък начален час от крайният")
 
         return self.cleaned_data
 
@@ -110,9 +113,17 @@ def siteorder_confirm_view(request):
          order.email = request.user.email
          order.status = 'REQUESTED'
          order.user = request.user
-         order.saloon_fk = Saloon.objects.get(default=True)
+         order.club_fk =  form_siteorder.cleaned_data['club_field']
+
+         if form_siteorder.cleaned_data['club_field'] is not None:
+            order.saloon_fk = Saloon.objects.get(club_fk=form_siteorder.cleaned_data['club_field'], default=True)
 
          order.save()
+    else:
+        template_data={}
+        template_data['form'] = form_siteorder
+        template_data['user'] = request.user
+        return render_to_response("siteorder.html", template_data,context)
 
     template_data={}
     template_data['form'] = form_siteorder
@@ -126,11 +137,14 @@ def siteorder_pay_deposit(request):
 
     order = Order.objects.get(id=order_id)
 
+    amount = str(50.0 * 0.572310)
+    text = "Капаро за парти"
+
     context = RequestContext(request)
     paypal_dict = {
         "business": "putbul_lady-facilitator@abv.bg",
-        "amount": str(50.0 * 0.572310),
-        "item_name": "Капаро за парти",
+        "amount": amount,
+        "item_name": text,
         "invoice": "order-deposit" + str(order.id),
         "notify_url": "https://ostrovaweb.herokuapp.com" + reverse('paypal-ipn'),
         "return_url": "https://ostrovaweb.herokuapp.com/accounts/profile/",
@@ -143,6 +157,10 @@ def siteorder_pay_deposit(request):
     template_data={}
     template_data['form'] = form
     template_data['user'] = request.user
+    template_data['payment_data'] = [
+        ['Сума', "%.2f" % float(amount),],
+        ['Основание', text],
+    ]
     return render_to_response("siteorder_paypal.html", template_data, context)
 
 
@@ -152,11 +170,14 @@ def siteorder_pay_final(request):
 
     order = Order.objects.get(id=order_id)
 
+    amount = str(nvl(order.dueAmount,0) * Decimal(0.572310))
+    text = "Финално плащане за парти"
+
     context = RequestContext(request)
     paypal_dict = {
         "business": "putbul_lady-facilitator@abv.bg",
-        "amount": str(nvl(order.dueAmount,0) * Decimal(0.572310)),
-        "item_name": "Финално плащане за парти",
+        "amount": amount,
+        "item_name": text,
         "invoice": "order-final" + str(order.id),
         "notify_url": "https://ostrovaweb.herokuapp.com" + reverse('paypal-ipn'),
         "return_url": "https://ostrovaweb.herokuapp.com/accounts/profile/",
@@ -169,4 +190,8 @@ def siteorder_pay_final(request):
     template_data={}
     template_data['form'] = form
     template_data['user'] = request.user
+    template_data['payment_data'] = [
+        ['Сума', "%.2f" % float(amount),],
+        ['Основание', text],
+    ]
     return render_to_response("siteorder_paypal.html", template_data, context)

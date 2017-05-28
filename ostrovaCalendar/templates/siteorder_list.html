@@ -7,62 +7,60 @@
 
 {% block content %}
 
-<a href="/siteorder">Нова поръчка</a>
+<div class="wordart slate"><h3 class="text">Вашите поръчки:</h3></div>
 
-<h2>Вашите поръчки:</h2>
 <br>
 
-<table border="1">
-    <tr>
-        <th>Номер</th>
-        <th>Дата на р.д.</th>
-        <th>Начало</th>
-        <th>Край</th>
-        <th>Родител</th>
-        <th>Телефон</th>
-        <th>Дете</th>
-        <th>Години</th>
-        <th>Брой деца</th>
-        <th>Брой възрастни</th>
-        <th>Статус</th>
-        <th>Сума за плащане</th>
-        <th>Капаро</th>
-        <th>Финално плащане</th>
+<div class="container-fluid">
+    <div class="row">
+        <div class="span1"><strong>Номер</strong></div>
+        <div class="span1_1"><strong>Дата на р.д.</strong></div>
+        <div class="span1"><strong>Начало</strong></div>
+        <div class="span1"><strong>Край</strong></div>
+        <div class="span1"><strong>Родител</strong></div>
+        <div class="span1_1"><strong>Телефон</strong></div>
+        <div class="span1"><strong>Дете</strong></div>
+        <div class="span1   text-right"><strong>Години</strong></div>
+        <div class="span1   text-right"><strong>Брой деца</strong></div>
+        <div class="span1_1 text-right"><strong>Брой възрастни</strong></div>
+        <div class="span1_1 text-right"><strong>Статус</strong></div>
+        <div class="span1   text-right"><strong>Сума за плащане</strong></div>
+        <div class="span1"><strong>Капаро</strong></div>
+        <div class="span1   text-right"><strong>Финално плащане</strong></div>
+    </div>
 
-    </tr>
+    {% for order in orders %}
 
-{% for order in orders %}
+    <div class="row">
+        <div class="span1"> {{ order.id }}</div>
+        <div class="span1_1"> {{ order.rec_date }}</div>
+        <div class="span1"> {{ order.rec_time }}</div>
+        <div class="span1"> {{ order.rec_time_end }}</div>
+        <div class="span1"> {{ order.parent|default:"" }}</div>
+        <div class="span1_1"> {{ order.phone|default:"" }}</div>
+        <div class="span1"> {{ order.child|default:"" }}</div>
+        <div class="span1   text-right"> {{ order.age|default:"" }}</div>
+        <div class="span1   text-right"> {{ order.child_count|default:"" }}</div>
+        <div class="span1_1 text-right"> {{ order.adult_count|default:"" }}</div>
+        <div class="span1_1 text-right"> {{ order.get_status_display }}</div>
+        <div class="span1   text-right"> {{ order.dueAmount|floatformat:2 }}</div>
 
-    <tr>
-        <td>    {{ order.id }} </td>
-        <td>    {{ order.rec_date }} </td>
-        <td>    {{ order.rec_time }} </td>
-        <td>    {{ order.rec_time_end }} </td>
-        <td>    {{ order.parent }} </td>
-        <td>    {{ order.phone }} </td>
-        <td>    {{ order.child }} </td>
-        <td>    {{ order.age }} </td>
-        <td>    {{ order.child_count }} </td>
-        <td>    {{ order.adult_count }} </td>
-        <td>    {{ order.get_status_display }} </td>
-        <td>    {{ order.dueAmount }} </td>
-
-        <td>
-             {% if order.status == 'CONFIRMED' and not order.deposit %}
-                 <a href="/siteorderpaydeposit/?id={{order.id}}">Плащане капаро 50лв.</a>
-             {% endif %}
-        </td>
-        <td>
-            {% if order.status == 'ORDERED' and order.locked and order.dueAmount%}
-                <a href="/siteorderpayfinal/?id={{order.id}}">Финално плащане</a>
+        <div class="span1">
+            {% if order.status == 'CONFIRMED' and not order.deposit %}
+            <a class= "btn btn-info" href="/siteorderpaydeposit/?id={{order.id}}">Капаро 50лв.</a>
             {% endif %}
-        </td>
+        </div>
+        <div class="span1">
+            {% if order.status == 'ORDERED' and order.locked and order.dueAmount%}
+            <a class= "btn btn-info" href="/siteorderpayfinal/?id={{order.id}}">Финално плащане</a>
+            {% endif %}
+        </div>
 
-    </tr>
+    </div>
 
     {% endfor %}
 
-</table>
+</div>
 
 
 {% endblock %}

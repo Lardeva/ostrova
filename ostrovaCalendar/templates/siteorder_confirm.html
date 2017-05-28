@@ -1,23 +1,30 @@
 {% extends "base.html" %}
 
 {% block extrahead %}
-    {{ block.super }}
+{{ block.super }}
 
 {% endblock %}
 
 {% block content %}
 
-<h1>Вие заявихте поръчка за парти успешно. Ще се свържем с вас за потвърждение.</h1>
-
-<h2>Данни за поръчката:</h2>
+<div id="site-name" class="wordart slate"><h1 class="text">Вие заявихте поръчка за парти успешно! <br>Ще се свържем с
+    вас за потвърждение. </h1></div>
+<br>
+<br>
+<div class="wordart slate"><h2 class="text">Данни за поръчката:</h2></div>
 <br>
 
-    {% for field in form %}
-       <h3>
-            {{ field.label }} : {{ field.value }}
-       </h3>
-    {% endfor %}
+{% for field in form %}
 
-    {% endblock %}
+<p>
+<div class="wordart slate">
+    <h4 class="text"><strong>{{ field.label }} </strong>: {{ field.value }} </h4>
+</div>
+
+</p>
+
+{% endfor %}
+
+{% endblock %}
 
 

@@ -7,7 +7,27 @@
 
 {% block content %}
 
-<h1>Детски парти център</h1>
+<div class="wordart slate"><h3 class="text">Данни за плащане:</h3></div>
+
+{% for key, value in payment_data %}
+
+    <p>
+    <div class="wordart slate">
+        <h3 class="text"><strong>{{ key }} </strong>: {{ value }} </h3>
+    </div>
+
+    </p>
+
+{% endfor %}
+<br>
+<div class="wordart slate"><h3 class="text">Изберете метод за On-Line плащане:</h3></div>
+
+<br>
+
+<div class="wordart slate"><h3 class="text">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Paypal</h3></div>
+
+<br>
+<br>
 
 {{ form.render }}
 

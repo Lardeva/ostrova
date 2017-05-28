@@ -17,6 +17,8 @@
 
   <style type="text/css">.required:after { content: '*'; margin: 0 0 0 5px; position: absolute; color: #ccc;}</style>
 
+  {% block extrahead %}{% endblock %}
+
   {% block blockbots %}
     <meta name="robots" content="NONE,NOARCHIVE"/>
   {% endblock %}
@@ -40,7 +42,7 @@
 <body>
   <img src="{% static 'png/winnie.jpg' %}">
 
-  <div class="container">
+  <div class="container-large container">
 
   <!-- Container -->
   {% block container %}
@@ -51,33 +53,43 @@
 
       <div id="header" class="header" style="">
         <div id="branding">
-          <h1 id="site-name">ДЕТСКИ ПАРТИ ЦЕНТЪР</h1>
+
+
+            <div  id="site-name" class="wordart rainbow"><h1 class="text">ДЕТСКИ ПАРТИ ЦЕНТЪР</h1></div>
+
         </div>
 
+<br>
       <div id="user-tools">
       {% if user.is_active  %}
 
-          {% trans 'Welcome,' %}
-          <strong>
-            {% filter force_escape %}
-            {% firstof user.first_name user.username %}{% endfilter %}
-          </strong>.
+          <div class="wordart slate" style="float:right;vertical-align: top !important">
+              <h3 class=" text" >
+                  {% trans 'Welcome,' %}
+                  <strong>
+                    {% filter force_escape %}
+                    {% firstof user.first_name user.username %}{% endfilter %}
+                  </strong>
+              </h3>
+          </div>
 
           <span class="user-links">
                   {% block userlinks %}
-                    <a href="/accounts/password/change/">{% trans 'Change password' %}</a>
+                    <a class="btn btn-info" href="/accounts/password/change/">{% trans 'Change password' %}</a>
                     <span class="separator">|</span>
-                    <a href="/accounts/logout/">{% trans 'Log out' %}</a>
+                    <a class="btn btn-info" href="/accounts/logout/">{% trans 'Log out' %}</a>
                     <span class="separator">|</span>
-                    <a href="/accounts/profile/">Списък с Поръчки</a>
+                    <a class="btn btn-info" href="/accounts/profile/">Списък с Поръчки</a>
+                      <span class="separator">|</span>
+                      <a class= "btn btn-info" href="/siteorder">Нова поръчка</a>
                   {% endblock %}
-                  </span>
+           </span>
       {% endif %}
       {% if not user.is_active  %}
           <span class="user-links">
-            <a href="/accounts/register">Регистрация</a>
+            <a class="btn btn-info" href="/accounts/register">Регистрация</a>
             <span class="separator">|</span>
-            <a href="/accounts/login">Вход</a>
+            <a class="btn btn-info" href="/accounts/login">Вход</a>
           </span>
       {% endif %}
 
@@ -105,6 +117,12 @@
 
 <!--  <script src="{% static 'suit/js/suit.js' %}"></script>-->
   {% block extrajs %}{% endblock %}
+
+<script>
+$(document).ready(function() {
+    $('form input[type="submit"]').addClass('btn btn-info');
+});
+</script>
 
 </body>
 </html>

@@ -131,12 +131,12 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
 
     cubes.Server.prototype.cubeinfo = function(cubename) {
     	var cubeinfos = $.grep(this._cube_list, function (ci) { return ci.name == cubename });
-    	if (cubeinfos.length != 1) throw "Found " + cubeinfos.length + " cubes with name '" + cubename + "' in the cube list";
+    	if (cubeinfos.length != 1) throw "Found " + cubeinfos.length + " куб с име '" + cubename + "' в списъка с кубове";
     	return cubeinfos[0];
     };
 
     cubes.Server.prototype.ajaxRequest = function(settings) {
-        throw "Must implement ajaxRequest for server to process jquery-style $.ajax settings object";
+        throw "Трябва да се внедри ajaxRequest за сървърната обработка jquery-style $.ajax настройки";
     };
 
     cubes.Server.prototype.query = function(query, cube, args, callback, errCallback, completeCallback) {
@@ -586,14 +586,14 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
 
     cubes.Drilldown = function(dimension, hierarchy, level) {
         if ( ! _.isObject(dimension) )
-            throw "Drilldown requires a Dimension object as first argument";
+            throw "Сечението задължително изисква дименсия като първи артумент";
         this.dimension = dimension;
         this.hierarchy = dimension.hierarchy(hierarchy);
         this.level = dimension.level(level) || this.hierarchy.levels[0];
         if ( ! this.hierarchy )
-            throw "Drilldown cannot recognize hierarchy " + hierarchy + " for dimension " + dimension;
+            throw "Сечението не може да разпознае нивото  йерархията " + hierarchy + " за дименсията " + dimension;
         if ( ! this.level )
-            throw "Drilldown cannot recognize level " + level  + " for dimension " + dimension;
+            throw "Сечението не може да разпознае нивото " + level  + " за дименсията " + dimension;
     };
 
     cubes.Drilldown.prototype.toString = function() {
@@ -729,9 +729,9 @@ angular.module('bootstrapSubmenu', []).directive("submenu", ['$timeout', functio
 
     cubes.SPLIT_DIMENSION = new cubes.Dimension({
       name: cubes.SPLIT_DIMENSION_STRING,
-      label: 'Matches Filters',
+      label: 'Съвпадащи филтри',
       hierarchies: [ { name: 'default', levels: [ cubes.SPLIT_DIMENSION_STRING ] } ],
-      levels: [ { name: cubes.SPLIT_DIMENSION_STRING, attributes: [{name: cubes.SPLIT_DIMENSION_STRING}], label: 'Matches Filters' } ]
+      levels: [ { name: cubes.SPLIT_DIMENSION_STRING, attributes: [{name: cubes.SPLIT_DIMENSION_STRING}], label: 'Съвпадащи филтри' } ]
     });
 
     cubes._split_with_negative_lookbehind = function(input, regex, lb) {
@@ -1106,25 +1106,25 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	this.connect = function() {
 		// Initialize Cubes client library
 		this.cubesserver = new cubes.Server(cubesService._cubesAjaxHandler);
-		console.debug("Cubes client connecting to: " + cvOptions.cubesUrl);
+		console.debug("Клиентите на куба са добавени към: " + cvOptions.cubesUrl);
 		this.cubesserver.connect (cvOptions.cubesUrl, function() {
-			$log.debug('Cubes client initialized (server version: ' + cubesService.cubesserver.server_version + ')');
+			$log.debug('Клиентите на куба са инициализирани (версия на сървъра: ' + cubesService.cubesserver.server_version + ')');
 			cubesService.state = cubesviewer.VIEW_STATE_INITIALIZED;
 			$rootScope.$apply();
 		}, function(xhr) {
 
 			console.debug(xhr);
-			console.debug('Could not connect to Cubes server [code=' + xhr.status + "]");
+			console.debug('Няма връзка със сървъра на куба[code=' + xhr.status + "]");
 			cubesService.state = cubesviewer.VIEW_STATE_ERROR;
 
 			if (xhr.status == 401) {
-				cubesService.stateText = "Unauthorized.";
+				cubesService.stateText = "Неоторизиран.";
 			} else if (xhr.status == 403) {
-				cubesService.stateText = "Forbidden.";
+				cubesService.stateText = "Забранено.";
 			} else if (xhr.status == 400) {
-				cubesService.stateText = "Bad request: " + ($.parseJSON(xhr.responseText).message);
+				cubesService.stateText = "Некоректна заявка: " + ($.parseJSON(xhr.responseText).message);
 			} else {
-				cubesService.stateText = "Unknown error.";
+				cubesService.stateText = "Непозната грешка.";
 			}
 
 
@@ -1154,7 +1154,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		if (path.charAt(0) == '/') path = cvOptions.cubesUrl + path;
 
 		if (cvOptions.debug) {
-			$log.debug("Cubes request: " + path + " (" + JSON.stringify(params) + ")");
+			$log.debug("Заявка за куба: " + path + " (" + JSON.stringify(params) + ")");
 		}
 
 		var jqxhr = $.get(path, params, cubesService._cubesRequestCallback(successCallback), cvOptions.jsonRequestType);
@@ -1164,7 +1164,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 		try {
 			gaService.trackRequest(path);
 		} catch(e) {
-			$log.error("An error happened during CubesViewer event tracking: " + e)
+			$log.error("Възникна грешка по време на проследяването на събития в CubesViewer: " + e)
 		}
 
 		return jqxhr;
@@ -1182,7 +1182,7 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 	 * Default XHR error handler for CubesRequests
 	 */
 	this.defaultRequestErrorHandler = function(xhr, textStatus, errorThrown) {
-		$log.error("Cubes request error: " + xhr)
+		$log.error("Грешка при зареждане на Куба: " + xhr)
 	};
 
 	/*
@@ -1327,18 +1327,18 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 			var level = dimensionparts.hierarchy.levels[i];
 
 			var field = level.role;
-			if (field == "year") {
+			if (field == "година") {
 				values.push(tdate.getFullYear());
-			} else if (field == "month") {
+			} else if (field == "месец") {
 				values.push(tdate.getMonth() + 1);
-			} else if (field == "quarter") {
+			} else if (field == "тримесечие") {
 				values.push((Math.floor(tdate.getMonth() / 3) + 1));
-			} else if (field == "week") {
+			} else if (field == "седмица") {
 				values.push(this._weekNumber(tdate));
-			} else if (field == "day") {
+			} else if (field == "ден") {
 				values.push(tdate.getDate());
 			} else {
-				dialogService.show("Wrong configuration of model: time role of level '" + level.name + "' is invalid.");
+				dialogService.show("Грешна конфигурация на модела: времевата роля  на нивото '" + level.name + "' е грешна.");
 			}
 		}
 
@@ -1408,7 +1408,7 @@ angular.module('cv.cubes').service("cubesCacheService", ['$rootScope', '$log', '
 		}
 		if (cvOptions.cacheEnabled) {
 			// Replace request function
-			$log.debug("Replacing Cubes request method with caching version.")
+			$log.debug("Замяна на метода за заявка на Cubes останали в кеша.")
 			cubesCacheService._cacheOverridedCubesRequest = cubesService.cubesRequest;
 			cubesService.cubesRequest = cubesCacheService.cachedCubesRequest;
 		}
@@ -1426,7 +1426,7 @@ angular.module('cv.cubes').service("cubesCacheService", ['$rootScope', '$log', '
 			var timediff = Math.round ((new Date().getTime() - cubesCacheService.cache[requestHash].time) / 1000);
 			if (timediff > cvOptions.cacheNotice) {
 				//cubesviewer.showInfoMessage("Data loaded from cache<br/>(" + timediff + " minutes old)", 1000);
-				$log.debug("Data loaded from cache (" + Math.floor(timediff / 60, 2) + " minutes old)");
+				$log.debug("Данни, заредени от кеша преди(" + Math.floor(timediff / 60, 2) + " минути)");
 			}
 
 			jqxhr = $.Deferred();
@@ -1604,7 +1604,7 @@ angular.module('cv').config([ '$logProvider', 'cvOptions', /* 'editableOptions',
 angular.module('cv').run([ '$timeout', '$log', 'cvOptions', 'cubesService', 'cubesCacheService', /* 'editableOptions', 'editableThemes', */
 	                           function($timeout, $log, cvOptions, cubesService, cubesCacheService /*, editableOptions, editableThemes */) {
 
-	$log.debug("CubesViewer debug mode is enabled.");
+	$log.debug("CubesViewer режимът за отстраняване на грешки е активиран.");
 
 	// Initialize cache service
 	cubesCacheService.initialize();
@@ -1856,9 +1856,9 @@ angular.module('cv.views').service("viewsService", ['$rootScope', '$window', 'cv
 			try {
 				params = $.parseJSON(data);
 			} catch (err) {
-				console.debug('Error: could not process serialized data (JSON parse error)');
-				dialogService.show('Error: could not process serialized data (JSON parse error).')
-				params["name"] = "Undefined view";
+				console.debug('Грешка: Не може да се обработят сериализираните данни (Грешка в JSON)');
+				dialogService.show('Грешка: Не може да се обработят сериализираните данни (Грешка в JSON).')
+				params["name"] = "Недефиниран изглед";
 			}
 		} else {
 			params = data;
@@ -2122,7 +2122,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 		jqxhr.fail(function(req) {
 			var data = req.responseJSON;
 			$scope.view.state = cubesviewer.VIEW_STATE_ERROR;
-			$scope.view.error = "Error loading model: " + data.message + " (" + data.error + ")";
+			$scope.view.error = "Грешка при зареждане на модела: " + data.message + " (" + data.error + ")";
 			console.debug(data);
 			$rootScope.$apply();
 		});
@@ -2311,12 +2311,12 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeController", ['$
 		var view = $scope.view;
 
 		if (view.params.drilldown.length != 1) {
-			dialogService.show('Can only filter multiple values in a view with one level of drilldown.');
+			dialogService.show('Може да се филтрират множество от стойности в изглед на едно ниво от сечението.');
 			return;
 		}
 
 		if (view.grid.api.selection.getSelectedCount() <= 0) {
-			dialogService.show('Cannot filter. No rows are selected.');
+			dialogService.show('Не може да се филтрира. Няма избрани редове.');
 			return;
 		}
 
@@ -3187,14 +3187,14 @@ angular.module('cv.views.cube').filter("datefilterMode", ['$rootScope', 'cvOptio
 	return function(val) {
 		var text = "None";
 		switch (val) {
-			case "custom": text = "Custom"; break;
-			case "auto-last1m": text = "Last month"; break;
-			case "auto-last3m": text = "Last 3 months"; break;
-			case "auto-last6m": text = "Last 6 months"; break;
-			case "auto-last12m": text = "Last year"; break;
-			case "auto-last24m": text = "Last 2 years"; break;
-			case "auto-january1st": text = "From January 1st"; break;
-			case "auto-yesterday": text = "Yesterday"; break;
+			case "custom": text = "Персонализиран"; break;
+			case "auto-last1m": text = "Миналият месец"; break;
+			case "auto-last3m": text = "Последните 3 месеца"; break;
+			case "auto-last6m": text = "Последните 6 месеца"; break;
+			case "auto-last12m": text = "Последната година"; break;
+			case "auto-last24m": text = "Последните 2 години"; break;
+			case "auto-january1st": text = "От 1-ви януари"; break;
+			case "auto-yesterday": text = "Вчера"; break;
 		}
 		return text;
 	};
@@ -3438,7 +3438,7 @@ angular.module('cv.views.cube').controller("CubesViewerViewsCubeFactsController"
 				cellClass : "text-right",
 				headerCellClass: "cv-grid-header-measure",
 				//type : "number",
-				cellTemplate: '<div class="ui-grid-cell-contents" title="TOOLTIP">{{ col.colDef.formatter(COL_FIELD, row, col) }}</div>',
+				cellTemplate: '<div class="ui-grid-cell-contents" title="Подсказка">{{ col.colDef.formatter(COL_FIELD, row, col) }}</div>',
 				formatter: $scope.columnFormatFunction(measure),
 				//footerValue: $scope.columnFormatFunction(ag)(data.summary[ag.ref], null, col)
 				//formatoptions: {},
@@ -5525,7 +5525,7 @@ function cubesviewerViewCubeDynamicChart() {
 		// Build params (do not include xaxis)
 		var params = this.cubesviewer.views.cube.buildQueryParams(view, false, false);
 
-		$('#' + view.id).find('.cv-view-viewdata').empty().append('<h3>Dynamic Chart</h3><span class="ajaxloader" title="Loading...">  Loading</span>');
+		$('#' + view.id).find('.cv-view-viewdata').empty().append('<h3>Динамична диаграма</h3><span class="ajaxloader" title="Зареждане...">  Loading</span>');
 
 		$.get(view.cubesviewer.options.cubesUrl + "/cube/" + view.cube.name + "/aggregate", params,
 				view.cubesviewer.views.cube.dynamicchart._loadDataCallback(view), "json");
@@ -5603,7 +5603,7 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 	this.exportGridAsCsv = function (view) {
 
 		if (!view.grid) {
-			console.debug("View has no grid that can be exported.");
+			console.debug("Не е налична таблична информация, за да се може да се експортира.");
 			return;
 		}
 
@@ -5702,7 +5702,7 @@ angular.module('cv.views.cube').service("exportService", ['$rootScope', '$timeou
 					}
 				}
 	    	} catch (err) {
-	    		console.debug("Could not access document stylesheet.")
+	    		console.debug("Не можа да се достигне до стилове за обработка на документи.")
 	    	}
 		}
 
@@ -5914,7 +5914,7 @@ angular.module('cv.studio').service("studioViewsService", ['$rootScope', '$ancho
 			try {
 				$.parseJSON(data);
 			} catch (err) {
-				dialogService.show('Could not process serialized data: JSON parse error.')
+				dialogService.show('Не възможност за обработка на данните: Грешка в JSON.')
 				return;
 			}
 		}
@@ -6390,7 +6390,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     reststoreService.saveView = function (view) {
 
         if (view.owner != cvOptions.user) {
-            dialogService.show('Cannot save a view that belongs to other user (try cloning the view).');
+            dialogService.show('Не може да се запази изглед, който принадлежи на друг потребител (опитайте да клонирате изгледа).');
             return;
         }
 
@@ -6443,15 +6443,15 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
     reststoreService.deleteView = function (view) {
 
         if (view.savedId == 0) {
-        	dialogService.show("Cannot delete this view as it hasn't been saved.");
+        	dialogService.show("Изгледът не може да бъде изтрит този изглед, тъй като не е запазен.");
             return;
         }
         if (view.owner != cvOptions.user) {
-            dialogService.show('Cannot delete a view that belongs to other user.');
+            dialogService.show('Не може да се изтрие изглед, който принадлежи на друг потребител.');
             return;
         }
 
-        if (! confirm('Are you sure you want to delete and close this view?')) {
+        if (! confirm('Наистина ли искате да изтриете и затворите този изглед?')) {
             return;
         }
 
@@ -6514,7 +6514,7 @@ angular.module('cv.studio').service("reststoreService", ['$rootScope', '$http', 
 	reststoreService.shareView = function(view, sharedstate) {
 
         if (view.owner != cvOptions.user) {
-            dialogService.show('Cannot share/unshare a view that belongs to other user (try cloning the view).');
+            dialogService.show('Не може да се споделя / деактивира изглед, който принадлежи на друг потребител (опитайте да клонирате изгледа).');
             return;
         }
 
@@ -6601,7 +6601,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
 	this.initTime = new Date();
 
 	this.initialize = function() {
-		if (cvOptions.gaTrackEvents) $log.debug("Google Analytics events tracking plugin enabled.")
+		if (cvOptions.gaTrackEvents) $log.debug("Приложението за проследяване на събития в Google - анализ е активирано.")
 	};
 
 	this.trackRequest = function(path) {
@@ -6632,12 +6632,12 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
 		if (event) {
 			if (typeof ga !== 'undefined') {
 				ga('send', 'event', "CubesViewer", event[0], event[1]);
-				$log.debug("Tracking GA event: " + event[0] + "/" + event[1]);
+				$log.debug("Проследяване на GA събития: " + event[0] + "/" + event[1]);
 			} else {
-				$log.debug("Cannot track CubesViewer events: GA object 'ga' not available.")
+				$log.debug("Не може да се проследи CubesViewer събития: GA обекти 'ga' не са достъпни .")
 			}
 		} else {
-			$log.warn("Unknown cubes operation, cannot be tracked by GA service: " + path)
+			$log.warn("Непозната куб-операция, не може да се проследи от GA услуги: " + path)
 		}
 
 	};
@@ -6659,8 +6659,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <p>{{ dialog.text }}</p>\n" +
     "  </div>\n" +
     "  <div class=\"modal-footer\">\n" +
-    "    <!-- <button type=\"button\" ng-click=\"close()\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancel</button>  -->\n" +
-    "    <button type=\"button\" ng-click=\"close()\" class=\"btn btn-primary\" data-dismiss=\"modal\">Close</button>\n" +
+    "    <!-- <button type=\"button\" ng-click=\"close()\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Откажи</button>  -->\n" +
+    "    <button type=\"button\" ng-click=\"close()\" class=\"btn btn-primary\" data-dismiss=\"modal\">Затвори</button>\n" +
     "  </div>\n" +
     "\n"
   );
@@ -6676,7 +6676,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "      </div>\n" +
     "      <div class=\"modal-body\">\n" +
     "\n" +
-    "            <p><a href=\"http://jjmontesl.github.io/cubesviewer/\" target=\"_blank\">CubesViewer</a> is a visual, web-based application for exploring and analyzing\n" +
+    "            <p><a href=\"http://jjmontesl.github.io/cubesviewer/\" target=\"_blank\">CubesViewer</a> е визуално, уеб базирано приложение за преглед и анализи.\n" +
     "            OLAP databases served by the <a href=\"http://cubes.databrewery.org/\" target=\"_blank\">Cubes OLAP Framework</a>.</p>\n" +
     "            <hr />\n" +
     "\n" +
@@ -6687,12 +6687,12 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            2012 - 2016</p>\n" +
     "\n" +
     "            <p>\n" +
-    "            <a href=\"http://github.com/jjmontesl/cubesviewer/blob/master/LICENSE.txt\" target=\"_blank\">LICENSE</a>\n" +
+    "            <a href=\"http://github.com/jjmontesl/cubesviewer/blob/master/LICENSE.txt\" target=\"_blank\">Лиценз</a>\n" +
     "            </p>\n" +
     "\n" +
     "      </div>\n" +
     "      <div class=\"modal-footer\">\n" +
-    "        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\"><i class=\"fa fa-cube\"></i> Close</button>\n" +
+    "        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\"><i class=\"fa fa-cube\"></i> Затвори</button>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "  </div>\n" +
@@ -6713,9 +6713,9 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "            <i class=\"fa fa-fw fa-file\"></i> <span class=\"cv-gui-title\" style=\"cursor: pointer;\" ng-dblclick=\"studioViewsService.studioScope.showRenameView(view)\"><a name=\"cvView{{ view.id }}\"></a>{{ view.params.name }}</span>\n" +
     "\n" +
-    "            <span ng-if=\"view.savedId > 0 && reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Modified</span>\n" +
-    "            <span ng-if=\"view.savedId > 0 && !reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Saved</span>\n" +
-    "            <span ng-if=\"view.shared\" class=\"badge cv-gui-container-state\" style=\"margin-left: 5px; font-size: 80%;\">Shared</span>\n" +
+    "            <span ng-if=\"view.savedId > 0 && reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Промени</span>\n" +
+    "            <span ng-if=\"view.savedId > 0 && !reststoreService.isViewChanged(view)\" class=\"badge cv-gui-container-state\" style=\"margin-left: 15px; font-size: 80%;\">Запиши</span>\n" +
+    "            <span ng-if=\"view.shared\" class=\"badge cv-gui-container-state\" style=\"margin-left: 5px; font-size: 80%;\">Сподели</span>\n" +
     "\n" +
     "            <button type=\"button\" class=\"btn btn-danger btn-xs\" style=\"visibility: hidden;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
     "\n" +
@@ -6736,21 +6736,21 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
   $templateCache.put('studio/rename.html',
     "  <div class=\"modal-header\">\n" +
     "    <button type=\"button\" ng-click=\"close();\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
-    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-pencil\"></i> Rename view</h4>\n" +
+    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-pencil\"></i> Преименувай изгледа</h4>\n" +
     "  </div>\n" +
     "  <div class=\"modal-body\">\n" +
     "\n" +
     "        <form class=\"form\" ng-submit=\"renameView(viewName);\">\n" +
     "            <div class=\"form-group\">\n" +
-    "                <label for=\"serializedView\">Name:</label>\n" +
+    "                <label for=\"serializedView\">Име:</label>\n" +
     "                <input class=\"form-control\" ng-model=\"viewName\" />\n" +
     "            </div>\n" +
     "        </form>\n" +
     "\n" +
     "  </div>\n" +
     "  <div class=\"modal-footer\">\n" +
-    "    <button type=\"button\" ng-click=\"close();\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancel</button>\n" +
-    "    <button type=\"button\" ng-click=\"renameView(viewName);\" class=\"btn btn-primary\" data-dismiss=\"modal\">Rename</button>\n" +
+    "    <button type=\"button\" ng-click=\"close();\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Откажи</button>\n" +
+    "    <button type=\"button\" ng-click=\"renameView(viewName);\" class=\"btn btn-primary\" data-dismiss=\"modal\">Преименувай</button>\n" +
     "  </div>\n" +
     "\n"
   );
@@ -6759,7 +6759,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
   $templateCache.put('studio/serialize-add.html',
     "  <div class=\"modal-header\">\n" +
     "    <button type=\"button\" ng-click=\"close()\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
-    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-code\"></i> Add view from serialized JSON</h4>\n" +
+    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-code\"></i> Добави изглед от сериализиран JSON</h4>\n" +
     "  </div>\n" +
     "  <div class=\"modal-body\">\n" +
     "\n" +
@@ -6770,8 +6770,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "  </div>\n" +
     "  <div class=\"modal-footer\">\n" +
-    "    <button type=\"button\" ng-click=\"close()\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Cancel</button>\n" +
-    "    <button type=\"button\" ng-click=\"addSerializedView(serializedView)\" class=\"btn btn-primary\" data-dismiss=\"modal\">Add View</button>\n" +
+    "    <button type=\"button\" ng-click=\"close()\" class=\"btn btn-secondary\" data-dismiss=\"modal\">Откажи</button>\n" +
+    "    <button type=\"button\" ng-click=\"addSerializedView(serializedView)\" class=\"btn btn-primary\" data-dismiss=\"modal\">Добади изглед</button>\n" +
     "  </div>\n" +
     "\n"
   );
@@ -6780,18 +6780,18 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
   $templateCache.put('studio/serialize-view.html',
     "  <div class=\"modal-header\">\n" +
     "    <button type=\"button\" ng-click=\"close()\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
-    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-code\"></i> Serialized View</h4>\n" +
+    "    <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-code\"></i> Сериализиран изглед</h4>\n" +
     "  </div>\n" +
     "  <div class=\"modal-body\">\n" +
     "\n" +
     "        <div class=\"form\">\n" +
-    "            <label for=\"serializedView\">View definition JSON:</label>\n" +
+    "            <label for=\"serializedView\">Вижте параметрите на JSON:</label>\n" +
     "            <textarea class=\"form-control cv-serialized-view\" ng-bind=\"serializedView\" style=\"width: 100%; height: 12em;\" readonly></textarea>\n" +
     "        </div>\n" +
     "\n" +
     "  </div>\n" +
     "  <div class=\"modal-footer\">\n" +
-    "    <button type=\"button\" ng-click=\"close()\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>\n" +
+    "    <button type=\"button\" ng-click=\"close()\" class=\"btn btn-default\" data-dismiss=\"modal\">Затвори</button>\n" +
     "  </div>\n" +
     "\n"
   );
@@ -6803,28 +6803,28 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <div class=\"modal-content\">\n" +
     "      <div class=\"modal-header\">\n" +
     "        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\"><i class=\"fa fa-fw fa-close\"></i></span></button>\n" +
-    "        <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-fw fa-database\"></i> Server info</h4>\n" +
+    "        <h4 class=\"modal-title\" id=\"myModalLabel\"><i class=\"fa fa-fw fa-database\"></i> Информация за сървъра</h4>\n" +
     "      </div>\n" +
     "      <div class=\"modal-body\">\n" +
     "\n" +
     "            <p>\n" +
-    "                <i>This CubesViewer version supports Cubes Server version 1.0.x and 1.1.x</i><br />\n" +
+    "                <i>Тази CubesViewer версия е поддържа Cubes Server version 1.0.x and 1.1.x</i><br />\n" +
     "                <br />\n" +
-    "                <b>Server version:</b> {{ cubesService.cubesserver.server_version }} <br />\n" +
-    "                <b>Cubes version:</b> {{ cubesService.cubesserver.cubes_version }} <br />\n" +
-    "                <b>API version:</b> {{ cubesService.cubesserver.api_version }} <br />\n" +
+    "                <b>SВерсия на сървъра:</b> {{ cubesService.cubesserver.server_version }} <br />\n" +
+    "                <b>Версия на куба:</b> {{ cubesService.cubesserver.cubes_version }} <br />\n" +
+    "                <b>Версия на интерфейса :</b> {{ cubesService.cubesserver.api_version }} <br />\n" +
     "            </p>\n" +
     "            <p>\n" +
-    "                <b>Timezone:</b> {{ cubesService.cubesserver.info.timezone }} <br />\n" +
-    "                <b>Week start:</b> {{ cubesService.cubesserver.info.first_weekday }} <br />\n" +
+    "                <b>Времева зона:</b> {{ cubesService.cubesserver.info.timezone }} <br />\n" +
+    "                <b>Начало на седмицата:</b> {{ cubesService.cubesserver.info.first_weekday }} <br />\n" +
     "            </p>\n" +
     "            <p>\n" +
-    "                <b>Result limit:</b> <strong class=\"text-warning\">{{ cubesService.cubesserver.info.json_record_limit }}</strong> items<br />\n" +
+    "                <b>Лимит:</b> <strong class=\"text-warning\">{{ cubesService.cubesserver.info.json_record_limit }}</strong> елементи<br />\n" +
     "            </p>\n" +
     "\n" +
     "      </div>\n" +
     "      <div class=\"modal-footer\">\n" +
-    "        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\"> Close</button>\n" +
+    "        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\"> Затварям</button>\n" +
     "      </div>\n" +
     "    </div>\n" +
     "  </div>\n" +
@@ -6841,14 +6841,14 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <div class=\"dropdown m-b\" style=\"display: inline-block;\">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "            <i class=\"fa fa-fw fa-cube\"></i> Cubes <span class=\"caret\"></span>\n" +
+    "            <i class=\"fa fa-fw fa-cube\"></i> Кубове <span class=\"caret\"></span>\n" +
     "          </button>\n" +
     "\n" +
     "          <ul class=\"dropdown-menu cv-gui-cubeslist-menu\">\n" +
     "\n" +
-    "            <li ng-show=\"cubesService.state === 1\" class=\"disabled\"><a>Loading...</a></li>\n" +
-    "            <li ng-show=\"cubesService.state === 2 && cubesService.cubesserver._cube_list.length === 0\" class=\"disabled\"><a>No cubes found</a></li>\n" +
-    "            <li ng-show=\"cubesService.state === 3\" class=\"disabled text-danger\"><a>Loading failed</a></li>\n" +
+    "            <li ng-show=\"cubesService.state === 1\" class=\"disabled\"><a>Зареждане...</a></li>\n" +
+    "            <li ng-show=\"cubesService.state === 2 && cubesService.cubesserver._cube_list.length === 0\" class=\"disabled\"><a>Не е намерен куб</a></li>\n" +
+    "            <li ng-show=\"cubesService.state === 3\" class=\"disabled text-danger\"><a>Зареждането не е успешно</a></li>\n" +
     "\n" +
     "            <li ng-repeat=\"cube in cubesService.cubesserver._cube_list | orderBy:'label'\" ng-click=\"studioViewsService.addViewCube(cube.name)\"><a>{{ cube.label }}</a></li>\n" +
     "\n" +
@@ -6858,19 +6858,19 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "            <i class=\"fa fa-fw fa-file\"></i> Saved views <span class=\"caret\"></span>\n" +
+    "            <i class=\"fa fa-fw fa-file\"></i> Запиши изгледа <span class=\"caret\"></span>\n" +
     "          </button>\n" +
     "\n" +
     "          <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
     "\n" +
-    "            <li class=\"dropdown-header\">Personal views</li>\n" +
+    "            <li class=\"dropdown-header\">Персонализиран изглед</li>\n" +
     "\n" +
-    "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Loading...</a></li>  -->\n" +
+    "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Зареждане...</a></li>  -->\n" +
     "            <li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.owner == cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>\n" +
     "\n" +
-    "            <li class=\"dropdown-header\">Shared by others</li>\n" +
+    "            <li class=\"dropdown-header\">Сподели с други</li>\n" +
     "\n" +
-    "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Loading...</a></li>  -->\n" +
+    "            <!-- <li ng-show=\"true\" class=\"disabled\"><a>Зареждане...</a></li>  -->\n" +
     "            <li ng-repeat=\"sv in reststoreService.savedViews | orderBy:'sv.name'\" ng-if=\"sv.shared && sv.owner != cvOptions.user\" ng-click=\"reststoreService.addSavedView(sv.id)\"><a style=\"max-width: 360px; overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\"><i class=\"fa fa-fw\"></i> {{ sv.name }}</a></li>\n" +
     "\n" +
     "          </ul>\n" +
@@ -6879,32 +6879,32 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <div class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "            <i class=\"fa fa-fw fa-wrench\"></i> Tools <span class=\"caret\"></span>\n" +
+    "            <i class=\"fa fa-fw fa-wrench\"></i> Инструменти <span class=\"caret\"></span>\n" +
     "          </button>\n" +
     "\n" +
     "          <ul class=\"dropdown-menu\">\n" +
     "\n" +
-    "                <li ng-click=\"showSerializeAdd()\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-code\"></i> Add view from JSON...</a></li>\n" +
+    "                <li ng-click=\"showSerializeAdd()\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-code\"></i> Добавете изглед от JSON...</a></li>\n" +
     "\n" +
     "                <div class=\"divider\"></div>\n" +
     "\n" +
-    "                <li ng-click=\"toggleTwoColumn()\" ng-class=\"{ 'hidden-xs': ! cvOptions.studioTwoColumn, 'disabled': studioViewsService.views.length == 0 }\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-columns\"></i> 2 column\n" +
-    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.studioTwoColumn }\">{{ cvOptions.studioTwoColumn ? \"ON\" : \"OFF\" }}</span></a>\n" +
+    "                <li ng-click=\"toggleTwoColumn()\" ng-class=\"{ 'hidden-xs': ! cvOptions.studioTwoColumn, 'disabled': studioViewsService.views.length == 0 }\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-columns\"></i> 2 колони\n" +
+    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.studioTwoColumn }\">{{ cvOptions.studioTwoColumn ? \"Вкл.\" : \"Изкл.\" }}</span></a>\n" +
     "                </li>\n" +
-    "                <li ng-click=\"toggleHideControls()\" ng-class=\"{ 'disabled': studioViewsService.views.length == 0 }\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-unlock-alt\"></i> Hide controls\n" +
-    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.hideControls }\">{{ cvOptions.hideControls ? \"ON\" : \"OFF\" }}</span></a>\n" +
+    "                <li ng-click=\"toggleHideControls()\" ng-class=\"{ 'disabled': studioViewsService.views.length == 0 }\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-unlock-alt\"></i> Скрии управлението\n" +
+    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.hideControls }\">{{ cvOptions.hideControls ? \"Вкл.\" : \"Изкл.\" }}</span></a>\n" +
     "                </li>\n" +
     "\n" +
     "                <div class=\"divider\"></div>\n" +
     "\n" +
     "\n" +
-    "                <!-- <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvServerInfo\"><i class=\"fa fa-fw fa-server\"></i> Data model</a></li> -->\n" +
-    "                <li class=\"\" ng-class=\"{ 'disabled': cubesService.state != 2 }\"><a data-toggle=\"modal\" data-target=\"#cvServerInfo\" ><i class=\"fa fa-fw fa-database\"></i> Server info</a></li>\n" +
+    "                <!-- <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvServerInfo\"><i class=\"fa fa-fw fa-server\"></i> Модел на данните</a></li> -->\n" +
+    "                <li class=\"\" ng-class=\"{ 'disabled': cubesService.state != 2 }\"><a data-toggle=\"modal\" data-target=\"#cvServerInfo\" ><i class=\"fa fa-fw fa-database\"></i> Информация за сървъра</a></li>\n" +
     "\n" +
     "                <div class=\"divider\"></div>\n" +
     "\n" +
-    "                <li class=\"\"><a href=\"http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md\" target=\"_blank\"><i class=\"fa fa-fw fa-question\"></i> User guide</a></li>\n" +
-    "                <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvAboutModal\"><i class=\"fa fa-fw fa-info\"></i> About CubesViewer...</a></li>\n" +
+    "                <li class=\"\"><a href=\"http://github.com/jjmontesl/cubesviewer/blob/master/doc/guide/cubesviewer-user-main.md\" target=\"_blank\"><i class=\"fa fa-fw fa-question\"></i> Инструкция за потребителя</a></li>\n" +
+    "                <li class=\"\"><a data-toggle=\"modal\" data-target=\"#cvAboutModal\"><i class=\"fa fa-fw fa-info\"></i> За CubesViewer...</a></li>\n" +
     "\n" +
     "            </ul>\n" +
     "        </div>\n" +
@@ -6915,7 +6915,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                <button class=\"btn\" type=\"button\" title=\"2 column\" ng-disabled=\"studioViewsService.views.length == 0\" ng-class=\"cvOptions.studioTwoColumn ? 'btn-active btn-success' : 'btn-primary'\" ng-click=\"toggleTwoColumn()\"><i class=\"fa fa-fw fa-columns\"></i></button>\n" +
     "             </div>\n" +
     "             <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0px;\">\n" +
-    "                <button class=\"btn\" type=\"button\" title=\"Hide controls\" ng-disabled=\"studioViewsService.views.length == 0\" ng-class=\"cvOptions.hideControls ? 'btn-active btn-success' : 'btn-primary'\" ng-click=\"toggleHideControls()\"><i class=\"fa fa-fw fa-unlock-alt\"></i></button>\n" +
+    "                <button class=\"btn\" type=\"button\" title=\"Скрии управлението\" ng-disabled=\"studioViewsService.views.length == 0\" ng-class=\"cvOptions.hideControls ? 'btn-active btn-success' : 'btn-primary'\" ng-click=\"toggleHideControls()\"><i class=\"fa fa-fw fa-unlock-alt\"></i></button>\n" +
     "             </div>\n" +
     "\n" +
     "        </div>\n" +
@@ -6932,8 +6932,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <div class=\"row\">\n" +
     "            <div ng-if=\"cubesService.state == 3\" class=\"col-xs-12\" style=\"margin-bottom: 10px;\">\n" +
     "                <div class=\"alert alert-danger\" style=\"margin: 0px;\">\n" +
-    "                    <p>Could not connect to server: {{ cubesService.stateText }}</p>\n" +
-    "                    <p>Please try again and contact your administrator if the problem persists.</p>\n" +
+    "                    <p>Няма връзка със сървъра: {{ cubesService.stateText }}</p>\n" +
+    "                    <p>Моля опитайте отново и ако проблемът продължава се свържете с администратора си.</p>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
@@ -6964,8 +6964,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <div ng-if=\"view.requestFailed\" class=\"alert alert-dismissable alert-danger\" style=\"margin-bottom: 5px;\">\n" +
     "        <div style=\"display: inline-block;\"><i class=\"fa fa-exclamation\"></i></div>\n" +
     "        <div style=\"display: inline-block; margin-left: 20px;\">\n" +
-    "            An error has occurred. Cannot present view.<br />\n" +
-    "            Please try again and contact your administrator if the problem persists.\n" +
+    "            Възникна грешка. Не е възможно да се покаже изглед.<br />\n" +
+    "            Моля опитайте отново и ако проблемът продължава се свържете с администратора си.\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
@@ -6973,8 +6973,8 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "        <button type=\"button\" class=\"close\" ng-click=\"view._resultLimitHit = false;\" data-dismiss=\"alert\" aria-hidden=\"true\">&times;</button>\n" +
     "        <div style=\"display: inline-block; vertical-align: top;\"><i class=\"fa fa-exclamation\"></i></div>\n" +
     "        <div style=\"display: inline-block; margin-left: 20px;\">\n" +
-    "            Limit of {{ cubesService.cubesserver.info.json_record_limit }} items has been hit. <b>Results are incomplete.</b><br />\n" +
-    "            <i>Tip</i>: reduce level of drilldown or filter your selection to reduce the number of items in the result.\n" +
+    "            Достигнат е максималният лимит на {{ cubesService.cubesserver.info.json_record_limit }} елементи. <b>Резултатът е незавършен.</b><br />\n" +
+    "            <i>Тип</i>: Намалете нивото на сеченията или филтрирайте селекцията, за да намалите броя на елементите в резултата.\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
@@ -6989,44 +6989,44 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <svg style=\"height: 400px;\" />\n" +
     "        </div>\n" +
     "        <div ng-hide=\"view.getControlsHidden() || view.params.charttype == 'radar'\" style=\"font-size: 8px; float: right;\">\n" +
-    "            <a href=\"\" class=\"cv-chart-height\" ng-click=\"chartCtrl.resizeChart(400);\">Small</a>\n" +
-    "            <a href=\"\" class=\"cv-chart-height\" ng-click=\"chartCtrl.resizeChart(550);\">Medium</a>\n" +
-    "            <a href=\"\" class=\"cv-chart-height\" ng-click=\"chartCtrl.resizeChart(700);\">Tall</a>\n" +
+    "            <a href=\"\" class=\"cv-chart-height\" ng-click=\"chartCtrl.resizeChart(400);\">Малък</a>\n" +
+    "            <a href=\"\" class=\"cv-chart-height\" ng-click=\"chartCtrl.resizeChart(550);\">Среден</a>\n" +
+    "            <a href=\"\" class=\"cv-chart-height\" ng-click=\"chartCtrl.resizeChart(700);\">Голям</a>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "\n" +
     "<div ng-if=\"view.params.yaxis == null\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
     "    <p>\n" +
-    "        Cannot present chart: no <b>measure</b> has been selected.\n" +
+    "        Не може да се представи диаграма: Не е селектната <b>мярка</b> .\n" +
     "    </p>\n" +
     "    <p>\n" +
-    "        Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View &gt; <i class=\"fa fa-fw fa-crosshairs\"></i> Measure</kbd> menu.\n" +
+    "        Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View &gt; <i class=\"fa fa-fw fa-crosshairs\"></i> Мярка</kbd> menu.\n" +
     "    </p>\n" +
     "</div>\n" +
     "\n" +
     "<div ng-if=\"view.pendingRequests == 0 && view.params.yaxis != null && view.grid.data.length == 0\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
     "    <p>\n" +
-    "        Cannot present chart: <b>no rows returned</b> by the current filtering, horizontal dimension, and drilldown combination.\n" +
+    "        Не може да се представи диаграма: <b>без връщане на редове</b> върнати от текущото филтриране, хоризонтална дименсия, и  комбинация от сечения.\n" +
     "    </p>\n" +
     "    <p>\n" +
-    "        Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View</kbd> menu to select an horizontal dimension.\n" +
+    "        Тип: Използван <kbd><i class=\"fa fa-fw fa-cogs\"></i> изглед</kbd> меню за избор на хоризонтална димансия.\n" +
     "    </p>\n" +
     "</div>\n" +
     "\n" +
     "<div ng-if=\"view.pendingRequests == 0 && view.params.charttype == 'pie' && view.grid.columnDefs.length > 2\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
     "    <p>\n" +
-    "        Cannot present a <b>pie chart</b> when <b>more than one column</b> is present.<br />\n" +
+    "        Не може да се представи <b>кръгов изглед</b> когато <b> повече от една колона</b> се визуализира.<br />\n" +
     "    </p>\n" +
     "    <p>\n" +
-    "        Tip: review chart data and columns in <a href=\"\" ng-click=\"setViewMode('series')\" class=\"alert-link\">series mode</a>,\n" +
-    "        or <a href=\"\" ng-click=\"selectXAxis(null);\" class=\"alert-link\">remove horizontal dimension</a>.\n" +
+    "        Тип: Преглед на данните от графиката и колоните в <a href=\"\" ng-click=\"setViewMode('series')\" class=\"alert-link\">сериен режим</a>,\n" +
+    "        or <a href=\"\" ng-click=\"selectXAxis(null);\" class=\"alert-link\">премахни хоризонталната дименсия</a>.\n" +
     "    </p>\n" +
     "</div>\n" +
     "\n" +
     "<div ng-if=\"view.pendingRequests == 0 && view.params.yaxis != null && view.params.charttype == 'radar' && view.grid.columnDefs.length < 4\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
-    "    Cannot present a <b>radar chart</b> when <b>less than 3 columns</b> are present.<br />\n" +
-    "    Tip: review chart data and columns in <a href=\"\" ng-click=\"setViewMode('series')\" class=\"alert-link\">series mode</a>.\n" +
+    "    Не може да се представи <b>радиален изглед </b> когато <b> по-малко от 3 колони</b> се визуализират.<br />\n" +
+    "    Тип: Преглед на данните от графиката и колоните в <a href=\"\" ng-click=\"setViewMode('series')\" class=\"alert-link\">сериен режим</a>.\n" +
     "</div>\n"
   );
 
@@ -7035,7 +7035,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "<div ng-controller=\"CubesViewerViewsCubeChartController as chartCtrl\">\n" +
     "\n" +
     "    <div ng-if=\"view.params.charttype == 'pie'\">\n" +
-    "        <h3><i class=\"fa fa-fw fa-pie-chart\"></i> Chart\n" +
+    "        <h3><i class=\"fa fa-fw fa-pie-chart\"></i> Диаграма\n" +
     "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "        </h3>\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
@@ -7071,7 +7071,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.charttype == 'lines'\">\n" +
-    "        <h3><i class=\"fa fa-fw fa-line-chart\"></i> Chart\n" +
+    "        <h3><i class=\"fa fa-fw fa-line-chart\"></i> Диаграма\n" +
     "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "        </h3>\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
@@ -7083,7 +7083,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.charttype == 'lines-stacked'\">\n" +
-    "        <h3><i class=\"fa fa-fw fa-area-chart\"></i> Chart\n" +
+    "        <h3><i class=\"fa fa-fw fa-area-chart\"></i> Диаграма\n" +
     "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "        </h3>\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
@@ -7124,7 +7124,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
 
   $templateCache.put('views/cube/cube-menu-drilldown.html',
     "  <button class=\"btn btn-primary btn-sm dropdown-toggle drilldownbutton\" ng-disabled=\"view.params.mode == 'facts'\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "    <i class=\"fa fa-fw fa-arrow-down\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Drilldown</span> <span class=\"caret\"></span>\n" +
+    "    <i class=\"fa fa-fw fa-arrow-down\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Детайлизиране</span> <span class=\"caret\"></span>\n" +
     "  </button>\n" +
     "\n" +
     "  <ul class=\"dropdown-menu dropdown-menu-right cv-view-menu-drilldown\">\n" +
@@ -7153,7 +7153,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "      <div class=\"divider\"></div>\n" +
     "\n" +
-    "      <li ng-class=\"{ 'disabled': view.params.drilldown.length == 0 }\" ng-click=\"selectDrill('')\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> None</a></li>\n" +
+    "      <li ng-class=\"{ 'disabled': view.params.drilldown.length == 0 }\" ng-click=\"selectDrill('')\"><a href=\"\"><i class=\"fa fa-fw fa-close\"></i> Празен</a></li>\n" +
     "\n" +
     "  </ul>\n" +
     "\n"
@@ -7162,16 +7162,16 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
 
   $templateCache.put('views/cube/cube-menu-filter.html',
     "  <button class=\"btn btn-primary btn-sm dropdown-toggle cutbutton\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "    <i class=\"fa fa-fw fa-filter\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Filter</span> <span class=\"caret\"></span>\n" +
+    "    <i class=\"fa fa-fw fa-filter\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Филтър</span> <span class=\"caret\"></span>\n" +
     "  </button>\n" +
     "\n" +
     "  <ul class=\"dropdown-menu dropdown-menu-right cv-view-menu cv-view-menu-cut\">\n" +
     "\n" +
-    "    <li ng-show=\"view.params.mode == 'explore'\" ng-click=\"filterSelected()\" ng-class=\"{ 'disabled': view.params.drilldown.length != 1 }\"><a href=\"\"><i class=\"fa fa-fw fa-filter\"></i> Filter selected rows</a></li>\n" +
+    "    <li ng-show=\"view.params.mode == 'explore'\" ng-click=\"filterSelected()\" ng-class=\"{ 'disabled': view.params.drilldown.length != 1 }\"><a href=\"\"><i class=\"fa fa-fw fa-filter\"></i> Филтър по избрани редове</a></li>\n" +
     "    <div ng-show=\"view.params.mode == 'explore'\" class=\"divider\"></div>\n" +
     "\n" +
     "    <li class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-bars\"></i> Dimension filter</a>\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-bars\"></i> Филтър по дименсия</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
     "          <li on-repeat-done ng-repeat-start=\"dimension in view.cube.dimensions\" ng-if=\"dimension.levels.length == 1\" ng-click=\"showDimensionFilter(dimension.name);\">\n" +
@@ -7201,7 +7201,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </li>\n" +
     "\n" +
     "    <li class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-calendar\"></i> Date filter</a>\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-calendar\"></i> Филтър по дата</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "          <li ng-repeat=\"dimension in view.cube.dimensions\" ng-if=\"dimension.isDateDimension()\">\n" +
     "            <a href=\"\" ng-click=\"selectDateFilter(dimension.name + ((dimension.info['cv-datefilter-hierarchy']) ? '@' + dimension.info['cv-datefilter-hierarchy'] : ''), true)\">\n" +
@@ -7209,7 +7209,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            </a>\n" +
     "          </li>\n" +
     "          <li ng-if=\"view.cube.dateDimensions().length == 0\" class=\"disabled\">\n" +
-    "            <a href=\"\" ng-click=\"\"><i>No date filters defined for this cube.</i></a>\n" +
+    "            <a href=\"\" ng-click=\"\"><i>Няма филтри за данните определени за този куб.</i></a>\n" +
     "          </li>\n" +
     "\n" +
     "        </ul>\n" +
@@ -7217,7 +7217,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <!--\n" +
     "    <li class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-arrows-h\"></i> Range filter</a>\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-arrows-h\"></i> Филтъра по диапазон</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
     "          <li on-repeat-done ng-repeat-start=\"dimension in view.cube.dimensions\" ng-if=\"dimension.levels.length == 1\" ng-click=\"showDimensionFilter(dimension.name);\">\n" +
@@ -7247,7 +7247,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <div class=\"divider\"></div>\n" +
     "\n" +
-    "    <li ng-class=\"{ 'disabled': view.params.cuts.length == 0 && view.params.datefilters.length == 0 }\" ng-click=\"clearFilters()\"><a href=\"\"><i class=\"fa fa-fw fa-trash\"></i> Clear filters</a></li>\n" +
+    "    <li ng-class=\"{ 'disabled': view.params.cuts.length == 0 && view.params.datefilters.length == 0 }\" ng-click=\"clearFilters()\"><a href=\"\"><i class=\"fa fa-fw fa-trash\"></i> Изчисти филтрите</a></li>\n" +
     "\n" +
     "  </ul>\n"
   );
@@ -7255,50 +7255,50 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
 
   $templateCache.put('views/cube/cube-menu-panel.html',
     "  <button class=\"btn btn-primary btn-sm dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "    <i class=\"fa fa-fw fa-file\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Panel</span> <span class=\"caret\"></span>\n" +
+    "    <i class=\"fa fa-fw fa-file\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Панел</span> <span class=\"caret\"></span>\n" +
     "  </button>\n" +
     "\n" +
     "  <ul class=\"dropdown-menu dropdown-menu-right cv-view-menu cv-view-menu-view\">\n" +
     "\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showRenameView(view)\"><a><i class=\"fa fa-fw fa-pencil\"></i> Rename...</a></li>\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.studioScope.cloneView(view)\"><a><i class=\"fa fa-fw fa-clone\"></i> Clone</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showRenameView(view)\"><a><i class=\"fa fa-fw fa-pencil\"></i> Преименувай...</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.cloneView(view)\"><a><i class=\"fa fa-fw fa-clone\"></i> Клонирай</a></li>\n" +
     "\n" +
     "    <div ng-if=\"cvOptions.backendUrl\" class=\"divider\"></div>\n" +
-    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.saveView(view)\"><a><i class=\"fa fa-fw fa-save\"></i> Save</a></li>\n" +
-    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.shareView(view, ! view.shared)\"><a><i class=\"fa fa-fw fa-share\"></i> {{ view.shared ? \"Unshare\" : \"Share\" }}</a></li>\n" +
-    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.deleteView(view)\"><a><i class=\"fa fa-fw fa-trash-o\"></i> Delete...</a></li>\n" +
+    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.saveView(view)\"><a><i class=\"fa fa-fw fa-save\"></i> Запиши</a></li>\n" +
+    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.shareView(view, ! view.shared)\"><a><i class=\"fa fa-fw fa-share\"></i> {{ view.shared ? \"Спри споделяне\" : \"Сподели\" }}</a></li>\n" +
+    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.deleteView(view)\"><a><i class=\"fa fa-fw fa-trash-o\"></i> Изтрии...</a></li>\n" +
     "\n" +
     "    <div class=\"divider\"></div>\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showSerializeView(view)\"><a><i class=\"fa fa-fw fa-code\"></i> Serialize...</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.studioScope.showSerializeView(view)\"><a><i class=\"fa fa-fw fa-code\"></i> Сериализирай...</a></li>\n" +
     "    <div class=\"divider\"></div>\n" +
-    "    <li ng-click=\"viewsService.studioViewsService.closeView(view)\"><a><i class=\"fa fa-fw fa-close\"></i> Close</a></li>\n" +
+    "    <li ng-click=\"viewsService.studioViewsService.closeView(view)\"><a><i class=\"fa fa-fw fa-close\"></i> Затвори</a></li>\n" +
     "  </ul>\n"
   );
 
 
   $templateCache.put('views/cube/cube-menu-view.html',
     "  <button class=\"btn btn-primary btn-sm dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "    <i class=\"fa fa-fw fa-cogs\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">View</span> <span class=\"caret\"></span>\n" +
+    "    <i class=\"fa fa-fw fa-cogs\"></i> <span class=\"hidden-xs\" ng-class=\"{ 'hidden-sm hidden-md': cvOptions.studioTwoColumn }\">Изглед</span> <span class=\"caret\"></span>\n" +
     "  </button>\n" +
     "\n" +
     "  <ul class=\"dropdown-menu dropdown-menu-right cv-view-menu cv-view-menu-view\">\n" +
     "\n" +
     "    <li ng-show=\"view.params.mode == 'chart'\" class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-area-chart\"></i> Chart type</a>\n" +
+    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-area-chart\"></i> Тип диаграма</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "          <li ng-click=\"selectChartType('pie')\"><a href=\"\"><i class=\"fa fa-fw fa-pie-chart\"></i> Pie</a></li>\n" +
-    "          <li ng-click=\"selectChartType('bars-vertical')\"><a href=\"\"><i class=\"fa fa-fw fa-bar-chart\"></i> Bars Vertical</a></li>\n" +
-    "          <li ng-click=\"selectChartType('bars-horizontal')\"><a href=\"\"><i class=\"fa fa-fw fa-rotate-270 fa-bar-chart\"></i> Bars Horizontal</a></li>\n" +
-    "          <li ng-click=\"selectChartType('lines')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Lines</a></li>\n" +
-    "          <li ng-click=\"selectChartType('lines-stacked')\"><a href=\"\"><i class=\"fa fa-fw fa-area-chart\"></i> Areas</a></li>\n" +
-    "          <li ng-click=\"selectChartType('radar')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Radar</a></li>\n" +
+    "          <li ng-click=\"selectChartType('pie')\"><a href=\"\"><i class=\"fa fa-fw fa-pie-chart\"></i> Кръгова диаграма</a></li>\n" +
+    "          <li ng-click=\"selectChartType('bars-vertical')\"><a href=\"\"><i class=\"fa fa-fw fa-bar-chart\"></i> Вертикална диаграма</a></li>\n" +
+    "          <li ng-click=\"selectChartType('bars-horizontal')\"><a href=\"\"><i class=\"fa fa-fw fa-rotate-270 fa-bar-chart\"></i> Хоризонтална диаграма</a></li>\n" +
+    "          <li ng-click=\"selectChartType('lines')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Линейна диаграма</a></li>\n" +
+    "          <li ng-click=\"selectChartType('lines-stacked')\"><a href=\"\"><i class=\"fa fa-fw fa-area-chart\"></i> Диаграма по области</a></li>\n" +
+    "          <li ng-click=\"selectChartType('radar')\"><a href=\"\"><i class=\"fa fa-fw fa-bullseye\"></i> Радиална диаграма</a></li>\n" +
     "\n" +
     "          <!-- <div class=\"divider\"></div>  -->\n" +
     "\n" +
     "          <!--\n" +
-    "          <li><a href=\"\"><i class=\"fa fa-fw fa-dot-circle-o\"></i> Bubbles</a></li>\n" +
-    "          <li><a href=\"\"><i class=\"fa fa-fw fa-square\"></i> Treemap</a></li>\n" +
-    "          <li ng-click=\"selectChartType('sunburst')\"><a href=\"\"><i class=\"fa fa-fw fa-sun-o\"></i> Sunburst</a></li>\n" +
+    "          <li><a href=\"\"><i class=\"fa fa-fw fa-dot-circle-o\"></i> Диаграма с точки</a></li>\n" +
+    "          <li><a href=\"\"><i class=\"fa fa-fw fa-square\"></i> Дървовидна карта</a></li>\n" +
+    "          <li ng-click=\"selectChartType('sunburst')\"><a href=\"\"><i class=\"fa fa-fw fa-sun-o\"></i> Радиална презентация</a></li>\n" +
     "          -->\n" +
     "\n" +
     "          <!--\n" +
@@ -7312,21 +7312,21 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <!--\n" +
     "    <li ng-show=\"view.params.mode == 'chart' && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines' || view.params.charttype == 'bars-horizontal')\" class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-sliders\"></i> Chart options</a>\n" +
+    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-sliders\"></i> Опции на диаграмата</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "    -->\n" +
     "        <li class=\"dropdown-submenu\" ng-show=\"view.params.mode == 'chart' && (view.params.charttype == 'lines-stacked' || view.params.charttype == 'lines')\">\n" +
     "            <a href=\"\"><i class=\"fa fa-fw fa-angle-up\"></i> Curve type</a>\n" +
     "            <ul class=\"dropdown-menu\">\n" +
-    "                <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'linear'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'linear'; refreshView();\"><a href=\"\"> Linear</a></li>\n" +
-    "                <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'monotone'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'monotone'; refreshView();\"><a href=\"\"> Smooth</a></li>\n" +
-    "                <!-- <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'cardinal'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'cardinal'; refreshView();\"><a href=\"\"> Smooth (Cardinal)</a></li>  -->\n" +
+    "                <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'linear'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'linear'; refreshView();\"><a href=\"\"> Линеен</a></li>\n" +
+    "                <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'monotone'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'monotone'; refreshView();\"><a href=\"\"> Гладък</a></li>\n" +
+    "                <!-- <li ng-class=\"{'active': view.params.chartoptions.lineInterpolation == 'cardinal'}\" ng-click=\"view.params.chartoptions.lineInterpolation = 'cardinal'; refreshView();\"><a href=\"\"> Гладък (Основен)</a></li>  -->\n" +
     "            </ul>\n" +
     "        </li>\n" +
     "\n" +
     "        <li ng-class=\"{'disabled': view.grid.data.length != 2 }\" ng-show=\"view.params.mode == 'chart' && view.params.charttype == 'bars-horizontal'\" ng-click=\"view.params.chartoptions.mirrorSerie2 = !view.params.chartoptions.mirrorSerie2; refreshView();\">\n" +
-    "            <a><i class=\"fa fa-fw fa-arrows-h\"></i> Invert 2nd series\n" +
-    "                <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.mirrorSerie2 }\">{{ view.params.chartoptions.mirrorSerie2 ? \"ON\" : \"OFF\" }}</span>\n" +
+    "            <a><i class=\"fa fa-fw fa-arrows-h\"></i> Обърнете към 2-рата\n" +
+    "                <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.mirrorSerie2 }\">{{ view.params.chartoptions.mirrorSerie2 ? \"Включи\" : \"Изключи\" }}</span>\n" +
     "            </a>\n" +
     "        </li>\n" +
     "\n" +
@@ -7336,15 +7336,15 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "     -->\n" +
     "\n" +
     "    <li ng-show=\"view.params.mode == 'chart'\" ng-click=\"view.params.chartoptions.showLegend = !view.params.chartoptions.showLegend; refreshView();\">\n" +
-    "        <a><i class=\"fa fa-fw\" ng-class=\"{'fa-toggle-on': view.params.chartoptions.showLegend, 'fa-toggle-off': ! view.params.chartoptions.showLegend }\"></i> Toggle legend\n" +
-    "            <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.showLegend }\">{{ view.params.chartoptions.showLegend ? \"ON\" : \"OFF\" }}</span>\n" +
+    "        <a><i class=\"fa fa-fw\" ng-class=\"{'fa-toggle-on': view.params.chartoptions.showLegend, 'fa-toggle-off': ! view.params.chartoptions.showLegend }\"></i> Изключване на надпис\n" +
+    "            <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.showLegend }\">{{ view.params.chartoptions.showLegend ? \"Включи\" : \"Изключи\" }}</span>\n" +
     "        </a>\n" +
     "    </li>\n" +
     "\n" +
     "    <div ng-show=\"view.params.mode == 'chart'\" class=\"divider\"></div>\n" +
     "\n" +
     "    <li ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-long-arrow-right\"></i> Horizontal dimension</a>\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-long-arrow-right\"></i> Хоризонтална дименсия</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
     "          <li on-repeat-done ng-repeat-start=\"dimension in view.cube.dimensions\" ng-if=\"dimension.levels.length == 1\" ng-click=\"selectXAxis(dimension.name)\">\n" +
@@ -7378,7 +7378,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </li>\n" +
     "\n" +
     "    <li ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-crosshairs\"></i> Measure</a>\n" +
+    "        <a tabindex=\"0\"><i class=\"fa fa-fw fa-crosshairs\"></i> Мярка</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
     "\n" +
     "          <li ng-repeat=\"measure in view.cube.measures\" ng-if=\"view.cube.measureAggregates(measure.name).length > 0\" class=\"dropdown-submenu\">\n" +
@@ -7401,25 +7401,25 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <div ng-show=\"cvOptions.seriesOperationsEnabled && (view.params.mode == 'series' || view.params.mode == 'chart')\" class=\"divider\"></div>\n" +
     "\n" +
     "    <li ng-show=\"cvOptions.seriesOperationsEnabled && (view.params.mode == 'series' || view.params.mode == 'chart')\" class=\"dropdown-submenu\">\n" +
-    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-calculator\"></i> Series operations</a>\n" +
+    "        <a tabindex=\"0\" ><i class=\"fa fa-fw fa-calculator\"></i> Операции</a>\n" +
     "        <ul class=\"dropdown-menu\">\n" +
-    "          <li ng-click=\"selectOperation('difference')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Difference</a></li>\n" +
+    "          <li ng-click=\"selectOperation('difference')\"><a href=\"\"><i class=\"fa fa-fw fa-line-chart\"></i> Ралики</a></li>\n" +
     "          <li ng-click=\"selectOperation('percentage')\"><a href=\"\"><i class=\"fa fa-fw fa-percent\"></i> Change rate</a></li>\n" +
     "          <!--\n" +
-    "          <li ng-click=\"selectOperation('accum')\"><a href=\"\"><i class=\"fa fa-fw\">&sum;</i> Accumulated</a></li>\n" +
+    "          <li ng-click=\"selectOperation('accum')\"><a href=\"\"><i class=\"fa fa-fw\">&sum;</i>Акумулирам</a></li>\n" +
     "          <div class=\"divider\"></div>\n" +
-    "          <li ng-click=\"selectOperation('fill-zeros')\"><a href=\"\"><i class=\"fa fa-fw\">0</i> Replace blanks with zeroes</a></li>\n" +
+    "          <li ng-click=\"selectOperation('fill-zeros')\"><a href=\"\"><i class=\"fa fa-fw\">0</i> Замени празните стойности с нули</a></li>\n" +
     "           -->\n" +
     "          <div class=\"divider\"></div>\n" +
-    "          <li ng-click=\"selectOperation(null)\"><a href=\"\"><i class=\"fa fa-fw fa-times\"></i> Clear operations</a></li>\n" +
+    "          <li ng-click=\"selectOperation(null)\"><a href=\"\"><i class=\"fa fa-fw fa-times\"></i> Изчистване на операцията</a></li>\n" +
     "        </ul>\n" +
     "    </li>\n" +
     "\n" +
     "    <div ng-show=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"divider\"></div>\n" +
     "\n" +
-    "    <li ng-show=\"view.params.mode != 'chart'\" ng-click=\"exportService.exportGridAsCsv(view)\"><a><i class=\"fa fa-fw fa-table\"></i> Export table</a></li>\n" +
-    "    <li ng-show=\"view.params.mode == 'chart' && view.params.charttype != 'radar' \" ng-click=\"view.exportChartAsPNG()\"><a><i class=\"fa fa-fw fa-picture-o\"></i> Export figure</a></li>\n" +
-    "    <li ng-click=\"exportService.exportFacts(view)\"><a><i class=\"fa fa-fw fa-th\"></i> Export facts</a></li>\n" +
+    "    <li ng-show=\"view.params.mode != 'chart'\" ng-click=\"exportService.exportGridAsCsv(view)\"><a><i class=\"fa fa-fw fa-table\"></i> Експорт на таблица</a></li>\n" +
+    "    <li ng-show=\"view.params.mode == 'chart' && view.params.charttype != 'radar' \" ng-click=\"view.exportChartAsPNG()\"><a><i class=\"fa fa-fw fa-picture-o\"></i> Експорт на фигура</a></li>\n" +
+    "    <li ng-click=\"exportService.exportFacts(view)\"><a><i class=\"fa fa-fw fa-th\"></i> Ексторт на данните</a></li>\n" +
     "\n" +
     "  </ul>\n" +
     "\n"
@@ -7431,10 +7431,10 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <div ng-if=\"view.state == 3\">\n" +
     "        <div class=\"alert alert-danger\" style=\"margin: 0px;\">\n" +
-    "            <p>An error occurred. Cannot present view.</p>\n" +
+    "            <p>Възникна грешка. Не може да се презентира изгледа.</p>\n" +
     "            <p ng-if=\"cubesService.state != 3\">{{ view.error }}</p>\n" +
-    "            <p ng-if=\"cubesService.state == 3\">Could not connect to data server: {{ cubesService.stateText }}</p>\n" +
-    "            <p>Please try again and contact your administrator if the problem persists.</p>\n" +
+    "            <p ng-if=\"cubesService.state == 3\">Няма връзка към сървъра за данни: {{ cubesService.stateText }}</p>\n" +
+    "            <p>Моля опитайте отново и ако продължи проблема се обърнете към администратора.</p>\n" +
     "            <p class=\"text-right\">\n" +
     "                <a class=\"alert-link\" href=\"http://jjmontesl.github.io/cubesviewer/\" target=\"_blank\">CubesViewer Data Visualizer</a>\n" +
     "            </p>\n" +
@@ -7456,15 +7456,15 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <div class=\"panel panel-primary pull-right\" style=\"padding: 3px; white-space: nowrap; margin-bottom: 6px; margin-left: 6px;\">\n" +
     "\n" +
     "                <div ng-if=\"cvOptions.undoEnabled\" class=\"btn-group\" role=\"group\" ng-controller=\"CubesViewerViewsUndoController\">\n" +
-    "                  <button type=\"button\" ng-click=\"undo()\" ng-disabled=\"view.undoPos <= 0\" class=\"btn btn-default btn-sm\" title=\"Undo\"><i class=\"fa fa-fw fa-undo\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"redo()\" ng-disabled=\"view.undoPos >= view.undoList.length - 1\" class=\"btn btn-default btn-sm\" title=\"Redo\"><i class=\"fa fa-fw fa-undo fa-flip-horizontal\"></i></button>\n" +
+    "                  <button type=\"button\" ng-click=\"undo()\" ng-disabled=\"view.undoPos <= 0\" class=\"btn btn-default btn-sm\" title=\"Върни\"><i class=\"fa fa-fw fa-undo\"></i></button>\n" +
+    "                  <button type=\"button\" ng-click=\"redo()\" ng-disabled=\"view.undoPos >= view.undoList.length - 1\" class=\"btn btn-default btn-sm\" title=\"Повтори\"><i class=\"fa fa-fw fa-undo fa-flip-horizontal\"></i></button>\n" +
     "                </div>\n" +
     "\n" +
     "                <div class=\"btn-group\" role=\"group\" aria-label=\"...\" style=\"margin-left: 5px;\">\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('explore')\" ng-class=\"{'active': view.params.mode == 'explore'}\" class=\"btn btn-primary btn-sm explorebutton\" title=\"Explore\"><i class=\"fa fa-fw fa-arrow-circle-down\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('facts')\" ng-class=\"{'active': view.params.mode == 'facts'}\" class=\"btn btn-primary btn-sm \" title=\"Facts\"><i class=\"fa fa-fw fa-th\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('series')\" ng-class=\"{'active': view.params.mode == 'series'}\" class=\"btn btn-primary btn-sm \" title=\"Series\"><i class=\"fa fa-fw fa-clock-o\"></i></button>\n" +
-    "                  <button type=\"button\" ng-click=\"setViewMode('chart')\" ng-class=\"{'active': view.params.mode == 'chart'}\" class=\"btn btn-primary btn-sm \" title=\"Charts\"><i class=\"fa fa-fw fa-area-chart\"></i></button>\n" +
+    "                  <button type=\"button\" ng-click=\"setViewMode('explore')\" ng-class=\"{'active': view.params.mode == 'explore'}\" class=\"btn btn-primary btn-sm explorebutton\" title=\"Преглед\"><i class=\"fa fa-fw fa-arrow-circle-down\"></i></button>\n" +
+    "                  <button type=\"button\" ng-click=\"setViewMode('facts')\" ng-class=\"{'active': view.params.mode == 'facts'}\" class=\"btn btn-primary btn-sm \" title=\"Данни\"><i class=\"fa fa-fw fa-th\"></i></button>\n" +
+    "                  <button type=\"button\" ng-click=\"setViewMode('series')\" ng-class=\"{'active': view.params.mode == 'series'}\" class=\"btn btn-primary btn-sm \" title=\"Поредица\"><i class=\"fa fa-fw fa-clock-o\"></i></button>\n" +
+    "                  <button type=\"button\" ng-click=\"setViewMode('chart')\" ng-class=\"{'active': view.params.mode == 'chart'}\" class=\"btn btn-primary btn-sm \" title=\"Графики\"><i class=\"fa fa-fw fa-area-chart\"></i></button>\n" +
     "                </div>\n" +
     "\n" +
     "                <div ng-include=\"'views/cube/cube-menu-drilldown.html'\" class=\"dropdown m-b\" style=\"display: inline-block; margin-left: 5px;\"></div>\n" +
@@ -7494,7 +7494,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "\n" +
     "                    <div ng-repeat=\"drilldown in view.params.drilldown\" ng-init=\"parts = view.cube.dimensionParts(drilldown);\" ng-if=\"view.params.mode != 'facts'\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-drill\" style=\"color: black; background-color: #ccffcc;\">\n" +
-    "                        <span><i class=\"fa fa-fw fa-arrow-down\" title=\"Drilldown\"></i> <b class=\"hidden-xs hidden-sm\">Drilldown:</b> <span title=\"{{ view.cube.dimensionParts(drilldown).label }}\">{{ parts.labelShort }}</span></span>\n" +
+    "                        <span><i class=\"fa fa-fw fa-arrow-down\" title=\"Детайлизиране\"></i> <b class=\"hidden-xs hidden-sm\">Drilldown:</b> <span title=\"{{ view.cube.dimensionParts(drilldown).label }}\">{{ parts.labelShort }}</span></span>\n" +
     "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
     "\n" +
     "                        <button ng-hide=\"view.getControlsHidden() || parts.hierarchy.levels.length < 2\" ng-disabled=\"! parts.drilldownDimensionMinus\" type=\"button\" ng-click=\"selectDrill(parts.drilldownDimensionMinus, true)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-minus\"></i></button>\n" +
@@ -7513,7 +7513,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                        cubesviewer.views.cube.dimensionfilter.drawDimensionFilter(view, dimensionString + \":\" + parts.hierarchy.levels[depth - 1] );\n" +
     "                     -->\n" +
     "                    <div ng-repeat=\"cut in view.params.cuts\" ng-init=\"equality = cut.invert ? ' &ne; ' : ' = ';\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut\" style=\"color: black; background-color: #ffcccc;\">\n" +
-    "                        <span style=\"max-width: 480px;\"><i class=\"fa fa-fw fa-filter\" title=\"Filter\"></i> <b class=\"hidden-xs hidden-sm\">Filter:</b> <span title=\"{{ view.cube.dimensionPartsFromCut(cut).label }}\">{{ view.cube.dimensionPartsFromCut(cut).labelShort }}</span> <span ng-class=\"{ 'text-danger': cut.invert }\">{{ equality }}</span> <span title=\"{{ cut.value }}\">{{ cut.value }}</span></span>\n" +
+    "                        <span style=\"max-width: 480px;\"><i class=\"fa fa-fw fa-filter\" title=\"Филтър\"></i> <b class=\"hidden-xs hidden-sm\">Filter:</b> <span title=\"{{ view.cube.dimensionPartsFromCut(cut).label }}\">{{ view.cube.dimensionPartsFromCut(cut).labelShort }}</span> <span ng-class=\"{ 'text-danger': cut.invert }\">{{ equality }}</span> <span title=\"{{ cut.value }}\">{{ cut.value }}</span></span>\n" +
     "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
     "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"showDimensionFilter(view.cube.dimensionPartsFromCut(cut).drilldownDimension)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-search\"></i></button>\n" +
     "                        <button ng-hide=\"view.getControlsHidden()\" type=\"button\" ng-click=\"selectCut(cut.dimension, '', cut.invert)\" class=\"btn btn-danger btn-xs hidden-print\" style=\"margin-left: 1px;\"><i class=\"fa fa-fw fa-trash\"></i></button>\n" +
@@ -7525,12 +7525,12 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                <div class=\"cv-view-viewinfo-extra\">\n" +
     "\n" +
     "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\" style=\"color: black; background-color: #ccccff;\">\n" +
-    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-crosshairs\" title=\"Measure\"></i> <b class=\"hidden-xs hidden-sm\">Measure:</b> {{ (view.params.yaxis != null) ? view.cube.aggregateFromName(view.params.yaxis).label : \"None\" }}</span>\n" +
+    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-crosshairs\" title=\"Мярка\"></i> <b class=\"hidden-xs hidden-sm\">Мярка:</b> {{ (view.params.yaxis != null) ? view.cube.aggregateFromName(view.params.yaxis).label : \"None\" }}</span>\n" +
     "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
     "                    </div>\n" +
     "\n" +
     "                    <div ng-if=\"view.params.mode == 'series' || view.params.mode == 'chart'\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-extra\" style=\"color: black; background-color: #ccddff;\">\n" +
-    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-long-arrow-right\" title=\"Horizontal dimension\"></i> <b class=\"hidden-xs hidden-sm\">Horizontal dimension:</b> {{ (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).labelShort : \"None\" }}</span>\n" +
+    "                        <span style=\"max-width: 350px;\"><i class=\"fa fa-fw fa-long-arrow-right\" title=\"Хоризонтална дименсия\"></i> <b class=\"hidden-xs hidden-sm\">Horizontal dimension:</b> {{ (view.params.xaxis != null) ? view.cube.dimensionParts(view.params.xaxis).labelShort : \"None\" }}</span>\n" +
     "                        <button type=\"button\" class=\"btn btn-info btn-xs\" style=\"visibility: hidden; margin-left: -20px;\"><i class=\"fa fa-fw fa-info\"></i></button>\n" +
     "\n" +
     "                        <button ng-hide=\"view.getControlsHidden() || !view.params.xaxis || view.cube.dimensionParts(view.params.xaxis).hierarchy.levels.length < 2\" ng-disabled=\"! view.cube.dimensionParts(view.params.xaxis).drilldownDimensionMinus\" type=\"button\" ng-click=\"selectXAxis(view.cube.dimensionParts(view.params.xaxis).drilldownDimensionMinus, true)\" class=\"btn btn-secondary btn-xs hidden-print\" style=\"margin-left: 3px;\"><i class=\"fa fa-fw fa-minus\"></i></button>\n" +
@@ -7571,7 +7571,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "<div ng-controller=\"CubesViewerViewsCubeExploreController\">\n" +
     "\n" +
     "    <!-- ($(view.container).find('.cv-view-viewdata').children().size() == 0)  -->\n" +
-    "    <h3><i class=\"fa fa-fw fa-arrow-circle-down\"></i> Aggregated data\n" +
+    "    <h3><i class=\"fa fa-fw fa-arrow-circle-down\"></i> Обобщени данни\n" +
     "        <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "    </h3>\n" +
     "\n" +
@@ -7594,7 +7594,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "<div ng-controller=\"CubesViewerViewsCubeFactsController\">\n" +
     "\n" +
     "    <!-- ($(view.container).find('.cv-view-viewdata').children().size() == 0)  -->\n" +
-    "    <h3><i class=\"fa fa-fw fa-th\"></i> Facts data\n" +
+    "    <h3><i class=\"fa fa-fw fa-th\"></i> Данни\n" +
     "        <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "    </h3>\n" +
     "\n" +
@@ -7610,7 +7610,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </div>\n" +
     "    <div ng-if=\"view.grid.data.length > 0\" style=\"height: 30px;\">&nbsp;</div>\n" +
     "\n" +
-    "    <div ng-if=\"viewController.view.pendingRequests == 0 && view.grid.data.length == 0\">No facts are returned by the current filtering combination.</div>\n" +
+    "    <div ng-if=\"viewController.view.pendingRequests == 0 && view.grid.data.length == 0\">Няма данни от филтриращата комбинация.</div>\n" +
     "\n" +
     "</div>\n"
   );
@@ -7619,7 +7619,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
   $templateCache.put('views/cube/filter/datefilter.html',
     "<div class=\"cv-view-viewinfo-date\">\n" +
     "    <div ng-repeat=\"datefilter in view.params.datefilters\" ng-controller=\"CubesViewerViewsCubeFilterDateController\" ng-init=\"dimparts = view.cube.dimensionParts(datefilter.dimension);\" class=\"label label-secondary cv-infopiece cv-view-viewinfo-cut text-left\" style=\"color: black; background-color: #ffdddd; text-align: left;\">\n" +
-    "        <span style=\"max-width: 280px; white-space: nowrap;\"><i class=\"fa fa-fw fa-filter\"></i> <b class=\"hidden-xs hidden-sm\">Filter:</b> {{ dimparts.labelNoLevel }}:</span>\n" +
+    "        <span style=\"max-width: 280px; white-space: nowrap;\"><i class=\"fa fa-fw fa-filter\"></i> <b class=\"hidden-xs hidden-sm\">Филтър:</b> {{ dimparts.labelNoLevel }}:</span>\n" +
     "\n" +
     "        <!--\n" +
     "        <br class=\"hidden-sm hidden-md hidden-lg\" />\n" +
@@ -7638,15 +7638,15 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                      <span ng-show=\"view.getControlsHidden()\"><i class=\"fa fa-fw fa-calendar\"></i> {{ datefilter.mode | datefilterMode }}</span>\n" +
     "\n" +
     "                      <ul class=\"dropdown-menu cv-view-menu cv-view-menu-view\">\n" +
-    "                        <li ng-click=\"setMode('custom')\"><a><i class=\"fa fa-fw\"></i> Custom</a></li>\n" +
+    "                        <li ng-click=\"setMode('custom')\"><a><i class=\"fa fa-fw\"></i> Персонализиран</a></li>\n" +
     "                        <div class=\"divider\"></div>\n" +
-    "                        <li ng-click=\"setMode('auto-last1m')\"><a><i class=\"fa fa-fw\"></i> Last month</a></li>\n" +
-    "                        <li ng-click=\"setMode('auto-last3m')\"><a><i class=\"fa fa-fw\"></i> Last 3 months</a></li>\n" +
-    "                        <li ng-click=\"setMode('auto-last6m')\"><a><i class=\"fa fa-fw\"></i> Last 6 months</a></li>\n" +
-    "                        <li ng-click=\"setMode('auto-last12m')\"><a><i class=\"fa fa-fw\"></i> Last year</a></li>\n" +
-    "                        <li ng-click=\"setMode('auto-last24m')\"><a><i class=\"fa fa-fw\"></i> Last 2 years</a></li>\n" +
-    "                        <li ng-click=\"setMode('auto-january1st')\"><a><i class=\"fa fa-fw\"></i> From January 1st</a></li>\n" +
-    "                        <li ng-click=\"setMode('auto-yesterday')\"><a><i class=\"fa fa-fw\"></i> Yesterday</a></li>\n" +
+    "                        <li ng-click=\"setMode('auto-last1m')\"><a><i class=\"fa fa-fw\"></i> Последен месец</a></li>\n" +
+    "                        <li ng-click=\"setMode('auto-last3m')\"><a><i class=\"fa fa-fw\"></i> Последни 3 три</a></li>\n" +
+    "                        <li ng-click=\"setMode('auto-last6m')\"><a><i class=\"fa fa-fw\"></i> Последни 6 три</a></li>\n" +
+    "                        <li ng-click=\"setMode('auto-last12m')\"><a><i class=\"fa fa-fw\"></i> Последна година</a></li>\n" +
+    "                        <li ng-click=\"setMode('auto-last24m')\"><a><i class=\"fa fa-fw\"></i> Последни 2 години</a></li>\n" +
+    "                        <li ng-click=\"setMode('auto-january1st')\"><a><i class=\"fa fa-fw\"></i> От 1-ви Януари</a></li>\n" +
+    "                        <li ng-click=\"setMode('auto-yesterday')\"><a><i class=\"fa fa-fw\"></i> Вчера </a></li>\n" +
     "                      </ul>\n" +
     "                  </div>\n" +
     "                 </div>\n" +
@@ -7657,7 +7657,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "                 <div class=\"form-group\" style=\"display: inline-block; margin: 0px;\">\n" +
     "                    <p class=\"input-group disabled\" style=\"margin: 0px; display: inline-block;\">\n" +
-    "                      <input ng-disabled=\"view.getControlsHidden()\" autocomplete=\"off\" type=\"text\" style=\"height: 20px; width: 80px; display: inline-block;\" class=\"form-control input-sm\" uib-datepicker-popup=\"yyyy-MM-dd\" ng-model=\"dateStart.value\" is-open=\"dateStart.opened\" datepicker-options=\"dateStart.options\" ng-required=\"true\" close-text=\"Close\" />\n" +
+    "                      <input ng-disabled=\"view.getControlsHidden()\" autocomplete=\"off\" type=\"text\" style=\"height: 20px; width: 80px; display: inline-block;\" class=\"form-control input-sm\" uib-datepicker-popup=\"yyyy-MM-dd\" ng-model=\"dateStart.value\" is-open=\"dateStart.opened\" datepicker-options=\"dateStart.options\" ng-required=\"true\" close-text=\"Затвори\" />\n" +
     "                      <span ng-hide=\"view.getControlsHidden()\"  class=\"input-group-btn\" style=\"display: inline-block;\">\n" +
     "                        <button type=\"button\" style=\"height: 20px;\" class=\"btn btn-default\" ng-click=\"dateStartOpen()\"><i class=\"fa fa-fw fa-calendar\"></i></button>\n" +
     "                      </span>\n" +
@@ -7669,7 +7669,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "                 <div class=\"form-group\" style=\"display: inline-block; margin: 0px;\">\n" +
     "                    <p class=\"input-group\" style=\"margin: 0px; display: inline-block;\">\n" +
-    "                      <input ng-disabled=\"view.getControlsHidden()\" autocomplete=\"off\" type=\"text\" style=\"height: 20px; width: 80px; display: inline-block;\" class=\"form-control input-sm\" uib-datepicker-popup=\"yyyy-MM-dd\" ng-model=\"dateEnd.value\" is-open=\"dateEnd.opened\" datepicker-options=\"dateEnd.options\" ng-required=\"true\" close-text=\"Close\" />\n" +
+    "                      <input ng-disabled=\"view.getControlsHidden()\" autocomplete=\"off\" type=\"text\" style=\"height: 20px; width: 80px; display: inline-block;\" class=\"form-control input-sm\" uib-datepicker-popup=\"yyyy-MM-dd\" ng-model=\"dateEnd.value\" is-open=\"dateEnd.opened\" datepicker-options=\"dateEnd.options\" ng-required=\"true\" close-text=\"Затвори\" />\n" +
     "                      <span ng-hide=\"view.getControlsHidden()\" class=\"input-group-btn\" style=\"display: inline-block;\">\n" +
     "                        <button type=\"button\" style=\"height: 20px;\" class=\"btn btn-default\" ng-click=\"dateEndOpen()\"><i class=\"fa fa-fw fa-calendar\"></i></button>\n" +
     "                      </span>\n" +
@@ -7698,7 +7698,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    <div class=\"panel panel-default panel-outline hidden-print\" ng-hide=\"view.getControlsHidden()\" style=\"border-color: #ffcccc;\">\n" +
     "        <div class=\"panel-heading clearfix\" style=\"border-color: #ffcccc;\">\n" +
     "            <button class=\"btn btn-xs btn-danger pull-right\" ng-click=\"closeDimensionFilter()\"><i class=\"fa fa-fw fa-close\"></i></button>\n" +
-    "            <h4 style=\"margin: 2px 0px 0px 0px;\"><i class=\"fa fa-fw fa-filter\"></i> Dimension filter: <b>{{ parts.label }}</b></h4>\n" +
+    "            <h4 style=\"margin: 2px 0px 0px 0px;\"><i class=\"fa fa-fw fa-filter\"></i> Филтър на дименсиите: <b>{{ parts.label }}</b></h4>\n" +
     "        </div>\n" +
     "        <div class=\"panel-body\">\n" +
     "\n" +
@@ -7706,26 +7706,26 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "            <form >\n" +
     "\n" +
     "              <div class=\"form-group has-feedback\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
-    "                <!-- <label for=\"search\">Search:</label>  -->\n" +
+    "                <!-- <label for=\"search\">Търсене:</label>  -->\n" +
     "                <input type=\"text\" class=\"form-control\" ng-model=\"searchString\" ng-model-options=\"{ debounce: 300 }\" placeholder=\"Search...\" style=\"width: 16em;\">\n" +
     "                <i class=\"fa fa-fw fa-times-circle form-control-feedback\" ng-click=\"searchString = ''\" style=\"cursor: pointer; pointer-events: inherit;\"></i>\n" +
     "              </div>\n" +
     "\n" +
     "              <div class=\"btn-group\" style=\"margin-left: 10px; display: inline-block; vertical-align: middle; margin-bottom: 2px; margin-right: 5px;\">\n" +
-    "                    <button class=\"btn btn-default\" ng-click=\"selectAll();\" type=\"button\" title=\"Select all\"><i class=\"fa fa-fw fa-check-square-o\"></i></button>\n" +
-    "                    <button class=\"btn btn-default\" ng-click=\"selectNone();\" type=\"button\" title=\"Select none\"><i class=\"fa fa-fw fa-square-o\"></i></button>\n" +
+    "                    <button class=\"btn btn-default\" ng-click=\"selectAll();\" type=\"button\" title=\"Маркирай всички\"><i class=\"fa fa-fw fa-check-square-o\"></i></button>\n" +
+    "                    <button class=\"btn btn-default\" ng-click=\"selectNone();\" type=\"button\" title=\"Размаркирай\"><i class=\"fa fa-fw fa-square-o\"></i></button>\n" +
     "              </div>\n" +
     "\n" +
     "<!--               <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\"> -->\n" +
     "              <div class=\"btn-group\" style=\"display: inline-block; vertical-align: middle; margin-bottom: 2px; margin-right: 5px;\">\n" +
-    "                    <button ng-hide=\"parts.hierarchy.levels.length < 2\" ng-disabled=\"! parts.drilldownDimensionMinus\"  class=\"btn btn-default\" ng-click=\"showDimensionFilter(parts.drilldownDimensionMinus)\" type=\"button\" title=\"Drilldown less\"><i class=\"fa fa-fw fa-minus\"></i></button>\n" +
-    "                    <button ng-hide=\"parts.hierarchy.levels.length < 2\" ng-disabled=\"! parts.drilldownDimensionPlus\"  class=\"btn btn-default\" ng-click=\"showDimensionFilter(parts.drilldownDimensionPlus)\" type=\"button\" title=\"Drilldown more\"><i class=\"fa fa-fw fa-plus\"></i></button>\n" +
-    "                    <button class=\"btn btn-default\" type=\"button\" title=\"Drilldown this\" ng-click=\"selectDrill(parts.drilldownDimension, true)\"><i class=\"fa fa-fw fa-arrow-down\"></i></button>\n" +
+    "                    <button ng-hide=\"parts.hierarchy.levels.length < 2\" ng-disabled=\"! parts.drilldownDimensionMinus\"  class=\"btn btn-default\" ng-click=\"showDimensionFilter(parts.drilldownDimensionMinus)\" type=\"button\" title=\"По-малко сечение\"><i class=\"fa fa-fw fa-minus\"></i></button>\n" +
+    "                    <button ng-hide=\"parts.hierarchy.levels.length < 2\" ng-disabled=\"! parts.drilldownDimensionPlus\"  class=\"btn btn-default\" ng-click=\"showDimensionFilter(parts.drilldownDimensionPlus)\" type=\"button\" title=\"По-голямо сечение\"><i class=\"fa fa-fw fa-plus\"></i></button>\n" +
+    "                    <button class=\"btn btn-default\" type=\"button\" title=\"Детайлизиране\" ng-click=\"selectDrill(parts.drilldownDimension, true)\"><i class=\"fa fa-fw fa-arrow-down\"></i></button>\n" +
     "              </div>\n" +
     "\n" +
     "              <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px; margin-right: 5px;\">\n" +
     "                 <div class=\"btn btn-default\" ng-click=\"filterShowAll = ! filterShowAll\" ng-class=\"{ 'active': filterShowAll, 'btn-info': filterShowAll }\">\n" +
-    "                    <i class=\"fa fa-fw fa-filter fa-rotate-180\"></i> Show all\n" +
+    "                    <i class=\"fa fa-fw fa-filter fa-rotate-180\"></i> Покажи всички\n" +
     "                 </div>\n" +
     "              </div>\n" +
     "\n" +
@@ -7733,13 +7733,13 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "                  <div class=\"btn btn-default\" ng-click=\"filterInverted = !filterInverted\" ng-class=\"{ 'active': filterInverted, 'btn-danger': filterInverted }\">\n" +
     "                    <input type=\"checkbox\" ng-model=\"filterInverted\" style=\"pointer-events: none; margin: 0px; vertical-align: middle;\" ></input>\n" +
-    "                    <b>&ne;</b> Invert\n" +
+    "                    <b>&ne;</b> Обърни\n" +
     "                  </div>\n" +
     "\n" +
     "              </div>\n" +
     "\n" +
     "                <div class=\"form-group\" style=\"display: inline-block; margin-bottom: 0; vertical-align: middle; margin-bottom: 2px;\">\n" +
-    "                 <button ng-click=\"applyFilter()\" class=\"btn btn-success\" type=\"button\"><i class=\"fa fa-fw fa-filter\"></i> Apply</button>\n" +
+    "                 <button ng-click=\"applyFilter()\" class=\"btn btn-success\" type=\"button\"><i class=\"fa fa-fw fa-filter\"></i> Приложи </button>\n" +
     "              </div>\n" +
     "            </form>\n" +
     "            </div>\n" +
@@ -7750,7 +7750,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                <div class=\"col-xs-9 col-sm-6\">\n" +
     "                <div style=\"margin-top: 5px;\">\n" +
     "                    <div class=\"panel panel-default panel-outline\" style=\"margin-bottom: 0px; \"><div class=\"panel-body\" style=\"max-height: 180px; overflow-y: auto; overflow-x: hidden;\">\n" +
-    "                        <div ng-show=\"loadingDimensionValues\" ><i class=\"fa fa-circle-o-notch fa-spin fa-fw\"></i> Loading...</div>\n" +
+    "                        <div ng-show=\"loadingDimensionValues\" ><i class=\"fa fa-circle-o-notch fa-spin fa-fw\"></i> Зареждане...</div>\n" +
     "\n" +
     "                        <div ng-if=\"!loadingDimensionValues\">\n" +
     "                            <div ng-repeat=\"val in dimensionValues | filter:filterDimensionValue(searchString)\" style=\"overflow-x: hidden; text-overflow: ellipsis; white-space: nowrap;\">\n" +
@@ -7772,7 +7772,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                    <div ng-if=\"!loadingDimensionValues && dimensionValues.length >= cubesService.cubesserver.info.json_record_limit\" class=\"alert alert-warning\" style=\"margin-bottom: 0px;\">\n" +
     "                        <div style=\"display: inline-block;\"><i class=\"fa fa-exclamation\"></i></div>\n" +
     "                        <div style=\"display: inline-block; margin-left: 20px;\">\n" +
-    "                            Limit of {{ cubesService.cubesserver.info.json_record_limit }} items has been hit. Dimension value list is <b>incomplete</b>.<br />\n" +
+    "                            Лимитът от {{ cubesService.cubesserver.info.json_record_limit }} беше достигнат. Списъкът от стойности на дименсията е <b>непълен</b>.<br />\n" +
     "                        </div>\n" +
     "                    </div>\n" +
     "\n" +
@@ -7794,7 +7794,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "<div ng-controller=\"CubesViewerViewsCubeSeriesController\">\n" +
     "\n" +
     "    <!-- ($(view.container).find('.cv-view-viewdata').children().size() == 0)  -->\n" +
-    "    <h3><i class=\"fa fa-fw fa-clock-o\"></i> Series table\n" +
+    "    <h3><i class=\"fa fa-fw fa-clock-o\"></i> Таблична сериализация\n" +
     "        <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "    </h3>\n" +
     "\n" +
@@ -7812,19 +7812,19 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <div ng-if=\"view.pendingRequests == 0 && view.params.yaxis == null\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
     "        <p>\n" +
-    "            Cannot present series table: no <b>measure</b> has been selected.\n" +
+    "            Не може да представи таблична сериализация: no <b>мярката</b> , която е избрана.\n" +
     "        </p>\n" +
     "        <p>\n" +
-    "            Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View &gt; <i class=\"fa fa-fw fa-crosshairs\"></i> Measure</kbd> menu.\n" +
+    "            Тип:: използвай <kbd><i class=\"fa fa-fw fa-cogs\"></i> изглед &gt; <i class=\"fa fa-fw fa-crosshairs\"></i> мярка</kbd> меню.\n" +
     "        </p>\n" +
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.pendingRequests == 0 && view.params.yaxis != null && view.grid.data.length == 0\" class=\"alert alert-info\" style=\"margin-bottom: 0px;\">\n" +
     "        <p>\n" +
-    "            Cannot present series table: <b>no rows</b> are returned by the current horizontal dimension, drilldown or filtering combination.\n" +
+    "            Не може да представи таблична сериализация: <b>без редове</b> , които се връщат от тркущата ходизонтална дименсия, сечението или филтриращата комбинация.\n" +
     "        </p>\n" +
     "        <p>\n" +
-    "            Tip: use the <kbd><i class=\"fa fa-fw fa-cogs\"></i> View</kbd> menu to select an horizontal dimension.\n" +
+    "            Тип: използвай <kbd><i class=\"fa fa-fw fa-cogs\"></i> изглед</kbd> меню за селектиране на хоризонтална дименсия.\n" +
     "        </p>\n" +
     "    </div>\n" +
     "\n" +
