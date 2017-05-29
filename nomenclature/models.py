@@ -78,7 +78,7 @@ class ArticleGroup(models.Model):
 
 class Article(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
-    name = models.CharField(max_length=100, blank=True, verbose_name="Име")
+    name = models.CharField(max_length=100, verbose_name="Име")
     group_fk = models.ForeignKey('ArticleGroup', null=True, verbose_name="Артикулна група")
     description = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Описание")
     supplier_fk = models.ManyToManyField('Supplier', verbose_name="Доставчик")

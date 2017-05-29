@@ -13,7 +13,7 @@ class ArticleStore(models.Model):
     cnt = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Налично кол.")
     cnt_min = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Минимално кол.")
     cnt_bl = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Блокирано кол.")
-    note = models.TextField(max_length=1000, blank=True, verbose_name="Забележка за блокировката")
+    note = models.TextField(max_length=1000, blank=True, null=True,verbose_name="Забележка за блокировката")
 
     def __str__(self):
         return self.article_fk.group_fk.name + ":" + self.article_fk.name + ':' + str(self.cnt)
