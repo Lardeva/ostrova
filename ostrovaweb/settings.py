@@ -58,7 +58,7 @@ INSTALLED_APPS = [
 
     # 'jquery-ui',
     # 'bootstrap',
-    'djangobower',
+    #'djangobower',
 
     'corsheaders',
     'cubesviewer',
