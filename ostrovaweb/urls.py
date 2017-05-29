@@ -23,7 +23,7 @@ from nomenclature.clubview import SaloonAjaxClubChainedView
 from siteorder import siteorder
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^erp/', admin.site.urls),
 
     url(r'^fullcalendar/', calendarview.calendar_view, name='fullcalendar'),
     url(r'^calendar_orders_feed/', calendarview.calendar_order_data, name='calendar_orders_feed'),
