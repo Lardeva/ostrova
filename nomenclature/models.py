@@ -47,7 +47,7 @@ class Employee(models.Model):
 class Supplier(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     name = models.CharField(max_length=60, blank=True, verbose_name="Име")
-    description = models.CharField(max_length=500, blank=True, verbose_name="Описание")
+    description = models.CharField(max_length=500, blank=True, null=True, verbose_name="Описание")
 
     def __str__(self):
         return self.name
