@@ -6,7 +6,7 @@ class Club(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     name = models.CharField(max_length=240, blank=True, verbose_name='Име')
     hall_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name='Цена на зала')
-    address = models.CharField(max_length=240, blank=True, verbose_name='Адрес')
+    address = models.CharField(max_length=240, blank=True, null=True, verbose_name='Адрес')
 
     def __str__(self):
         return self.name
