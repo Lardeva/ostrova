@@ -240,7 +240,7 @@ LOCALE_PATHS = [
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'djangobower.finders.BowerFinder'
+#    'djangobower.finders.BowerFinder'
     # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 ]
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')

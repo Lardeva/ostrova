@@ -42,25 +42,22 @@ Jinja2==2.9.6
 SQLAlchemy==1.1.10
 Werkzeug==0.12.2
 
-# ?click==6.7
+click==6.7
+django-appconf==1.0.2
+itsdangerous==0.24
+jdcal==1.3
+jsonschema==2.6.0
+MarkupSafe==1.0
+expressions==0.2.3
+
 # ?defusedxml==0.5.0
-# ?django-appconf==1.0.2
 # ?django-pkgconf==0.2.1
-# ?expressions==0.2.3
 # ?html5lib==1.0b10
 # ?httplib2==0.10.3
 # ?icalendar==3.11.3
-# ?itsdangerous==0.24
-# ?jdcal==1.3
-# ?jsonschema==2.6.0
-# ?MarkupSafe==1.0
-# ?oauthlib==2.0.2
 # ?olefile==0.44
-# ?pymongo==3.4.0
-# ?PyPDF2==1.26.0
 # ?python3-openid==3.1.0
-# ?requests-oauthlib==0.8.0
-# ?sqlparse==0.2.3
 # ?webencodings==0.5.1
 # ?xhtml2pdf==0.2b1
 # ?xlwt==1.2.0
+
