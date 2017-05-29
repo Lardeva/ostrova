@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 class Club(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
-    name = models.CharField(max_length=240, blank=True, verbose_name='Име')
+    name = models.CharField(max_length=240, verbose_name='Име')
     hall_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name='Цена на зала')
     address = models.CharField(max_length=240, blank=True, null=True, verbose_name='Адрес')
 
@@ -21,7 +21,7 @@ class Club(models.Model):
 class Saloon(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     club_fk = models.ForeignKey('Club', null=True, verbose_name="Клуб")
-    name = models.CharField(max_length=200, blank=True,  verbose_name="Име")
+    name = models.CharField(max_length=200, verbose_name="Име")
     default = models.BooleanField("Основен", default=False)
 
     def __str__(self):
@@ -46,7 +46,7 @@ class Employee(models.Model):
 
 class Supplier(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
-    name = models.CharField(max_length=60, blank=True, verbose_name="Име")
+    name = models.CharField(max_length=60, verbose_name="Име")
     description = models.CharField(max_length=500, blank=True, null=True, verbose_name="Описание")
 
     def __str__(self):
@@ -61,7 +61,7 @@ class Supplier(models.Model):
 
 class ArticleGroup(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
-    name = models.CharField(max_length=80, blank=False, null=False, verbose_name="Име")
+    name = models.CharField(max_length=80, verbose_name="Име")
     delivery_type = models.BooleanField(default=False, verbose_name="За доставки")
     order_type = models.BooleanField(default=False, verbose_name="За продажби")
     create_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата на създаване")
