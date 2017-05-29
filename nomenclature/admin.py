@@ -43,7 +43,7 @@ admin.site.register(Club, ClubAdmin)
 
 
 class SaloonAdmin(CompareVersionAdmin):
-    fields = ('club_fk', 'name')
+    fields = ('club_fk', 'name','default')
 
 admin.site.register(Saloon, SaloonAdmin)
 

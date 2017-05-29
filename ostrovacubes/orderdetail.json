@@ -19,7 +19,7 @@
       "measures": [
         {"name":"deposit", "label":"Amount"}
       ],
-      "joins" = [
+      "joins" : [
           {
           "master": "fact_sales.product_id",
           "detail": {

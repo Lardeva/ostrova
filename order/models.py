@@ -11,8 +11,8 @@ from ostrovaweb.utils import nvl
 class Order(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     rec_date = models.DateField(verbose_name="Дата на р.д.")
-    rec_time = models.CharField(max_length=80, verbose_name="Начало")
-    rec_time_end = models.CharField(max_length=40,verbose_name="Край")
+    rec_time = models.TimeField(verbose_name="Начало")
+    rec_time_end = models.TimeField(verbose_name="Край")
     phone = models.CharField(max_length=100, blank=True, verbose_name="Телефон")
     parent = models.CharField(max_length=240, blank=True, verbose_name="Родител")
     child = models.CharField(max_length=200, blank=True, verbose_name="Дете")
@@ -86,7 +86,7 @@ class OrderDetail(models.Model):
     article_fk = models.ForeignKey('ArticleOrder', blank=False, null=False, verbose_name="Артикул")
     cnt = models.DecimalField(max_digits=8, decimal_places=3,verbose_name="Количество")
     price = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Единична цена")
-    amount = models.DecimalField( max_digits=8, decimal_places=2, verbose_name="Цена",blank=True, null=False)
+    amount = models.DecimalField( max_digits=8, decimal_places=2, verbose_name="Общо", blank=True, null=False)
 
     def __str__(self):
         return self.article_fk.group_fk.name + ":" + self.article_fk.name + ":" + str(self.cnt) + " " + self.article_fk.measure + " :" + str(self.price) + " лв."

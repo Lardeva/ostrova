@@ -52,6 +52,11 @@ def get_app_template_dir(app_name):
             mod = import_module(app)
             template_dir = join(abspath(dirname(mod.__file__)), 'templates')
             break
+        if app.split('.')[0] == app_name:
+            mod = import_module(app.split('.')[0])
+            template_dir = join(abspath(dirname(mod.__file__)), 'templates')
+            break
+
     _cache[app_name] = template_dir
     return template_dir
 

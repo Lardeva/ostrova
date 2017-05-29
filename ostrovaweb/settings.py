@@ -30,12 +30,14 @@ DEBUG = True
 ALLOWED_HOSTS = ['192.168.6.132','127.0.0.1','localhost','testserver']
 
 INSTALLED_APPS = [
+
+    'order.apps.OrderConfig',
+    'delivery.apps.DeliveryConfig',
+    'cashdesk.apps.CashdeskConfig',
+    'store.apps.StoreConfig',
+    'nomenclature.apps.NomenclatureConfig',
+
     'registration',
-    'order',
-    'delivery',
-    'cashdesk',
-    'store',
-    'nomenclature',
     'suit',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -118,10 +120,10 @@ TEMPLATES = [
                 'django.core.context_processors.request',
             ],
             'loaders': [
+                'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
                 'ostrovaweb.overridingLoader.Loader',
-                'django.template.loaders.filesystem.Loader',
-                #    'django.template.loaders.eggs.Loader',
+               #    'django.template.loaders.eggs.Loader',
             ]
         },
     },
@@ -160,6 +162,15 @@ SUIT_CONFIG = {
             'label': 'Номенклатури',
             'models': ( 'supplier', 'articlegroup', 'article', 'club', 'saloon', 'cashdesk_groups_income', 'cashdesk_groups_expense' ),
         },
+
+        {
+            'label': 'Справки',
+            'models': (
+                {'url': '/cubesviewer/', 'label': 'Аналитични справки', },
+            ),
+            },
+
+
 
         {   'app': 'auth',
             'label': 'Контрол на достъпа',

@@ -15,6 +15,7 @@
     "cubes": [
         {
             "name": "ORDER",
+            "label": "Поръчки анализ",
             "dimensions": ["item", "year"],
             "measures": [
                 {"name":"deposit", "label":"Amount"}

@@ -1327,15 +1327,15 @@ angular.module('cv.cubes').service("cubesService", ['$rootScope', '$log', 'cvOpt
 			var level = dimensionparts.hierarchy.levels[i];
 
 			var field = level.role;
-			if (field == "година") {
+			if (field == "year") {
 				values.push(tdate.getFullYear());
-			} else if (field == "месец") {
+			} else if (field == "month") {
 				values.push(tdate.getMonth() + 1);
-			} else if (field == "тримесечие") {
+			} else if (field == "quarter") {
 				values.push((Math.floor(tdate.getMonth() / 3) + 1));
-			} else if (field == "седмица") {
+			} else if (field == "week") {
 				values.push(this._weekNumber(tdate));
-			} else if (field == "ден") {
+			} else if (field == "day") {
 				values.push(tdate.getDate());
 			} else {
 				dialogService.show("Грешна конфигурация на модела: времевата роля  на нивото '" + level.name + "' е грешна.");
@@ -6858,7 +6858,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <div ng-if=\"cvOptions.backendUrl\" class=\"dropdown m-b\" style=\"display: inline-block; \">\n" +
     "          <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" data-submenu>\n" +
-    "            <i class=\"fa fa-fw fa-file\"></i> Запиши изгледа <span class=\"caret\"></span>\n" +
+    "            <i class=\"fa fa-fw fa-file\"></i> Записани изгледи <span class=\"caret\"></span>\n" +
     "          </button>\n" +
     "\n" +
     "          <ul class=\"dropdown-menu cv-gui-catalog-menu\">\n" +
@@ -6889,10 +6889,10 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "                <div class=\"divider\"></div>\n" +
     "\n" +
     "                <li ng-click=\"toggleTwoColumn()\" ng-class=\"{ 'hidden-xs': ! cvOptions.studioTwoColumn, 'disabled': studioViewsService.views.length == 0 }\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-columns\"></i> 2 колони\n" +
-    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.studioTwoColumn }\">{{ cvOptions.studioTwoColumn ? \"Вкл.\" : \"Изкл.\" }}</span></a>\n" +
+    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.studioTwoColumn }\">{{ cvOptions.studioTwoColumn ? \"ON\" : \"OFF\" }}</span></a>\n" +
     "                </li>\n" +
     "                <li ng-click=\"toggleHideControls()\" ng-class=\"{ 'disabled': studioViewsService.views.length == 0 }\"><a tabindex=\"0\"><i class=\"fa fa-fw fa-unlock-alt\"></i> Скрии управлението\n" +
-    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.hideControls }\">{{ cvOptions.hideControls ? \"Вкл.\" : \"Изкл.\" }}</span></a>\n" +
+    "                    <span class=\"label label-default\" style=\"margin-left: 10px;\" ng-class=\"{ 'label-success': cvOptions.hideControls }\">{{ cvOptions.hideControls ? \"ON\" : \"OFF\" }}</span></a>\n" +
     "                </li>\n" +
     "\n" +
     "                <div class=\"divider\"></div>\n" +
@@ -7265,7 +7265,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <div ng-if=\"cvOptions.backendUrl\" class=\"divider\"></div>\n" +
     "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.saveView(view)\"><a><i class=\"fa fa-fw fa-save\"></i> Запиши</a></li>\n" +
-    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.shareView(view, ! view.shared)\"><a><i class=\"fa fa-fw fa-share\"></i> {{ view.shared ? \"Спри споделяне\" : \"Сподели\" }}</a></li>\n" +
+    "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.shareView(view, ! view.shared)\"><a><i class=\"fa fa-fw fa-share\"></i> {{ view.shared ? \"Unshare\" : \"Share\" }}</a></li>\n" +
     "    <li ng-if=\"cvOptions.backendUrl\" ng-click=\"reststoreService.deleteView(view)\"><a><i class=\"fa fa-fw fa-trash-o\"></i> Изтрии...</a></li>\n" +
     "\n" +
     "    <div class=\"divider\"></div>\n" +
@@ -7326,7 +7326,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "        <li ng-class=\"{'disabled': view.grid.data.length != 2 }\" ng-show=\"view.params.mode == 'chart' && view.params.charttype == 'bars-horizontal'\" ng-click=\"view.params.chartoptions.mirrorSerie2 = !view.params.chartoptions.mirrorSerie2; refreshView();\">\n" +
     "            <a><i class=\"fa fa-fw fa-arrows-h\"></i> Обърнете към 2-рата\n" +
-    "                <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.mirrorSerie2 }\">{{ view.params.chartoptions.mirrorSerie2 ? \"Включи\" : \"Изключи\" }}</span>\n" +
+    "                <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.mirrorSerie2 }\">{{ view.params.chartoptions.mirrorSerie2 ? \"ON\" : \"OFF\" }}</span>\n" +
     "            </a>\n" +
     "        </li>\n" +
     "\n" +
@@ -7337,7 +7337,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "\n" +
     "    <li ng-show=\"view.params.mode == 'chart'\" ng-click=\"view.params.chartoptions.showLegend = !view.params.chartoptions.showLegend; refreshView();\">\n" +
     "        <a><i class=\"fa fa-fw\" ng-class=\"{'fa-toggle-on': view.params.chartoptions.showLegend, 'fa-toggle-off': ! view.params.chartoptions.showLegend }\"></i> Изключване на надпис\n" +
-    "            <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.showLegend }\">{{ view.params.chartoptions.showLegend ? \"Включи\" : \"Изключи\" }}</span>\n" +
+    "            <span style=\"margin-left: 5px;\" class=\"label label-default\" ng-class=\"{ 'label-success': view.params.chartoptions.showLegend }\">{{ view.params.chartoptions.showLegend ? \"ON\" : \"OFF\" }}</span>\n" +
     "        </a>\n" +
     "    </li>\n" +
     "\n" +

@@ -1,0 +1,43 @@
+{
+  "locale":"bg",
+  "cubes": [
+    {
+      "name": "order_detail",
+      "label": "Поръчка за кухня",
+      "dimensions": ["article","ORDER","club","dt"],
+      "joins": [
+        { "master": "article_fk_id", "detail": "article.id"},
+        { "master": "order_fk_id", "detail": "ORDER.id"},
+        { "master": "ORDER.club_fk_id", "detail": "club.id"}
+      ],
+      "measures": [
+          { "name": "cnt", "label": "Count" }
+      ],
+      "aggregates": [
+        {
+          "name": "aggregate_cnt",
+          "function": "sum",
+          "measure": "cnt"
+        }
+      ]
+
+    }
+  ],
+
+  "mappings": {
+    "dt": {"table": "ORDER","column":"rec_date","extract":"month"},
+    "date.year": {"table": "ORDER","column":"rec_date", "extract":"year"}
+  },
+
+  "dimensions": [
+     { "name":"article",   "attributes": ["id","name"], "locales" : ["bg"] },
+     { "name":"ORDER",   "attributes": ["id","rec_date"] },
+     { "name":"club",   "attributes": ["id","name"] },
+     { "name":"dt", "role": "time"}
+  ],
+  "info": {
+    "min_date": "2017-01-01",
+    "max_date": "2018-12-31"
+  }
+
+}

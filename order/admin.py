@@ -99,7 +99,7 @@ class OrderForm(ChainedChoicesModelForm):
             'minView':0,
             'maxView':2,
             'minuteStep':15,
-            'hoursDisabled': '"0,1,2,3,4,5,6,7,8,20,21,22,23"',
+            'hoursDisabled': '"0,1,2,3,4,5,6,7,8,9,21,22,23"',
             'language':'bg'
         }
     ))
@@ -109,34 +109,32 @@ class OrderForm(ChainedChoicesModelForm):
             'minView':0,
             'maxView':2,
             'minuteStep':15,
-            'hoursDisabled': '"0,1,2,3,4,5,6,7,8,20,21,22,23"',
+            'hoursDisabled': '"0,1,2,3,4,5,6,7,8,9,10,22,23"',
             'language':'bg'
         }
     ))
     def clean(self):
 
         # rec_time triabva da e po-malko ot rec_time_end
-        if self.cleaned_data['rec_time'] > self.cleaned_data['rec_time_end']:
+        if 'rec_time' in self.cleaned_data and 'rec_time_end' in self.cleaned_data:
+            if self.cleaned_data['rec_time'] > self.cleaned_data['rec_time_end']:
                 raise ValidationError("Моля изберете по-малък начален час от крайният")
 
-        if self.cleaned_data['rec_time'].hour < 10:
-            raise ValidationError("Моля изберете по-голям начален час от 10 часа")
+            if self.cleaned_data['rec_time'].hour < 10:
+                raise ValidationError("Моля изберете по-голям начален час от 10 часа")
 
-        if self.cleaned_data['rec_time_end'].hour > 21:
-            raise ValidationError("Моля изберете по-малък начален час от 21 часа")
+            if self.cleaned_data['rec_time_end'].hour > 21:
+                raise ValidationError("Моля изберете по-малък начален час от 21 часа")
 
-        self.cleaned_data['rec_time'] = time.strftime(self.cleaned_data ['rec_time'],'%H:%M' )
-        self.cleaned_data['rec_time_end'] = time.strftime(self.cleaned_data ['rec_time_end'],'%H:%M' )
-
-        # da se proveri (sas filter ot bazata) dali ima veche rojden den za tazi data i chas i klub
-        orders = Order.objects.filter(rec_date= self.cleaned_data['rec_date'], club_fk=self.cleaned_data['club_fk']).exclude(id=self.instance.id).exclude(status='CANCELED')
-        for order in orders:
-            if datetime.strptime(self.cleaned_data ['rec_time'],'%H:%M' )<= datetime.strptime(order.rec_time_end,'%H:%M') and datetime.strptime(self.cleaned_data['rec_time'],'%H:%M')>= datetime.strptime(order.rec_time,'%H:%M'):
-                raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в  ' +order.rec_time + ' и ' + order.rec_time_end +'.' )
-            if datetime.strptime(self.cleaned_data ['rec_time_end'],'%H:%M')>= datetime.strptime(order.rec_time,'%H:%M') and datetime.strptime(self.cleaned_data['rec_time_end'],'%H:%M')<= datetime.strptime(order.rec_time_end,'%H:%M'):
-                raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка започва в '+order.rec_time +'.' )
-            if datetime.strptime(self.cleaned_data ['rec_time'],'%H:%M')<= datetime.strptime(order.rec_time,'%H:%M') and datetime.strptime(self.cleaned_data['rec_time_end'],'%H:%M')>= datetime.strptime(order.rec_time_end,'%H:%M'):
-                raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в '+order.rec_time+ '.')
+            # da se proveri (sas filter ot bazata) dali ima veche rojden den za tazi data i chas i klub
+            orders = Order.objects.filter(rec_date= self.cleaned_data['rec_date'], club_fk=self.cleaned_data['club_fk']).exclude(id=self.instance.id).exclude(status='CANCELED')
+            for order in orders:
+                if self.cleaned_data ['rec_time'] <= order.rec_time_end and self.cleaned_data['rec_time'] >= order.rec_time:
+                    raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в ' + str(order.rec_time) + ' и ' + str(order.rec_time_end) + '.')
+                if self.cleaned_data ['rec_time_end'] >= order.rec_time and self.cleaned_data['rec_time_end'] <= order.rec_time_end:
+                    raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка започва в '+ str(order.rec_time) + '.')
+                if self.cleaned_data ['rec_time'] <= order.rec_time and self.cleaned_data['rec_time_end'] >= order.rec_time_end:
+                    raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в '+ str(order.rec_time) + '.')
 
         # todo: rec_date triabva da e > datetime.now() bez chas
 
@@ -196,16 +194,19 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
                       ('notes', 'Забележки'))
 
 
-    readonly_fields = ('store_status','locked','create_date','last_update_date','user','priceDetail','dueAmount', 'priceFinal','payment_date','payment_date',)
+    readonly_fields = ['store_status','locked','create_date','last_update_date','user','priceDetail','dueAmount', 'priceFinal','payment_date','payment_date',]
 
     # closed_readonly_fields =  tuple(fieldsets[0][1].get('fields')) + tuple(fieldsets[1][1].get('fields')) + tuple(fieldsets[2][1].get('fields')) + tuple(fieldsets[3][1].get('fields')) + tuple(fieldsets[4][1].get('fields'))
     closed_readonly_fields = flatten(x[1].get('fields') for x in fieldsets) # all fields
+    pay_only_readonly_fields = readonly_fields + flatten(x[1].get('fields') for x in fieldsets if x[0] not in ('Суми за плащане','Плащания')) # all fields
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
             if (obj.locked and not request.user.is_superuser or
                     obj.store_status
             ):
+                if obj.dueAmount > 0:
+                    return self.pay_only_readonly_fields
                 return self.closed_readonly_fields
 
         return self.readonly_fields
