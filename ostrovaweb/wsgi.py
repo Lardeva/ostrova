@@ -6,16 +6,15 @@ It exposes the WSGI callable as a module-level variable named ``application``.
 For more information on this file, see
 https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/
 """
-import logging
+
 import os
 
-from cubes import get_logger
 from cubes.server import create_server
 from cubes.server import read_slicer_config
 from cubes.server.utils import str_to_bool
 from django.core.wsgi import get_wsgi_application
 from whitenoise.django import DjangoWhiteNoise
-# from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.wsgi import DispatcherMiddleware
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -39,41 +38,7 @@ debug = os.environ.get("SLICER_DEBUG")
 if debug and str_to_bool(debug):
     cubes_application.debug = True
 
-DEFAULT_APP = django_application
-MOUNTS = {
-    '/cubes_backend':     cubes_application
-}
-
-def DispatcherMiddleware(environ, start_response):
-
-        """Allows one to mount middlewares or applications in a WSGI application.
-        This is useful if you want to combine multiple WSGI applications::
-
-            app = DispatcherMiddleware(app, {
-                '/app2':        app2,
-                '/app3':        app3
-            })
-        """
-
-        logger = get_logger()
-        script = environ.get('PATH_INFO', '')
-        path_info = ''
-        while '/' in script:
-            if script in MOUNTS:
-                app = MOUNTS
-                break
-            script, last_item = script.rsplit('/', 1)
-            path_info = '/%s%s' % (last_item, path_info)
-            logger.info("**!!**1" + path_info)
-            logger.info("**!!**2" + script)
-        else:
-            app = MOUNTS.get(script, DEFAULT_APP)
-        original_script_name = environ.get('SCRIPT_NAME', '')
-        environ['SCRIPT_NAME'] = original_script_name + script
-        environ['PATH_INFO'] = path_info
-        logger.info("**!!**x" + path_info)
-        logger.info("**!!**y" + script)
-
-        return app(environ, start_response)
-
-application = DispatcherMiddleware
+application = DispatcherMiddleware(
+    django_application,
+    { '/cubes_backend':     cubes_application }
+)
