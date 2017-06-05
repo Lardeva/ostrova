@@ -127,14 +127,15 @@ class OrderForm(ChainedChoicesModelForm):
                 raise ValidationError("Моля изберете по-малък начален час от 21 часа")
 
             # da se proveri (sas filter ot bazata) dali ima veche rojden den za tazi data i chas i klub
-            orders = Order.objects.filter(rec_date= self.cleaned_data['rec_date'], club_fk=self.cleaned_data['club_fk']).exclude(id=self.instance.id).exclude(status='CANCELED')
-            for order in orders:
-                if self.cleaned_data ['rec_time'] <= order.rec_time_end and self.cleaned_data['rec_time'] >= order.rec_time:
-                    raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в ' + str(order.rec_time) + ' и ' + str(order.rec_time_end) + '.')
-                if self.cleaned_data ['rec_time_end'] >= order.rec_time and self.cleaned_data['rec_time_end'] <= order.rec_time_end:
-                    raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка започва в '+ str(order.rec_time) + '.')
-                if self.cleaned_data ['rec_time'] <= order.rec_time and self.cleaned_data['rec_time_end'] >= order.rec_time_end:
-                    raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в '+ str(order.rec_time) + '.')
+            if 'club_fk' in self.cleaned_data:
+                orders = Order.objects.filter(rec_date= self.cleaned_data['rec_date'], club_fk=self.cleaned_data['club_fk']).exclude(id=self.instance.id).exclude(status='CANCELED')
+                for order in orders:
+                    if self.cleaned_data ['rec_time'] <= order.rec_time_end and self.cleaned_data['rec_time'] >= order.rec_time:
+                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в ' + str(order.rec_time) + ' и ' + str(order.rec_time_end) + '.')
+                    if self.cleaned_data ['rec_time_end'] >= order.rec_time and self.cleaned_data['rec_time_end'] <= order.rec_time_end:
+                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка започва в '+ str(order.rec_time) + '.')
+                    if self.cleaned_data ['rec_time'] <= order.rec_time and self.cleaned_data['rec_time_end'] >= order.rec_time_end:
+                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в '+ str(order.rec_time) + '.')
 
         # todo: rec_date triabva da e > datetime.now() bez chas
 
