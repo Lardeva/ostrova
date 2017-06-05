@@ -40,5 +40,5 @@ if debug and str_to_bool(debug):
 
 application = DispatcherMiddleware(
     django_application,
-    { '/cubes_backend':     cubes_application }
+    { 'cubes_backend':     cubes_application }
 )
