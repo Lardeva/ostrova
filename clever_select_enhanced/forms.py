@@ -160,7 +160,7 @@ class ChainedChoicesMixin(object):
                             raise ValueError(u'Data returned from ajax request (url=%(url)s, params=%(params)s) could not be deserialized to Python object. %(data)s' % {
                                 'url': url,
                                 'params': params,
-                                'data':str(data.content)
+                                'data': '' # str(data.content.decode('utf-8'))
                             })
 
                 field.initial = field_value
