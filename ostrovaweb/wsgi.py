@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/
 import logging
 import os
 
+from cubes import get_logger
 from cubes.server import create_server
 from cubes.server import read_slicer_config
 from cubes.server.utils import str_to_bool
@@ -52,9 +53,11 @@ class DispatcherMiddleware(object):
     def __init__(self, app, mounts=None):
         self.app = app
         self.mounts = mounts or {}
-        logging.info("**!!**x")
+        logger = get_logger()
+        logger.info("**!!**x")
 
     def __call__(self, environ, start_response):
+        logger = get_logger()
         script = environ.get('PATH_INFO', '')
         path_info = ''
         while '/' in script:
@@ -63,15 +66,15 @@ class DispatcherMiddleware(object):
                 break
             script, last_item = script.rsplit('/', 1)
             path_info = '/%s%s' % (last_item, path_info)
-            logging.info("**!!**1" + path_info)
-            logging.info("**!!**2" + script)
+            logger.info("**!!**1" + path_info)
+            logger.info("**!!**2" + script)
         else:
             app = self.mounts.get(script, self.app)
         original_script_name = environ.get('SCRIPT_NAME', '')
         environ['SCRIPT_NAME'] = original_script_name + script
         environ['PATH_INFO'] = path_info
-        logging.info("**!!**x" + path_info)
-        logging.info("**!!**y" + script)
+        logger.info("**!!**x" + path_info)
+        logger.info("**!!**y" + script)
 
         return app(environ, start_response)
 
