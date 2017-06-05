@@ -120,9 +120,10 @@ TEMPLATES = [
                 'django.core.context_processors.request',
             ],
             'loaders': [
+                'ostrovaweb.overridingLoader.Loader',
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
-                'ostrovaweb.overridingLoader.Loader',
+
                #    'django.template.loaders.eggs.Loader',
             ]
         },
@@ -277,11 +278,11 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 ##
 
 if 'ON_HEROKU' in os.environ:
-    CUBESVIEWER_BACKEND_URL = "https://partyerp.herokuapp.com/cubesviewer"
-    CUBESVIEWER_CUBES_URL = "https://partyerp.herokuapp.com/cubes_backend"
+    CUBESVIEWER_BACKEND_URL = "http://partyerp.herokuapp.com/cubesviewer"
+    CUBESVIEWER_CUBES_URL = "http://partyerp.herokuapp.com/cubes_backend"
 
-    SECURE_SSL_REDIRECT = True # [1]
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    #SECURE_SSL_REDIRECT = True # [1]
+    #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 else:
     # Base Cubes Server URL.
     # Your Cubes Server needs to be running and listening on this URL, and it needs

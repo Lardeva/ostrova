@@ -149,9 +149,10 @@ class ChainedChoicesMixin(object):
 
                     }
                     data = c.get(url, params)
-
+                    if data is None:
+                        data = ''
                     try:
-                        field.choices = field.choices + json.loads(data.content)
+                        field.choices = field.choices + json.loads(data.content.decode('utf-8'))
                     except ValueError:
                         try:
                             field.choices = field.choices + json.loads(data.content.decode('utf-8'))
