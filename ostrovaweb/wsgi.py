@@ -39,37 +39,35 @@ debug = os.environ.get("SLICER_DEBUG")
 if debug and str_to_bool(debug):
     cubes_application.debug = True
 
-class DispatcherMiddleware(object):
+DEFAULT_APP = django_application
+MOUNTS = {
+    '/cubes_backend':     cubes_application
+}
 
-    """Allows one to mount middlewares or applications in a WSGI application.
-    This is useful if you want to combine multiple WSGI applications::
+def DispatcherMiddleware(environ, start_response):
 
-        app = DispatcherMiddleware(app, {
-            '/app2':        app2,
-            '/app3':        app3
-        })
-    """
+        """Allows one to mount middlewares or applications in a WSGI application.
+        This is useful if you want to combine multiple WSGI applications::
 
-    def __init__(self, app, mounts=None):
-        self.app = app
-        self.mounts = mounts or {}
-        logger = get_logger()
-        logger.info("**!!**x")
+            app = DispatcherMiddleware(app, {
+                '/app2':        app2,
+                '/app3':        app3
+            })
+        """
 
-    def __call__(self, environ, start_response):
         logger = get_logger()
         script = environ.get('PATH_INFO', '')
         path_info = ''
         while '/' in script:
-            if script in self.mounts:
-                app = self.mounts[script]
+            if script in MOUNTS:
+                app = MOUNTS
                 break
             script, last_item = script.rsplit('/', 1)
             path_info = '/%s%s' % (last_item, path_info)
             logger.info("**!!**1" + path_info)
             logger.info("**!!**2" + script)
         else:
-            app = self.mounts.get(script, self.app)
+            app = MOUNTS.get(script, DEFAULT_APP)
         original_script_name = environ.get('SCRIPT_NAME', '')
         environ['SCRIPT_NAME'] = original_script_name + script
         environ['PATH_INFO'] = path_info
@@ -78,7 +76,4 @@ class DispatcherMiddleware(object):
 
         return app(environ, start_response)
 
-application = DispatcherMiddleware(
-    django_application,
-    { '/cubes_backend':     cubes_application }
-)
+application = DispatcherMiddleware
