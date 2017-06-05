@@ -667,11 +667,12 @@
         fromArgs = false;
       }
 
-      if (typeof date === "string") {
+/*     removed - 03.06.2017 - breaks time parsing
+       if (typeof date === "string") {
         if (new RegExp(this.hour_minute).test(date) || new RegExp(this.hour_minute + ":[0-5][0-9]").test(date)) {
           date = this.getDate()
         }
-      }
+      }*/
 
       this.date = DPGlobal.parseDate(date, this.format, this.language, this.formatType, this.timezone);
 

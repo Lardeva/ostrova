@@ -2,7 +2,7 @@ import json
 
 from django import forms
 from django.http import HttpResponse
-from datetime import datetime
+from datetime import datetime, time
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -27,8 +27,8 @@ def calendar_order_data(request):
         inp = {}
 
         inp['title'] = 'order:' + str(order)
-        inp['start'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + order.rec_time
-        inp['end'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + order.rec_time_end
+        inp['start'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + time.strftime(order.rec_time,'%H:%M')
+        inp['end'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + time.strftime(order.rec_time_end,'%H:%M')
         inp['id'] = order.id
         inp['url'] = '/admin/order/order/'+str(order.id)+'/change/'
         inp['textColor'] = 'black'
