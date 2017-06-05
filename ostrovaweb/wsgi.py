@@ -52,6 +52,7 @@ class DispatcherMiddleware(object):
     def __init__(self, app, mounts=None):
         self.app = app
         self.mounts = mounts or {}
+        logging.info("**!!**x")
 
     def __call__(self, environ, start_response):
         script = environ.get('PATH_INFO', '')
