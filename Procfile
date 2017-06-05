@@ -1,1 +1,1 @@
-web: gunicorn ostrovaweb.wsgi --log-file /var/log/app.log
+web: gunicorn ostrovaweb.wsgi --log-file -
