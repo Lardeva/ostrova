@@ -9,7 +9,9 @@ https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/
 
 import os
 
-from cubes.server.app import application as cubes_application
+from cubes.server import create_server
+from cubes.server import read_slicer_config
+from cubes.server.utils import str_to_bool
 from django.core.wsgi import get_wsgi_application
 from whitenoise.django import DjangoWhiteNoise
 from werkzeug.wsgi import DispatcherMiddleware
@@ -28,6 +30,13 @@ os.environ.setdefault("SLICER_CONFIG", BASE_DIR + "/ostrovacubes/heroku_slicer_s
 
 django_application = get_wsgi_application()
 django_application = DjangoWhiteNoise(django_application)
+
+config = read_slicer_config(os.environ["SLICER_CONFIG"])
+cubes_application = create_server(config)
+
+debug = os.environ.get("SLICER_DEBUG")
+if debug and str_to_bool(debug):
+    cubes_application.debug = True
 
 application = DispatcherMiddleware(
     django_application,
