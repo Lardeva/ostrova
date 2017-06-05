@@ -277,8 +277,8 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 ##
 
 if 'ON_HEROKU' in os.environ:
-    CUBESVIEWER_BACKEND_URL = "http://ostrova.herokuapp.com/cubesviewer"
-    CUBESVIEWER_CUBES_URL = "http://ostrova.herokuapp.com/cubes_backend"
+    CUBESVIEWER_BACKEND_URL = "http://partyerp.herokuapp.com/cubesviewer"
+    CUBESVIEWER_CUBES_URL = "http://partyerp.herokuapp.com/cubes_backend"
 else:
     # Base Cubes Server URL.
     # Your Cubes Server needs to be running and listening on this URL, and it needs
