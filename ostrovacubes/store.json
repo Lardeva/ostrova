@@ -1,0 +1,44 @@
+{
+  "dimensions": [
+    {
+      "name": "club",
+      "levels": [
+        {
+          "name": "club",
+          "label": "club",
+          "attributes": [
+            "id","name"
+          ]
+        }
+      ]
+    }
+
+  ],
+  "cubes": [
+    {
+      "name": "article_store",
+      "label": "Склад анализ",
+      "dimensions": [ "club"],
+      "joins": [
+        {"master":"article_store.article_fk_id", "detail":"article.id"},
+        {"master":"article_store.club_fk_id", "detail":"club.id"}
+      ],
+      "measures": [
+        {"name":"cnt_min", "label":"cnt"}
+      ],
+      "aggregates": [
+        {
+          "name": "agg_count",
+          "function": "count"
+        }
+      ],
+
+      "mappings": {
+        "ASRTCLE_STORE.CNT": "dm_ASRTCLE_STORE.ASRTCLE_STORE_CNT",
+        "ASRTCLE_STORE.CNT_BL": "dm_ASRTCLE_STORE.ASRTCLE_STORE_CNT_BL",
+        "ASRTCLE_STORE.CNT_MIN": "dm_ASRTCLE_STORE.ASRTCLE_STORE_CNT_MIN"
+      }
+    }
+
+  ]
+}

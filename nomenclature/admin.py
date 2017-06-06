@@ -70,7 +70,7 @@ class ArticleAdmin(admin.ModelAdmin):
     filter_horizontal = ('supplier_fk',)
 
     list_filter = ('group_fk','active')
-    search_fields = ('name', 'description')
+    search_fields = ('name', 'description', '=id')
 
 admin.site.register(Article, ArticleAdmin)
 
