@@ -14,7 +14,7 @@
     ],
     "cubes": [
         {
-            "name": "ORDER",
+            "name": "order",
             "label": "Поръчки анализ",
             "dimensions": ["item", "year"],
             "measures": [

@@ -120,9 +120,10 @@ TEMPLATES = [
                 'django.core.context_processors.request',
             ],
             'loaders': [
+                'ostrovaweb.overridingLoader.Loader',
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
-                'ostrovaweb.overridingLoader.Loader',
+
                #    'django.template.loaders.eggs.Loader',
             ]
         },
@@ -276,18 +277,25 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 # 2. Configuration of CubesViewer Server
 ##
 
-# Base Cubes Server URL.
-# Your Cubes Server needs to be running and listening on this URL, and it needs
-# to be accessible to clients of the application.
-CUBESVIEWER_CUBES_URL = "http://192.168.6.132:5000"
+if 'ON_HEROKU' in os.environ:
+    CUBESVIEWER_BACKEND_URL = "http://partyerp.herokuapp.com/cubesviewer"
+    CUBESVIEWER_CUBES_URL = "http://partyerp.herokuapp.com/cubes_backend"
 
-# CubesViewer Store backend URL. It should point to this application.
-# Note that this must match the URL that you use to access the application,
-# otherwise you may hit security issues. If you access your server
-# via http://localhost:8000, use the same here. Note that 127.0.0.1 and
-# 'localhost' are different strings for this purpose. (If you wish to accept
-# requests from different URLs, you may need to add CORS support).
-CUBESVIEWER_BACKEND_URL = "http://192.168.6.132/cubesviewer"
+    #SECURE_SSL_REDIRECT = True # [1]
+    #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+else:
+    # Base Cubes Server URL.
+    # Your Cubes Server needs to be running and listening on this URL, and it needs
+    # to be accessible to clients of the application.
+    CUBESVIEWER_CUBES_URL = "http://192.168.6.132:5000"
+
+    # CubesViewer Store backend URL. It should point to this application.
+    # Note that this must match the URL that you use to access the application,
+    # otherwise you may hit security issues. If you access your server
+    # via http://localhost:8000, use the same here. Note that 127.0.0.1 and
+    # 'localhost' are different strings for this purpose. (If you wish to accept
+    # requests from different URLs, you may need to add CORS support).
+    CUBESVIEWER_BACKEND_URL = "http://192.168.6.132/cubesviewer"
 
 # Optional user and password tuple to access the backend, or False
 # (only applies when CubesViewer Cubes proxy is used)

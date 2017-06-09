@@ -149,16 +149,20 @@ class ChainedChoicesMixin(object):
 
                     }
                     data = c.get(url, params)
-
+                    if data is None:
+                        data = ''
                     try:
                         field.choices = field.choices + json.loads(data.content.decode('utf-8'))
                     except ValueError:
-#                        raise
-                        raise ValueError(u'Data returned from ajax request (url=%(url)s, params=%(params)s) could not be deserialized to Python object. %(data)s' % {
-                            'url': url,
-                            'params': params,
-                            'data':str(data.content)
-                        })
+                        try:
+                            field.choices = field.choices + json.loads(data.content.decode('utf-8'))
+                        except ValueError:
+    #                        raise
+                            raise ValueError(u'Data returned from ajax request (url=%(url)s, params=%(params)s) could not be deserialized to Python object. %(data)s' % {
+                                'url': url,
+                                'params': params,
+                                'data': '' # str(data.content.decode('utf-8'))
+                            })
 
                 field.initial = field_value
 

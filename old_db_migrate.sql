@@ -1,4 +1,3 @@
- INSERT INTO "OSTROVA"."TIMES"  SELECT    "ID" ,	"TIME_SLOT" ,	"TIM" ,	"TIM_END" ,	"WEEKDAY"FROM  OSTROVA_IMP.times;
  INSERT INTO "OSTROVA"."SALOON"   SELECT   "ID", 	"NAME", 	"CLUB_ID" FROM   OSTROVA_IMP.SALON;
  INSERT INTO "OSTROVA"."CLUB"     "CLUB_ID", 	"NAME", 	"ZALA_PRICE", 	"ADDRESS"   FROM     OSTROVA_IMP.CLUB;
   INSERT INTO "OSTROVA"."SUPPLIER"   SELECT   	"SUP_ID", 	"NAME", 	"DESCRIPTION" FROM   OSTROVA_IMP."SUPPLIER";
@@ -318,68 +317,6 @@ drop sequence "OSTROVA"."SUPPLIER_SQ";
 CREATE SEQUENCE  "OSTROVA"."SUPPLIER_SQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1000 CACHE 20 NOORDER  NOCYCLE ;
 
 commit;
-
-
-/*
-drop table days;
-
-create table days as
-SELECT TRUNC (SYSDATE + ROWNUM - 3660) dt
-  FROM DUAL CONNECT BY ROWNUM < 3660 + 3660;
-
-
-select sysdate from dual;
-
-insert into shedule
-select SHEDULE_SQ.NEXTVAL,
-      dt,
-      null,
-      id
-from tmp
-  ;
-
-  create table tmp as
-  select * from times, days x
-  where times.weekday = to_char(dt , 'D')
-  order by dt, time_slot
-
-      */
-
-
-      drop table days;
-
-      create table days as
-      SELECT TRUNC (SYSDATE + ROWNUM - 3660) dt
-        FROM DUAL CONNECT BY ROWNUM < 3660 + 3660;
-
-
-      select sysdate from dual;
-
-      truncate table schedule;
-
-      insert into schedule
-      select SHEDULE_SQ.NEXTVAL,
-            dt,
-            null,
-            id ,
-            club_id
-      from tmp
-        ;
-
-        drop table tmp;
-
-        create table tmp as
-        select times.*,x.*, club.id club_id from times, days x, club
-        where times.weekday = to_char(dt , 'D')
-        order by dt, time_slot;
-
-
-
-        update schedule x set order_fk_id = (select id from "ORDER" where x.schedule_date = rec_date and rec_time_slot = (select time_slot from times where id = x.times_fk_id) and club_fk_id = x.club_fk_id);
-
-       select * from (
-       select count(*) c, rec_date,rec_time_slot  from "ORDER" group by rec_date,rec_time_slot, club_fk_id
-       ) where c > 1;
 
 
 
