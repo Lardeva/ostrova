@@ -72,7 +72,7 @@ class DeliveryAdmin(DjangoObjectActions, CompareVersionAdmin):
     )
 
     ordering = ['-id']
-    list_per_page = 50
+    list_per_page = 20
     date_hierarchy = "order_date"
 
     def get_inline_formsets(self, request, formsets, inline_instances,obj=None):

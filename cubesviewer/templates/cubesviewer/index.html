@@ -1,5 +1,5 @@
 {% extends "suit:admin/base.html" %}
-{% load i18n %}
+{% load i18n admin_static suit_tags  %}
 
 {% block extrahead %}
 
@@ -65,6 +65,19 @@ $(document).ready(function() {
 });
 
 </script>
+
+<script type='text/javascript' src="{% static 'js/suit_menu_show_hide.js' %}"></script>
+
+{% endblock %}
+
+{% block header_time %}
+<div class="header-content header-content-first">
+    <a style="cursor:pointer" id="myButton" onClick="clickCounter();">Скрий Меню</a>
+    <br>
+    <span class="date"> {% suit_date %}</span>
+    <span class="time" id="clock">{% suit_time %}</span>
+
+</div>
 
 {% endblock %}
 

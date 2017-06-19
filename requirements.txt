@@ -63,3 +63,4 @@ uwsgi
 # ?xhtml2pdf==0.2b1
 # ?xlwt==1.2.0
 
+django-phonenumber-field==1.3.0

@@ -10,7 +10,7 @@ from nomenclature.models import *
 class ClubAdmin(admin.ModelAdmin):
     fields = ('name', 'hall_price', 'address',)
     list_display =( 'name', 'hall_price', 'address',)
-
+    search_fields = ('name',)
     def save_model(self, request, obj, form, change):
         if obj.id is None:
             obj.save()
@@ -44,12 +44,15 @@ admin.site.register(Club, ClubAdmin)
 
 class SaloonAdmin(CompareVersionAdmin):
     fields = ('club_fk', 'name','default')
+    search_fields = ('name',)
 
 admin.site.register(Saloon, SaloonAdmin)
 
 
 class SupplierAdmin(admin.ModelAdmin):
     fields = ('name',)
+    search_fields = ('name',)
+    readonly_fields = ('last_update_date','id',)
 admin.site.register(Supplier, SupplierAdmin)
 
 
@@ -57,7 +60,10 @@ class ArticleGroupAdmin(admin.ModelAdmin):
     fields = ('name','delivery_type','order_type','create_date',)
     list_display =('name','delivery_type','order_type',)
     #   list_editable = ('delivery_type','order_type',)
-    readonly_fields = ('create_date',)
+    readonly_fields = ('create_date','id')
+    search_fields = ('name',)
+    list_filter = ('delivery_type','order_type')
+
 
 admin.site.register(ArticleGroup, ArticleGroupAdmin)
 
@@ -78,6 +84,7 @@ admin.site.register(Article, ArticleAdmin)
 class Cashdesk_groups_incomeAdmin(admin.ModelAdmin):
     fields = ('name', 'sub_name',)
     list_display = ('name', 'sub_name',)
+    search_fields = ('name','sub_name')
 
 admin.site.register(Cashdesk_groups_income, Cashdesk_groups_incomeAdmin)
 
@@ -85,6 +92,8 @@ admin.site.register(Cashdesk_groups_income, Cashdesk_groups_incomeAdmin)
 class Cashdesk_Groups__expenseAdmin(admin.ModelAdmin):
     fields = ('name', 'sub_name',)
     list_display = ('name', 'sub_name',)
+    search_fields = ('name','sub_name')
+
 
 admin.site.register(Cashdesk_groups_expense, Cashdesk_Groups__expenseAdmin)
 

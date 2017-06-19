@@ -12024,7 +12024,7 @@ module.filter('px', function() {
           filterLabel: "Filter for column: "
         },
         aggregate: {
-          label: 'items'
+          label: 'реда'
         },
         groupPanel: {
           description: 'Drag a column header here and drop it to group by that column.'
@@ -12096,10 +12096,10 @@ module.filter('px', function() {
             pageForward: 'Page forward',
             pageToLast: 'Page to last'
           },
-          sizes: 'items per page',
-          totalItems: 'items',
+          sizes: 'редове на страница',
+          totalItems: 'редове',
           through: 'through',
-          of: 'of'
+          of: 'от'
         },
         grouping: {
           group: 'Group',

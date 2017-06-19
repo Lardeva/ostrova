@@ -1,8 +1,10 @@
 from decimal import Decimal
 from django.contrib.auth.models import User
+from django.core.validators import EmailValidator
 from django.db import models
 from django.db.models import F, Sum
 from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
 
 from nomenclature.models import Article
 from ostrovaweb.utils import nvl
@@ -13,7 +15,7 @@ class Order(models.Model):
     rec_date = models.DateField(verbose_name="Дата на р.д.")
     rec_time = models.TimeField(verbose_name="Начало")
     rec_time_end = models.TimeField(verbose_name="Край")
-    phone = models.CharField(max_length=100, blank=True, verbose_name="Телефон")
+    phone = PhoneNumberField(max_length=100, blank=True, verbose_name="Телефон")
     parent = models.CharField(max_length=240, blank=True, verbose_name="Родител")
     child = models.CharField(max_length=200, blank=True, verbose_name="Дете")
     age = models.IntegerField(blank=True, null=True, verbose_name="Години")
@@ -33,7 +35,7 @@ class Order(models.Model):
     notes = models.TextField(max_length=12000, blank=True, verbose_name="Забележка")
     address = models.CharField(max_length=1024, blank=True, verbose_name="Адрес")
     user = models.ForeignKey(User, verbose_name="Служител")
-    email = models.CharField(max_length=400, blank=True, verbose_name="E-mail")
+    email = models.EmailField(max_length=400, blank=True, verbose_name="E-mail")
     club_fk = models.ForeignKey('nomenclature.Club', null=True, verbose_name="Клуб")
     create_date = models.DateTimeField(default=timezone.now, verbose_name="Дата на създаване")
     last_update_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата на промяна")

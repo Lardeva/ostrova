@@ -69,12 +69,15 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'django_forms_bootstrap',
+
+    'phonenumber_field',
 ]
 
 # django-registration-redux settings
 SITE_ID = 1
 ACCOUNT_ACTIVATION_DAYS = 10
 
+PHONENUMBER_DB_FORMAT = 'INTERNATIONAL'
 # Django - paypal settings
 PAYPAL_TEST = True
 
@@ -308,3 +311,4 @@ CUBESVIEWER_CUBES_PROXY_USER = None
 # (only applies when CubesViewer Cubes proxy is used)
 # ie. CUBESVIEWER_PROXY_ACL = [ { "cube": "my_cube", "group": "my_group" } ]
 CUBESVIEWER_PROXY_ACL = [ ]
+
