@@ -50,9 +50,9 @@ admin.site.register(Saloon, SaloonAdmin)
 
 
 class SupplierAdmin(admin.ModelAdmin):
-    fields = ('name',)
+    fields = ('id', 'name',)
     search_fields = ('name',)
-    readonly_fields = ('last_update_date','id',)
+    readonly_fields = ('id',)
 admin.site.register(Supplier, SupplierAdmin)
 
 
