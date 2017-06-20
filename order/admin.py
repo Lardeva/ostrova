@@ -42,6 +42,8 @@ class OrderDetailInline(admin.TabularInline):
     readonly_fields = ()
     fields = ('article_fk', 'cnt', 'price', 'amount')
 
+    extra = 8
+
     raw_id_fields = ( 'article_fk',)
 
     def get_readonly_fields(self, request, obj=None):

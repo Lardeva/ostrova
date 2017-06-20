@@ -30,6 +30,7 @@ class DeliveryDetailForm(ChainedChoicesModelForm):
 class DeliveryDetailInline(admin.TabularInline):
     model = DeliveryDetail
     form = DeliveryDetailForm
+    extra = 8
 
     fields = ('article_fk','cnt','price','amount',)
 
