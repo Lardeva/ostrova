@@ -47,7 +47,7 @@ class OrderDetailInline(admin.TabularInline):
     def get_readonly_fields(self, request, obj=None):
         if obj:
            if (obj.locked and not request.user.is_superuser or
-               obj.store_status
+               obj.store_status or obj.payed_final
            ):
             self.form = ModelForm
             return self.fields
@@ -56,7 +56,7 @@ class OrderDetailInline(admin.TabularInline):
     def get_extra(self, request, obj=None, **kwargs):
         if obj:
             if (obj.locked and not request.user.is_superuser or
-                    obj.store_status
+                    obj.store_status or obj.payed_final
             ):
                 return 0
         return self.extra
@@ -64,7 +64,7 @@ class OrderDetailInline(admin.TabularInline):
     def get_max_num(self, request, obj=None, **kwargs):
         if obj:
             if (obj.locked and not request.user.is_superuser or
-                    obj.store_status
+                    obj.store_status or obj.payed_final
             ):
                 return 0
         return self.max_num
@@ -72,7 +72,7 @@ class OrderDetailInline(admin.TabularInline):
     def has_delete_permission(self, request, obj=None):
         if obj:
             if (obj.locked and not request.user.is_superuser or
-                    obj.store_status
+                    obj.store_status or obj.payed_final
                 ):
                 return False
         return True
