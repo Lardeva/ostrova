@@ -1,12 +1,10 @@
 from datetime import datetime
 
-from decimal import Decimal
 from django.contrib import admin
 from django.contrib import messages
 from django.core.urlresolvers import reverse_lazy
 from django.forms import ModelForm
 from django_object_actions import DjangoObjectActions
-from reversion_compare.admin import CompareVersionAdmin
 
 from cashdesk.models import Cashdesk, Cashdesk_detail_expense
 from clever_select_enhanced.forms import ChainedChoicesModelForm
@@ -63,7 +61,7 @@ class DeliveryDetailInline(admin.TabularInline):
         return True
 
 
-class DeliveryAdmin(DjangoObjectActions, CompareVersionAdmin):
+class DeliveryAdmin(DjangoObjectActions, admin.ModelAdmin):
     list_display = ('id','club_fk','order_date', 'delivery_date', 'supplier_fk', 'invoice_no','firm_invoice_no','status', 'paid','delivery_amount',)
     # list_editable = ('club_fk','status')
     search_fields = ('club_fk__name','order_date','supplier_fk__name',)

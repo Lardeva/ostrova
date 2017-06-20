@@ -5,7 +5,6 @@ from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django_object_actions import DjangoObjectActions
-from reversion_compare.admin import CompareVersionAdmin
 
 from delivery.models import DeliveryDetail
 from ostrovaweb.utils import nvl
@@ -24,7 +23,7 @@ class ArticleStoreForm(ModelForm):
         fields = '__all__'
 
 
-class ArticleStoreAdmin(CompareVersionAdmin):
+class ArticleStoreAdmin(admin.ModelAdmin):
     form = ArticleStoreForm
     readonly_fields = ('id','club_fk','article_fk','cnt','user','create_date','last_update_date')
     fields = ('club_fk','article_fk','user','create_date','last_update_date','cnt','cnt_min', 'cnt_bl','note')
@@ -119,7 +118,7 @@ class stock_receipt_protocolForm(ModelForm):
         return form_data['transfer_club_fk']
 
 
-class stock_receipt_protocolAdmin(DjangoObjectActions, CompareVersionAdmin):
+class stock_receipt_protocolAdmin(DjangoObjectActions, admin.ModelAdmin):
 
     list_display =('type','id','receipt_date', 'club_fk','transfer_club_fk' )
     readonly_fields = ('id','order_fk' ,'delivery_fk','transfer_fk','receipt_date', 'closed')

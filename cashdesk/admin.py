@@ -5,7 +5,6 @@ from django.contrib import admin
 from django.contrib import messages
 from django.shortcuts import redirect
 from django_object_actions import DjangoObjectActions
-from reversion_compare.admin import CompareVersionAdmin
 
 from cashdesk.models import *
 from nomenclature.models import Cashdesk_groups_income
@@ -150,7 +149,7 @@ class Cashdesk_detail_expense_inline(admin.TabularInline):
         return False
 
 
-class CashdeskAdmin(DjangoObjectActions, CompareVersionAdmin):
+class CashdeskAdmin(DjangoObjectActions, admin.ModelAdmin):
     list_display = ('rec_date','status','club_fk','beg_open', 'income_amount','expense_amount', 'total_amount','beg_close',)
     readonly_fields = (
         'amt_header','expense_amount','total_amount','beg_amount','end_amount','income_amount','status',

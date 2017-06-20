@@ -1,7 +1,6 @@
 from datetime import datetime
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from reversion_compare.admin import CompareVersionAdmin
 
 from cashdesk.models import Cashdesk
 from nomenclature.models import *
@@ -42,7 +41,7 @@ class ClubAdmin(admin.ModelAdmin):
 admin.site.register(Club, ClubAdmin)
 
 
-class SaloonAdmin(CompareVersionAdmin):
+class SaloonAdmin(admin.ModelAdmin):
     fields = ('club_fk', 'name','default')
     search_fields = ('name',)
 
