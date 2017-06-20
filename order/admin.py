@@ -290,22 +290,21 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
                 return self.closed_readonly_fields
 
-            if obj.dueAmount > 0:
-                if obj.deposit:
-                    actual_readonly_fields.append('deposit')
-                    actual_readonly_fields.append('deposit_date')
-                    actual_readonly_fields.append('deposit_payment_type')
+            if obj.deposit or obj.dueAmount == 0:
+                actual_readonly_fields.append('deposit')
+                actual_readonly_fields.append('deposit_date')
+                actual_readonly_fields.append('deposit_payment_type')
 
-                if obj.deposit2:
-                    actual_readonly_fields.append('deposit2')
-                    actual_readonly_fields.append('deposit2_date')
-                    actual_readonly_fields.append('deposit2_payment_type')
+            if obj.deposit2 or obj.dueAmount == 0:
+                actual_readonly_fields.append('deposit2')
+                actual_readonly_fields.append('deposit2_date')
+                actual_readonly_fields.append('deposit2_payment_type')
 
-                if obj.payed_final:
-                    actual_readonly_fields.append('payed_final')
-                    actual_readonly_fields.append('payment_date')
-                    actual_readonly_fields.append('final_payment_type')
-                    actual_readonly_fields.append('discount')
+            if obj.payed_final or obj.dueAmount == 0:
+                actual_readonly_fields.append('payed_final')
+                actual_readonly_fields.append('payment_date')
+                actual_readonly_fields.append('final_payment_type')
+                actual_readonly_fields.append('discount')
 
             if obj.status in ('CANCELED',):
                 actual_readonly_fields.append('status')
