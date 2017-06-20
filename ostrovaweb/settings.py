@@ -135,7 +135,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ostrovaweb.wsgi.application'
 
 SUIT_CONFIG = {
-    'ADMIN_NAME': 'Парти център ERP',
+    'ADMIN_NAME': 'Парти център ЕРП',
     #'MENU_EXCLUDE': ('sites',),
     'MENU_OPEN_FIRST_CHILD': True,
     'MENU': (

@@ -9,9 +9,13 @@
 
 {% block extrahead %}
     <link rel='stylesheet' type='text/css' href="{% static 'fullcalendar/dist/fullcalendar.css' %}" />
+    <link rel='stylesheet' type='text/css' href="{% static 'css/ostrova.css' %}" />
     <script type='text/javascript' src="{% static 'moment/moment.js' %}"></script>
     <script type='text/javascript' src="{% static 'fullcalendar/dist/fullcalendar.js' %}"></script>
 <script type='text/javascript' src="{% static 'fullcalendar/dist/locale/bg.js' %}"></script>
+{% endblock %}
+
+{% block breadcrumbs %}
 {% endblock %}
 
 {% block content %}
@@ -44,7 +48,7 @@
             maxTime : "21:00",
             locale : 'bg',
             columnFormat: 'dddd',
-            contentHeight: 500,
+            contentHeight: 542,
             //slotDuration: '00:30:00' ,
             events: {
                 url: '/calendar_orders_feed',
