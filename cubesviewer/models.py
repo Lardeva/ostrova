@@ -64,7 +64,8 @@ class CubesView(CubesViewerModel):
         verbose_name = u"Записан Изглед за Куб"
         verbose_name_plural = u"Записани изгледи за кубове"
 
-        permissions = Options.default_permissions + (
+        permissions =  (
+            'add', 'delete', 'change',
             ('view_olap_reports','Достъп до справките'),
 
         )
