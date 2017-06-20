@@ -173,7 +173,7 @@ def siteorder_pay_final(request):
 
     order = Order.objects.get(id=order_id)
 
-    amount = str(nvl(order.dueAmount,0) * Decimal(0.572310))
+    amount = str(nvl(order.dueAmount_int(),0) * Decimal(0.572310))
     text = "Финално плащане за парти"
 
     context = RequestContext(request)

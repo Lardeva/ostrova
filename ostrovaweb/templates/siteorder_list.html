@@ -43,7 +43,7 @@
         <div class="span1   text-right"> {{ order.child_count|default:"" }}</div>
         <div class="span1_1 text-right"> {{ order.adult_count|default:"" }}</div>
         <div class="span1_1 text-right"> {{ order.get_status_display }}</div>
-        <div class="span1   text-right"> {{ order.dueAmount|floatformat:2 }}</div>
+        <div class="span1   text-right"> {{ order.dueAmount }}</div>
 
         <div class="span1">
             {% if order.status == 'CONFIRMED' and not order.deposit %}
@@ -51,7 +51,7 @@
             {% endif %}
         </div>
         <div class="span1">
-            {% if order.status == 'ORDERED' and order.locked and order.dueAmount%}
+            {% if order.status == 'ORDERED' and order.locked and order.dueAmount_int%}
             <a class= "btn btn-info" href="/siteorderpayfinal/?id={{order.id}}">Финално плащане</a>
             {% endif %}
         </div>

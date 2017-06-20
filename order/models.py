@@ -80,7 +80,10 @@ class Order(models.Model):
         return Decimal(nvl(result['agg_Result'],0))
 
     def priceFinal_int(self):
-        return  Decimal(Decimal(nvl(self.priceDetail_int(),0)) - Decimal(nvl(self.priceDetail_int(),0)) * Decimal(nvl(self.discount,0)) / Decimal(100))
+        return Decimal(Decimal(nvl(self.priceDetail_int(),0)) - Decimal(nvl(self.priceDetail_int(),0)) * Decimal(nvl(self.discount,0)) / Decimal(100))
+
+    def dueAmount_int(self):
+        return Decimal(Decimal(nvl(self.priceFinal_int(),0)) - Decimal(nvl(self.deposit2,0)) - Decimal(nvl(self.deposit,0)) - Decimal(nvl(self.payed_final,0)))
 
     @property
     def priceDetail(self):
@@ -94,7 +97,7 @@ class Order(models.Model):
 
     @property
     def dueAmount(self):
-        return formats.number_format(Decimal(Decimal(nvl(self.priceFinal_int(),0)) - Decimal(nvl(self.deposit2,0)) - Decimal(nvl(self.deposit,0)) - Decimal(nvl(self.payed_final,0))),2)
+        return formats.number_format(self.dueAmount_int(),2)
     dueAmount.fget.short_description = 'Сума за доплащане'
 
     def __str__(self):

@@ -48,11 +48,11 @@ urlpatterns = [
     url(r'^accounts/profile/', siteorder.siteorder_list, name='siteorder_list'),
     url(r'^siteorderpaydeposit/', siteorder.siteorder_pay_deposit, name='siteorder_pay_deposit'),
     url(r'^siteorderpayfinal/', siteorder.siteorder_pay_final, name='siteorder_pay_final'),
-
+    url(r'^accounts/', include('registration.backends.simple.urls')),
 #    url(r'^paypal/', include('paypal.standard.ipn.urls')),
 
     #url(r'^accounts/', include('registration.backends.default.urls')),
-    url(r'^accounts/', include('registration.backends.simple.urls')),
+
 
     url(r'^cubesviewer/', include('cubesviewer.urls')),
 
