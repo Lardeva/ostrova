@@ -139,7 +139,7 @@ class OrderForm(ChainedChoicesModelForm):
                 raise ValidationError("Моля изберете по-малък начален час от 21 часа")
 
             # da se proveri (sas filter ot bazata) dali ima veche rojden den za tazi data i chas i klub
-            if 'club_fk' in self.cleaned_data:
+            if 'club_fk' in self.cleaned_data and 'rec_date' in self.cleaned_data:
                 orders = Order.objects.filter(rec_date= self.cleaned_data['rec_date'], club_fk=self.cleaned_data['club_fk']).exclude(id=self.instance.id).exclude(status='CANCELED')
                 for order in orders:
                     if self.cleaned_data ['rec_time'] <= order.rec_time_end and self.cleaned_data['rec_time'] >= order.rec_time:
@@ -188,7 +188,8 @@ class OrderForm(ChainedChoicesModelForm):
 
         if 'payed_final' in self.cleaned_data and self.cleaned_data['payed_final']:
             if self.instance and self.cleaned_data['payed_final'] != self.instance.dueAmount_int():
-                raise ValidationError('Сумата по офкончателното плащане се разминава със сумата за доплащане.')
+                self.cleaned_data['payed_final'] = 0
+                raise ValidationError('Сумата по окончателното плащане се разминава със сумата за доплащане.')
 
         return self.cleaned_data
 
