@@ -49,7 +49,7 @@ urlpatterns = [
     url(r'^siteorderpaydeposit/', siteorder.siteorder_pay_deposit, name='siteorder_pay_deposit'),
     url(r'^siteorderpayfinal/', siteorder.siteorder_pay_final, name='siteorder_pay_final'),
 
-    url(r'^paypal/', include('paypal.standard.ipn.urls')),
+#    url(r'^paypal/', include('paypal.standard.ipn.urls')),
 
     #url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^accounts/', include('registration.backends.simple.urls')),
