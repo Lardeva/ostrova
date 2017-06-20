@@ -1,8 +1,9 @@
-from decimal import Decimal
+from decimal import Decimal, Context
 from django.contrib.auth.models import User
 from django.core.validators import EmailValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Sum
+from django.utils import formats
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -77,17 +78,17 @@ class Order(models.Model):
     @property
     def priceDetail(self):
         result = OrderDetail.objects.filter(order_fk=self).aggregate(agg_Result=Sum(F('cnt')*F('price')))
-        return Decimal(nvl(result['agg_Result'],0))
+        return formats.number_format(Decimal(nvl(result['agg_Result'],0)),2)
     priceDetail.fget.short_description = 'Цена'
 
     @property
     def priceFinal(self):
-        return  Decimal(nvl(self.priceDetail,0)) - Decimal(nvl(self.priceDetail,0)) * Decimal(nvl(self.discount,0)) / Decimal(100)
+        return  formats.number_format(Decimal(Decimal(nvl(self.priceDetail,0)) - Decimal(nvl(self.priceDetail,0)) * Decimal(nvl(self.discount,0)) / Decimal(100)),2)
     priceFinal.fget.short_description = 'Крайна цена'
 
     @property
     def dueAmount(self):
-        return Decimal(nvl(self.priceFinal,0)) - Decimal(nvl(self.deposit2,0)) - Decimal(nvl(self.deposit,0)) - Decimal(nvl(self.payed_final,0))
+        return formats.number_format(Decimal(Decimal(nvl(self.priceFinal,0)) - Decimal(nvl(self.deposit2,0)) - Decimal(nvl(self.deposit,0)) - Decimal(nvl(self.payed_final,0))),2)
     dueAmount.fget.short_description = 'Сума за доплащане'
 
     def __str__(self):
