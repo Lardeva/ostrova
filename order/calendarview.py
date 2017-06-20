@@ -30,7 +30,7 @@ def calendar_order_data(request):
         inp['start'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + time.strftime(order.rec_time,'%H:%M')
         inp['end'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + time.strftime(order.rec_time_end,'%H:%M')
         inp['id'] = order.id
-        inp['url'] = '/admin/order/order/'+str(order.id)+'/change/'
+        inp['url'] = '/erp/order/order/'+str(order.id)+'/change/'
         inp['textColor'] = 'black'
 
         if order.status == 'REQUESTED':
