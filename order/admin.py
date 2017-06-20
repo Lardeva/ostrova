@@ -152,15 +152,15 @@ class OrderForm(ChainedChoicesModelForm):
         ########################################################33
         # Check payment type arrangement
         if 'deposit_payment_type' in self.cleaned_data:
-            if self.cleaned_data['deposit_payment_type'] != 'CASH' and 'deposit_date' not in self.cleaned_data:
+            if self.cleaned_data['deposit_payment_type'] != 'CASH' and ('deposit_date' not in self.cleaned_data or not self.cleaned_data['deposit_date']):
                 raise ValidationError('Датата за капаро е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
 
         if 'deposit2_payment_type' in self.cleaned_data:
-            if self.cleaned_data['deposit2_payment_type'] != 'CASH' and 'deposit2_date' not in self.cleaned_data:
+            if self.cleaned_data['deposit2_payment_type'] != 'CASH' and ('deposit2_date' not in self.cleaned_data or not self.cleaned_data['deposit2_date']):
                 raise ValidationError('Датата за капаро 2 е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
 
         if 'final_payment_type' in self.cleaned_data:
-            if self.cleaned_data['final_payment_type'] != 'CASH' and 'payment_date' not in self.cleaned_data:
+            if self.cleaned_data['final_payment_type'] != 'CASH' and ('payment_date' not in self.cleaned_data or not self.cleaned_data['payment_date']):
                 raise ValidationError('Датата за плащане е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
 
 
@@ -288,21 +288,22 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
                 return self.closed_readonly_fields
 
-            if obj.deposit:
-                actual_readonly_fields.append('deposit')
-                actual_readonly_fields.append('deposit_date')
-                actual_readonly_fields.append('deposit_payment_type')
+            if obj.dueAmount > 0:
+                if obj.deposit:
+                    actual_readonly_fields.append('deposit')
+                    actual_readonly_fields.append('deposit_date')
+                    actual_readonly_fields.append('deposit_payment_type')
 
-            if obj.deposit2:
-                actual_readonly_fields.append('deposit2')
-                actual_readonly_fields.append('deposit2_date')
-                actual_readonly_fields.append('deposit2_payment_type')
+                if obj.deposit2:
+                    actual_readonly_fields.append('deposit2')
+                    actual_readonly_fields.append('deposit2_date')
+                    actual_readonly_fields.append('deposit2_payment_type')
 
-            if obj.payed_final:
-                actual_readonly_fields.append('payed_final')
-                actual_readonly_fields.append('payment_date')
-                actual_readonly_fields.append('final_payment_type')
-                actual_readonly_fields.append('discount')
+                if obj.payed_final:
+                    actual_readonly_fields.append('payed_final')
+                    actual_readonly_fields.append('payment_date')
+                    actual_readonly_fields.append('final_payment_type')
+                    actual_readonly_fields.append('discount')
 
             if obj.status in ('CANCELED',):
                 actual_readonly_fields.append('status')
