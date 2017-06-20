@@ -60,5 +60,8 @@ class CubesView(CubesViewerModel):
 
     class Meta:
         ordering = ['name']
+        verbose_name = u"Записан Изглед за Куб"
+        verbose_name_plural = u"Записани изгледи за кубове"
+
 
 
