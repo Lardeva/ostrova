@@ -394,7 +394,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
             if obj.status in ('REQUESTED',):
                 obj.status = 'CONFIRMED'
 
-            if obj.deposit_payment_type == 'CASH':
+            if obj.deposit2_payment_type == 'CASH':
                 try:
                     cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
                 except Cashdesk.DoesNotExist:
@@ -418,7 +418,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
         if 'payed_final' in form.changed_data and form.cleaned_data['payed_final'] > 0:
             payment_doc = Cashdesk_detail_income()
 
-            if obj.deposit_payment_type == 'CASH':
+            if obj.final_payment_type == 'CASH':
                 try:
                     cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
                 except Cashdesk.DoesNotExist:
