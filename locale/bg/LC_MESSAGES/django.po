@@ -39,6 +39,10 @@ msgstr "Успешен изход"
 msgid "Enter a valid phone number."
 msgstr "Въведете коректен номер на телефон."
 
+#####################################################################
+# Phone number - превод
+
+
 msgid "Phone number"
 msgstr "Номер на телефон"
 
@@ -47,6 +51,14 @@ msgid "The phone number entered is not valid."
 msgstr "Въведеният номер на телефона е некоректен."
 
 # Forgot your password? Enter your email in the form below and we'll send you instructions for creating a new one.
-
 # Reset password
 
+
+#####################################################################3333
+# Django Admin - change labels
+
+msgid "Changed"
+msgstr "Променен"
+
+msgid "Added"
+msgstr "Добавен"
