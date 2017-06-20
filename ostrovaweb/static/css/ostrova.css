@@ -64,5 +64,5 @@ table tbody>tr.ostrova_cal_row>td.ostrova_free,table tbody>tr>th.ostrova_free {
 
 /* full calendar - better size of slots*/
     div.fc-slats table tbody tr {
-       height:40px;
+       height:20px;
     }
