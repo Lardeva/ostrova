@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -82,8 +85,8 @@ class Article(models.Model):
     group_fk = models.ForeignKey('ArticleGroup', null=True, verbose_name="Артикулна група")
     description = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Описание")
     supplier_fk = models.ManyToManyField('Supplier', verbose_name="Доставчик")
-    delivery_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Доставна цена")
-    sale_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Продажна цена")
+    delivery_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Доставна цена", validators=[MinValueValidator(Decimal('0.01'))])
+    sale_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Продажна цена", validators=[MinValueValidator(Decimal('0.01'))])
     last_price_dl = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Посл.Цена на доставка")
     last_price_sl = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Посл.Цена на продажба")
     last_update_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата промяна")

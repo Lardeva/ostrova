@@ -1,4 +1,6 @@
+from decimal import Decimal
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.db.models import F, Sum
@@ -55,8 +57,8 @@ class DeliveryDetail(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     delivery_fk = models.ForeignKey('Delivery', null=True, verbose_name="Доставка N", )
     article_fk = models.ForeignKey('ArticleDelivery', blank=False, null=True, verbose_name="Артикул")
-    cnt = models.DecimalField(max_digits=8, decimal_places=3, verbose_name="Количество")
-    price = models.DecimalField( max_digits=8, decimal_places=2, verbose_name="Единична цена")
+    cnt = models.DecimalField(max_digits=8, decimal_places=3, verbose_name="Количество", validators=[MinValueValidator(Decimal('0.001'))])
+    price = models.DecimalField( max_digits=8, decimal_places=2, verbose_name="Единична цена", validators=[MinValueValidator(Decimal('0.01'))])
     amount = models.DecimalField( max_digits=8, decimal_places=2, verbose_name="Цена",blank=True, null=False)
 
     # @property

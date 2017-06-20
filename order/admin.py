@@ -71,11 +71,9 @@ class OrderDetailInline(admin.TabularInline):
 
     def has_delete_permission(self, request, obj=None):
         if obj:
-            if (obj.locked and not request.user.is_superuser or
-                    obj.store_status
-            ):
-                return False
-        return True
+            if obj.status == 'REQESTED':
+                return True
+        return False
 
 class OrderForm(ChainedChoicesModelForm):
 
@@ -113,7 +111,16 @@ class OrderForm(ChainedChoicesModelForm):
             'language':'bg'
         }
     ))
+
     def clean(self):
+
+        if self.cleaned_data['rec_date'] < datetime.now().date():
+            raise ValidationError("Датата на поръчката не може да е по-малка от днешната")
+
+        if self.instance:
+            if self.cleaned_data['rec_date'] != self.instance.rec_date:
+                if self.instance.locked or self.instance.status in ('ORDERED', 'CANCELED'):
+                    raise ValidationError("Вече не можете да променяте датата на поръчката")
 
         # rec_time triabva da e po-malko ot rec_time_end
         if 'rec_time' in self.cleaned_data and 'rec_time_end' in self.cleaned_data:
@@ -131,13 +138,42 @@ class OrderForm(ChainedChoicesModelForm):
                 orders = Order.objects.filter(rec_date= self.cleaned_data['rec_date'], club_fk=self.cleaned_data['club_fk']).exclude(id=self.instance.id).exclude(status='CANCELED')
                 for order in orders:
                     if self.cleaned_data ['rec_time'] <= order.rec_time_end and self.cleaned_data['rec_time'] >= order.rec_time:
-                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в ' + str(order.rec_time) + ' и ' + str(order.rec_time_end) + '.')
+                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга поръчката в ' + str(order.rec_time) + ' и ' + str(order.rec_time_end) + '.')
                     if self.cleaned_data ['rec_time_end'] >= order.rec_time and self.cleaned_data['rec_time_end'] <= order.rec_time_end:
-                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка започва в '+ str(order.rec_time) + '.')
+                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга поръчката, започва в '+ str(order.rec_time) + '.')
                     if self.cleaned_data ['rec_time'] <= order.rec_time and self.cleaned_data['rec_time_end'] >= order.rec_time_end:
-                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга заявка в '+ str(order.rec_time) + '.')
+                        raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга поръчката  в '+ str(order.rec_time) + '.')
 
         # todo: rec_date triabva da e > datetime.now() bez chas
+
+        ########################################################33
+        # Check payment type arrangement
+        if self.cleaned_data['deposit_payment_type'] != 'CASH' and 'deposit_date' not in self.cleaned_data:
+            raise ValidationError('Датата за капаро е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
+
+        if self.cleaned_data['deposit2_payment_type'] != 'CASH' and 'deposit2_date' not in self.cleaned_data:
+            raise ValidationError('Датата за капаро 2 е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
+
+        if self.cleaned_data['final_payment_type'] != 'CASH' and 'payment_date' not in self.cleaned_data:
+            raise ValidationError('Датата за плащане е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
+
+
+        ########################################################33
+        # Check status is manually changed only to Canceled
+
+        status = self.cleaned_data['status'] or self.instance.status
+        if self.instance:
+            if  status in ('REQUESTED', 'ORDERED', 'CONFIRMED') and self.cleaned_data['status'] != self.instance.status:
+                raise ValidationError('Статусът на поръчката може да бъде променян ръчно само в "ОТКАЗАНА".')
+
+        if status == 'CANCELED':
+            if 'refusal_date' not in self.cleaned_data or 'refusal_date' not in self.refusal_reason:
+                raise ValidationError('Дата и причина за отказ са задължителни при маркитане на поръчка като "ОТКАЗАНА".')
+
+
+        if 'payed_final' in self.cleaned_data:
+            if self.instance and self.cleaned_data['payed_final'] != self.instance.dueAmount:
+                raise ValidationError('Сумата по ойкончателното плащане се разминава със сумата за доплащане.')
 
         return self.cleaned_data
 
@@ -163,7 +199,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
     list_per_page = 50
 
     date_hierarchy = "rec_date"
-    list_display = ('rec_date', 'club_fk', 'rec_time', 'rec_time_end','parent', 'child', 'status', 'locked', 'priceFinal',)
+    list_display = ('rec_date', 'club_fk', 'saloon_fk', 'rec_time', 'rec_time_end','parent', 'child', 'status', 'locked', 'priceFinal',)
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-club',),
@@ -172,7 +208,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
         ('Клиент', {
             'classes': ('suit-tab', 'suit-tab-club',),
-            'fields': ('parent','phone','child','age','child_count','adult_count','saloon_fk','address','email',)
+            'fields': ('parent','phone','child','age','child_count','adult_count','address','email',)
         }),
 
         ('Суми за плащане', {
@@ -180,9 +216,19 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
             'fields': ('priceDetail','discount','priceFinal','dueAmount',)
         }),
 
-        ('Плащания', {
+        ('Плащане Капаро', {
             'classes': ('suit-tab', 'suit-tab-club',),
-            'fields': ('deposit','deposit2_date','deposit2','payment_date','payed_final',)
+            'fields': ('deposit','deposit_date', 'deposit_payment_type', 'cashdesk_deposit_fk',)
+        }),
+
+        ('Плащане Капаро 2', {
+            'classes': ('suit-tab', 'suit-tab-club',),
+            'fields': ('deposit2','deposit2_date', 'deposit2_payment_type', 'cashdesk_deposit2_fk',)
+        }),
+
+        ('Окончателно плащане', {
+            'classes': ('suit-tab', 'suit-tab-club',),
+            'fields': ('payed_final', 'payment_date', 'final_payment_type', 'cashdesk_payment_fk',)
         }),
 
         ('Забележка', {
@@ -195,22 +241,62 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
                       ('notes', 'Забележки'))
 
 
-    readonly_fields = ['store_status','locked','create_date','last_update_date','user','priceDetail','dueAmount', 'priceFinal','payment_date','payment_date',]
-
-    # closed_readonly_fields =  tuple(fieldsets[0][1].get('fields')) + tuple(fieldsets[1][1].get('fields')) + tuple(fieldsets[2][1].get('fields')) + tuple(fieldsets[3][1].get('fields')) + tuple(fieldsets[4][1].get('fields'))
+    readonly_fields = ['store_status','locked','create_date','last_update_date','user','priceDetail','dueAmount', 'priceFinal','cashdesk_deposit2_fk','cashdesk_payment_fk', 'cashdesk_deposit_fk',]
     closed_readonly_fields = flatten(x[1].get('fields') for x in fieldsets) # all fields
-    pay_only_readonly_fields = readonly_fields + flatten(x[1].get('fields') for x in fieldsets if x[0] not in ('Суми за плащане','Плащания')) # all fields
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
             if (obj.locked and not request.user.is_superuser or
                     obj.store_status
             ):
+
+                pay_only_readonly_fields = self.closed_readonly_fields.copy()
                 if obj.dueAmount > 0:
-                    return self.pay_only_readonly_fields
+
+                    if not obj.deposit:
+                        pay_only_readonly_fields.remove('deposit')
+                        pay_only_readonly_fields.remove('deposit_date')
+                        pay_only_readonly_fields.remove('deposit_payment_type')
+
+                    if not obj.deposit2:
+                        pay_only_readonly_fields.remove('deposit2')
+                        pay_only_readonly_fields.remove('deposit2_date')
+                        pay_only_readonly_fields.remove('deposit2_payment_type')
+
+                    if not obj.payed_final:
+                        pay_only_readonly_fields.remove('payed_final')
+                        pay_only_readonly_fields.remove('payment_date')
+                        pay_only_readonly_fields.remove('final_payment_type')
+                        pay_only_readonly_fields.remove('discount')
+
+
+                    return pay_only_readonly_fields
+
                 return self.closed_readonly_fields
 
-        return self.readonly_fields
+
+        actual_readonly_fields = self.readonly_fields.copy()
+
+        if obj.deposit:
+            actual_readonly_fields.append('deposit')
+            actual_readonly_fields.append('deposit_date')
+            actual_readonly_fields.append('deposit_payment_type')
+
+        if obj.deposit2:
+            actual_readonly_fields.append('deposit2')
+            actual_readonly_fields.append('deposit2_date')
+            actual_readonly_fields.append('deposit2_payment_type')
+
+        if obj.payed_final:
+            actual_readonly_fields.append('payed_final')
+            actual_readonly_fields.append('payment_date')
+            actual_readonly_fields.append('final_payment_type')
+            actual_readonly_fields.append('discount')
+
+        if obj.status in ('CANCELED',):
+            actual_readonly_fields.append('status')
+
+        return actual_readonly_fields
 
     def suit_row_attributes(self, obj):
         class_locked = {
@@ -245,7 +331,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
 
         if obj:
-            if obj.rec_date < datetime.now().date():
+            if obj.rec_date < datetime.now().date() or obj.status == 'CANCELED':
                 obj.locked = True
                 obj.save()
 
@@ -266,62 +352,80 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
         if 'deposit' in form.changed_data and form.cleaned_data['deposit'] > 0:
             payment_doc = Cashdesk_detail_income()
 
-            try:
-                cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
-            except Cashdesk.DoesNotExist:
-                messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
-                obj.deposit = 0
-                obj.save()
-            else:
-                payment_doc.order_fk = obj
-                payment_doc.amount = obj.deposit
-                payment_doc.note = None
-                payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
-                payment_doc.cashdesk = cashdesk
+            if obj.status in ('REQUESTED',):
+                obj.status = 'CONFIRMED'
 
-                payment_doc.save()
+            if obj.deposit_payment_type == 'CASH':
+                try:
+                    cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
+                except Cashdesk.DoesNotExist:
+                    messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
+                    obj.deposit = 0
+                    obj.save()
+                else:
+                    payment_doc.order_fk = obj
+                    payment_doc.amount = obj.deposit
+                    payment_doc.note = None
+                    payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
+                    payment_doc.cashdesk = cashdesk
 
-                messages.info(request,"Добавено плащане капаро за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
+                    payment_doc.save()
+
+                    obj.cashdesk_deposit_fk = cashdesk
+                    obj.deposit_date = cashdesk.rec_date
+
+                    messages.info(request,"Добавено плащане капаро за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
 
         if 'deposit2' in form.changed_data and form.cleaned_data['deposit2'] > 0:
             payment_doc = Cashdesk_detail_income()
 
-            try:
-                cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
-            except Cashdesk.DoesNotExist:
-                messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
-                obj.deposit = 0
-                obj.save()
-            else:
-                payment_doc.order_fk = obj
-                payment_doc.amount = obj.deposit2
-                payment_doc.note = None
-                payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
-                payment_doc.cashdesk = cashdesk
+            if obj.status in ('REQUESTED',):
+                obj.status = 'CONFIRMED'
 
-                payment_doc.save()
+            if obj.deposit_payment_type == 'CASH':
+                try:
+                    cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
+                except Cashdesk.DoesNotExist:
+                    messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
+                    obj.deposit = 0
+                    obj.save()
+                else:
+                    payment_doc.order_fk = obj
+                    payment_doc.amount = obj.deposit2
+                    payment_doc.note = None
+                    payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
+                    payment_doc.cashdesk = cashdesk
 
-                messages.info(request,"Добавено плащане капаро 2 за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
+                    payment_doc.save()
+
+                    obj.cashdesk_deposit2_fk = cashdesk
+                    obj.deposit2_date = cashdesk.rec_date
+
+                    messages.info(request,"Добавено плащане капаро 2 за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
 
         if 'payed_final' in form.changed_data and form.cleaned_data['payed_final'] > 0:
             payment_doc = Cashdesk_detail_income()
 
-            try:
-                cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
-            except Cashdesk.DoesNotExist:
-                messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
-                obj.deposit = 0
-                obj.save()
-            else:
-                payment_doc.order_fk = obj
-                payment_doc.amount = obj.payed_final
-                payment_doc.note = None
-                payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
-                payment_doc.cashdesk = cashdesk
+            if obj.deposit_payment_type == 'CASH':
+                try:
+                    cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
+                except Cashdesk.DoesNotExist:
+                    messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
+                    obj.deposit = 0
+                    obj.save()
+                else:
+                    payment_doc.order_fk = obj
+                    payment_doc.amount = obj.payed_final
+                    payment_doc.note = None
+                    payment_doc.group_fk = Cashdesk_groups_income.objects.get(name='ПОРЪЧКА',sub_name='ПЛАЩАНЕ')
+                    payment_doc.cashdesk = cashdesk
 
-                payment_doc.save()
+                    payment_doc.save()
 
-                messages.info(request,"Добавено финално плащане за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
+                    obj.cashdesk_payment_fk = cashdesk
+                    obj.payment_date = cashdesk.rec_date
+
+                    messages.info(request,"Добавено финално плащане за %.2f лв. Номер:%d, Каса:%s " % (payment_doc.amount,payment_doc.id, str(payment_doc.cashdesk)))
 
         super(OrderAdmin, self).save_model(request, obj, form, change)
 
@@ -330,6 +434,11 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
         # if Article is missing from ArticleStore -print error and abort save
         if obj.store_status:
             messages.error(request,"Поръчката вече е изписана" )
+            return
+
+        if obj.status == "CANCELED":
+            messages.error(request,"Поръчката е отказана и не може да бъде изписвана" )
+            return
 
         checked = True
         for ord in obj.orderdetail_set.all():
@@ -378,9 +487,8 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
             messages.info(request,"Добавен е протокол за изписване от склада. Номер:%d" % (stock_doc.id, ) )
 
-
-
             obj.store_status = True
+            obj.status = 'ORDERED'
             obj.save()
         else:
 

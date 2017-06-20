@@ -1,4 +1,6 @@
+from decimal import Decimal
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -11,8 +13,8 @@ class ArticleStore(models.Model):
     club_fk = models.ForeignKey('nomenclature.Club', null=True, verbose_name="Клуб")
     article_fk = models.ForeignKey('nomenclature.Article', blank=False, null=True, verbose_name="Артикул")
     cnt = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Налично кол.")
-    cnt_min = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Минимално кол.")
-    cnt_bl = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Блокирано кол.")
+    cnt_min = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Минимално кол.", validators=[MinValueValidator(Decimal('0.001'))])
+    cnt_bl = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Блокирано кол.", validators=[MinValueValidator(Decimal('0.001'))])
     note = models.TextField(max_length=1000, blank=True, null=True,verbose_name="Забележка за блокировката")
 
     def __str__(self):
@@ -30,7 +32,7 @@ class stock_acceptance_detail(models.Model):
     stock_protocol_fk = models.ForeignKey('store.Stock_receipt_protocol', verbose_name="Протокол")
     article_store_fk = models.ForeignKey('store.ArticleStore', blank=False, null=False, verbose_name="Артикул")
     deliverydetail_fk = models.ForeignKey('delivery.DeliveryDetail', blank=True, null=True, verbose_name="Доставено кол.")
-    cnt = models.DecimalField( max_digits=8, decimal_places=3, verbose_name="Количество")
+    cnt = models.DecimalField( max_digits=8, decimal_places=3, verbose_name="Количество", validators=[MinValueValidator(Decimal('0.001'))])
 
     class Meta:
         managed = True
@@ -47,7 +49,7 @@ class stock_delivery_detail(models.Model):
     stock_protocol_fk = models.ForeignKey('store.Stock_receipt_protocol', verbose_name="Протокол")
     article_store_fk = models.ForeignKey('store.ArticleStore', blank=False, null=False, verbose_name="Артикул")
     orderdetail_fk = models.ForeignKey('order.Orderdetail', blank=True, null=True, verbose_name="Поръчка детайл")
-    cnt = models.DecimalField( max_digits=8, decimal_places=3, verbose_name="Количество")
+    cnt = models.DecimalField( max_digits=8, decimal_places=3, verbose_name="Количество", validators=[MinValueValidator(Decimal('0.001'))])
 
     class Meta:
         managed = True

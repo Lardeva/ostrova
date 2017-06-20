@@ -1,6 +1,6 @@
 from decimal import Decimal
 from django.contrib.auth.models import User
-from django.core.validators import EmailValidator
+from django.core.validators import EmailValidator, MinValueValidator
 from django.db import models
 from django.db.models import F, Sum
 from django.utils import timezone
@@ -11,49 +11,68 @@ from ostrovaweb.utils import nvl
 
 
 class Order(models.Model):
+    PAYMENT_TYPES = (
+        ('CASH', 'В БРОЙ'),
+        ('BANK_TRANSFER', 'БАНКОВ ПРЕВОД'),
+        ('BANK_CARD', 'ПЛАЩАНЕ С КАРТА'),
+    )
+
     id = models.AutoField(primary_key=True, verbose_name="Номер")
+
     rec_date = models.DateField(verbose_name="Дата на р.д.")
     rec_time = models.TimeField(verbose_name="Начало")
     rec_time_end = models.TimeField(verbose_name="Край")
+
+    club_fk = models.ForeignKey('nomenclature.Club', null=True, verbose_name="Клуб")
+    saloon_fk = models.ForeignKey('nomenclature.Saloon', verbose_name="Салон за възрастни",blank=False, null=True)
+
     phone = PhoneNumberField(max_length=100, blank=True, null=True, verbose_name="Телефон")
     parent = models.CharField(max_length=240, blank=True, null=True, verbose_name="Родител")
     child = models.CharField(max_length=200, blank=True, null=True, verbose_name="Дете")
     age = models.IntegerField(blank=True, null=True, verbose_name="Години")
     child_count = models.IntegerField(blank=True, null=True, verbose_name="Брой деца")
     adult_count = models.IntegerField(blank=True, null=True, verbose_name="Брой възрастни")
-    saloon_fk = models.ForeignKey('nomenclature.Saloon', verbose_name="Салон за възрастни",blank=False, null=True)
-    # hall_count = models.IntegerField(blank=True, null=True, verbose_name="Брой зала")
-    # hall_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Цена на зала")
-    deposit = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Капаро")
-    discount = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Отстъпка")
-    #price_final = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Крайна цена")
+    email = models.EmailField(max_length=400, blank=True, null=True, verbose_name="E-mail")
+    address = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Адрес")
+
+    deposit = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Капаро", validators=[MinValueValidator(Decimal('0.01'))])
     deposit_date = models.DateField(blank=True, null=True, verbose_name="Дата на капаро")
+    cashdesk_deposit_fk = models.ForeignKey('cashdesk.Cashdesk', blank=True, null=True, verbose_name="Платено в каса", related_name="order_deposit")
+    deposit_payment_type = models.CharField(max_length=30, verbose_name="Тип на плащане", choices = PAYMENT_TYPES, default='CASH')
+
+    deposit2 = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Капаро 2", validators=[MinValueValidator(Decimal('0.01'))])
+    deposit2_date = models.DateField(blank=True, null=True, verbose_name="Дата на капаро2")
+    cashdesk_deposit2_fk = models.ForeignKey('cashdesk.Cashdesk', blank=True, null=True, verbose_name="Платено в каса", related_name="order_deposit2")
+    deposit2_payment_type = models.CharField(max_length=30, verbose_name="Тип на плащане", choices = PAYMENT_TYPES, default='CASH')
+
     payment_date = models.DateField(blank=True, null=True, verbose_name="Дата на плащане")
+    payed_final = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Финално плащане", validators=[MinValueValidator(Decimal('0.01'))])
+    cashdesk_payment_fk = models.ForeignKey('cashdesk.Cashdesk', blank=True, null=True, verbose_name="Платено в каса", related_name="order_final_payment")
+    final_payment_type = models.CharField(max_length=30, verbose_name="Тип на плащане", choices = PAYMENT_TYPES, default='CASH')
+
+    discount = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Отстъпка")
+
     # validity_date = models.DateField(blank=True, null=True, verbose_name="Дата на валидност")
     refusal_date = models.DateField(blank=True, null=True, verbose_name="Дата на отказ")
     refusal_reason = models.CharField(max_length=400, blank=True, verbose_name="Причина за отказ")
+
     notes = models.TextField(max_length=12000, blank=True, null=True, verbose_name="Забележка")
-    address = models.CharField(max_length=1024, blank=True, null=True, verbose_name="Адрес")
+    notes_torta = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Забележка за тортата")
+    notes_kitchen = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Забележка за кухнята")
+
     user = models.ForeignKey(User, verbose_name="Служител")
-    email = models.EmailField(max_length=400, blank=True, null=True, verbose_name="E-mail")
-    club_fk = models.ForeignKey('nomenclature.Club', null=True, verbose_name="Клуб")
     create_date = models.DateTimeField(default=timezone.now, verbose_name="Дата на създаване")
     last_update_date = models.DateTimeField(blank=True, null=True, verbose_name="Дата на промяна")
     # changes = models.TextField(max_length=12000, blank=True, verbose_name="Промени")
-    deposit2 = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Капаро 2")
-    deposit2_date = models.DateField(blank=True, null=True, verbose_name="Дата на капаро2")
-    locked = models.BooleanField(default=False, max_length=4,  verbose_name="Приключено")
-    payed_final = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Финално плащане")
-    notes_torta = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Забележка за тортата")
-    notes_kitchen = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Забележка за кухнята")
+
     store_status = models.BooleanField(default=False, verbose_name=" Изписано от склада")
+    locked = models.BooleanField(default=False, max_length=4,  verbose_name="Приключено")
     status = models.CharField(max_length=80, verbose_name="Статус", choices = (
         ('REQUESTED', 'ЗАЯВЕНА'),
         ('CONFIRMED', 'ПОТВЪРДЕНА'),
         ('ORDERED', 'ПОРЪЧАНА'),
         ('CANCELED', 'ОТКАЗАНА'),
-    ), default='REQUIRED')
-
+    ), default='REQUESTED')
 
     @property
     def priceDetail(self):
@@ -86,8 +105,8 @@ class OrderDetail(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="Номер")
     order_fk = models.ForeignKey('Order', null=True, verbose_name="Поръчка N")
     article_fk = models.ForeignKey('ArticleOrder', blank=False, null=False, verbose_name="Артикул")
-    cnt = models.DecimalField(max_digits=8, decimal_places=3,verbose_name="Количество")
-    price = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Единична цена")
+    cnt = models.DecimalField(max_digits=8, decimal_places=3,verbose_name="Количество", validators=[MinValueValidator(Decimal('0.001'))])
+    price = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="Единична цена", validators=[MinValueValidator(Decimal('0.01'))])
     amount = models.DecimalField( max_digits=8, decimal_places=2, verbose_name="Общо", blank=True, null=False)
 
     def __str__(self):
