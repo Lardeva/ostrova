@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/
 import os
 
 from cubes.server import create_server
+from cubes.logging import get_logger
 from cubes.server import read_slicer_config
 from cubes.server.utils import str_to_bool
 from django.core.wsgi import get_wsgi_application
@@ -33,12 +34,17 @@ django_application = get_wsgi_application()
 django_application = DjangoWhiteNoise(django_application)
 
 config = read_slicer_config(os.environ["SLICER_CONFIG"])
+
+# initialize logging
+if config.has_option("server","log"):
+    get_logger(config.get("server","log"))
+
 cubes_application = create_server(config)
 
 debug = os.environ.get("SLICER_DEBUG")
 if debug and str_to_bool(debug):
     cubes_application.debug = True
-
+cubes_application.log
 application = DispatcherMiddleware(
     django_application,
     { '/cubes_backend':     cubes_application }
