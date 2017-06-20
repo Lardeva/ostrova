@@ -92,7 +92,7 @@ class Order(models.Model):
     dueAmount.fget.short_description = 'Сума за доплащане'
 
     def __str__(self):
-        return str(self.parent) + ":" + str(self.phone) + ":" + str(self.child) + " :" + str(self.deposit) + " лв."
+        return str(self.parent) + ":" + str(nvl(self.phone,'')) + ":" + str(self.child) + " :" + str(self.deposit) + " лв."
 
 
     class Meta:

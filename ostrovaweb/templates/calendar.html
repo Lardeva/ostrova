@@ -68,7 +68,7 @@
             },
             dayClick: function(date, jsEvent, view) {
 
-                window.open('/admin/order/order/add?'+
+                window.open('/erp/order/order/add?'+
                  'rec_date='+ date.format('YYYY-MM-DD') +
                  '&rec_time=' + date.format('HH')  + ':15' +
                  '&rec_time_end=' + new moment(date).add(2, 'H').format('HH')+ ':15' +
