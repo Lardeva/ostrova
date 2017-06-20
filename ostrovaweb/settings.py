@@ -169,7 +169,7 @@ SUIT_CONFIG = {
         {
             'label': 'Справки',
             'models': (
-                {'url': '/cubesviewer/', 'label': 'Аналитични справки', 'permissions': ('view_olap_reports',)},
+                {'url': '/cubesviewer/', 'label': 'Аналитични справки', 'permissions': ('cubesviewer.view_olap_reports',)},
             ),
             },
 
