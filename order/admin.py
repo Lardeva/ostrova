@@ -172,8 +172,15 @@ class OrderForm(ChainedChoicesModelForm):
             if  status in ('REQUESTED', 'ORDERED', 'CONFIRMED') and self.cleaned_data['status'] != self.instance.status:
                 raise ValidationError('Статусът на поръчката може да бъде променян ръчно само в "ОТКАЗАНА".')
 
+            if status == 'CANCELED' and self.instanice.locked:
+                raise ValidationError('Приключена поръчка не може да се бъде отказвана.')
+
         if status == 'CANCELED':
-            if 'refusal_date' not in self.cleaned_data or 'refusal_date' not in self.refusal_reason:
+            if ('refusal_date' not in self.cleaned_data or
+                'refusal_reason' not in self.cleaned_data or
+                not self.cleaned_data['refusal_date'] or
+                not self.cleaned_data['refusal_reason']
+                ):
                 raise ValidationError('Дата и причина за отказ са задължителни при маркитане на поръчка като "ОТКАЗАНА".')
 
 
