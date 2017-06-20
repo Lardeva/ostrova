@@ -114,10 +114,10 @@ class OrderForm(ChainedChoicesModelForm):
 
     def clean(self):
 
-        if self.cleaned_data['rec_date'] < datetime.now().date():
-            raise ValidationError("Датата на поръчката не може да е по-малка от днешната")
-
         if self.instance:
+            if self.cleaned_data['rec_date'] < datetime.now().date():
+                raise ValidationError("Датата на поръчката не може да е по-малка от днешната")
+
             if self.cleaned_data['rec_date'] != self.instance.rec_date:
                 if self.instance.locked or self.instance.status in ('ORDERED', 'CANCELED'):
                     raise ValidationError("Вече не можете да променяте датата на поръчката")
