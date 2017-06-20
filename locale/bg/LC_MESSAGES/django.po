@@ -69,8 +69,11 @@ msgstr "Изтрито"
 msgid "Unknown content"
 msgstr "Неизвестно съдържание"
 
-msgid "please correct the errors below"
-msgstr "Моля поправете грешките"
+msgid " Please correct the errors below."
+msgstr " Моля поправете грешките"
+
+msgid "Please correct the error below."
+msgstr " Моля поправете грешката"
 
 
 
