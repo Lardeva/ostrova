@@ -50,13 +50,13 @@ class CubesView(CubesViewerModel):
     Saved CubesViewer view.
     """
 
-    name = models.CharField("Name", max_length=200)
-    data = models.TextField()
-    owner = models.ForeignKey(User)
-    shared = models.BooleanField(default = False)
+    name = models.CharField(verbose_name="Име", max_length=200)
+    data = models.TextField(verbose_name="Описание")
+    owner = models.ForeignKey(User, verbose_name="Собсвеник")
+    shared = models.BooleanField(default = False, verbose_name="Споделено")
 
     def __unicode__(self):
-        return str(self.id) + " " + self.name
+        return str(self.id) + " " + str(self.name)
 
     class Meta:
         ordering = ['name']

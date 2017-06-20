@@ -39,11 +39,11 @@ class CubesViewAdmin(admin.ModelAdmin):
 
     extra = 1
 
-    #list_display = ('dc', 'title', 'mac_address', 'var', 'state')
+    list_display = ('name', 'owner', 'shared',)
     # list_filter = ['var'] # seems that foreignkeys don't work for list filters
     #inlines = [ClientHostMappingInline, InfrastructureHostMappingInline]
 
 
 # Register models with the administration interface
-admin.site.register(CubesView)
+admin.site.register(CubesView, CubesViewAdmin)
 

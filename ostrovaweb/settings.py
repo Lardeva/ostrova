@@ -63,9 +63,9 @@ INSTALLED_APPS = [
     #'djangobower',
 
     'corsheaders',
-    'cubesviewer',
+    'cubesviewer.apps.CubesViewerConfig',
 
-    'paypal.standard.ipn',
+    # 'paypal.standard.ipn',
     'rest_framework',
 
     'django_forms_bootstrap',
