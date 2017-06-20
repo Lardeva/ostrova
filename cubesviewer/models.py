@@ -65,9 +65,10 @@ class CubesView(CubesViewerModel):
         verbose_name_plural = u"Записани изгледи за кубове"
 
         permissions =  (
-            'add', 'delete', 'change',
-            ('view_olap_reports','Достъп до справките'),
-
+            ('change_cubesview','Преглед на записани OLAP изгледи'),
+            ('add_cubesview','Добавяне на записани OLAP изгледи'),
+            ('delete_cubesview','Изтриване на записани OLAP изгледи'),
+            ('view_olap_reports','Достъп до OLAP справките'),
         )
 
 
