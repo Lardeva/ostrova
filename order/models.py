@@ -75,24 +75,30 @@ class Order(models.Model):
         ('CANCELED', 'ОТКАЗАНА'),
     ), default='REQUESTED')
 
+    def priceDetail_int(self):
+        result = OrderDetail.objects.filter(order_fk=self).aggregate(agg_Result=Sum(F('cnt')*F('price')))
+        return Decimal(nvl(result['agg_Result'],0))
+
+    def priceFinal_int(self):
+        return  Decimal(Decimal(nvl(self.priceDetail_int(),0)) - Decimal(nvl(self.priceDetail_int(),0)) * Decimal(nvl(self.discount,0)) / Decimal(100))
+
     @property
     def priceDetail(self):
-        result = OrderDetail.objects.filter(order_fk=self).aggregate(agg_Result=Sum(F('cnt')*F('price')))
-        return formats.number_format(Decimal(nvl(result['agg_Result'],0)),2)
+        return formats.number_format(self.priceDetail_int(),2)
     priceDetail.fget.short_description = 'Цена'
 
     @property
     def priceFinal(self):
-        return  formats.number_format(Decimal(Decimal(nvl(self.priceDetail,0)) - Decimal(nvl(self.priceDetail,0)) * Decimal(nvl(self.discount,0)) / Decimal(100)),2)
+        return  formats.number_format(self.priceFinal_int(),2)
     priceFinal.fget.short_description = 'Крайна цена'
 
     @property
     def dueAmount(self):
-        return formats.number_format(Decimal(Decimal(nvl(self.priceFinal,0)) - Decimal(nvl(self.deposit2,0)) - Decimal(nvl(self.deposit,0)) - Decimal(nvl(self.payed_final,0))),2)
+        return formats.number_format(Decimal(Decimal(nvl(self.priceFinal_int(),0)) - Decimal(nvl(self.deposit2,0)) - Decimal(nvl(self.deposit,0)) - Decimal(nvl(self.payed_final,0))),2)
     dueAmount.fget.short_description = 'Сума за доплащане'
 
     def __str__(self):
-        return str(self.parent) + ":" + str(nvl(self.phone,'')) + ":" + str(self.child) + " :" + str(self.deposit) + " лв."
+        return str(nvl(self.parent,'')) + ":" + str(nvl(self.phone,'')) + ":" + str(nvl(self.child,'')) + " :" + str(nvl(self.deposit,0)) + " лв."
 
 
     class Meta:

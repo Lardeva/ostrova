@@ -26,7 +26,7 @@ def calendar_order_data(request):
     for order in orders:
         inp = {}
 
-        inp['title'] = 'order:' + str(order)
+        inp['title'] = 'Поръчка:' + str(order)
         inp['start'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + time.strftime(order.rec_time,'%H:%M')
         inp['end'] = datetime.strftime(order.rec_date,'%Y-%m-%d')+ 'T' + time.strftime(order.rec_time_end,'%H:%M')
         inp['id'] = order.id
