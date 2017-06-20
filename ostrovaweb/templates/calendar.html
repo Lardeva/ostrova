@@ -32,6 +32,8 @@
                $('#calendar').fullCalendar( 'refetchEvents' );
             });
 
+        $('#push').hide();
+
         $('#calendar').fullCalendar({
             header: {
                 left: 'prev,next today',
@@ -48,7 +50,7 @@
             maxTime : "21:00",
             locale : 'bg',
             columnFormat: 'dddd',
-            contentHeight: 532,
+            contentHeight: 600,
             //slotDuration: '00:30:00' ,
             events: {
                 url: '/calendar_orders_feed',
