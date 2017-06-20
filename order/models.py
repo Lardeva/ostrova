@@ -51,7 +51,7 @@ class Order(models.Model):
     cashdesk_payment_fk = models.ForeignKey('cashdesk.Cashdesk', blank=True, null=True, verbose_name="Платено в каса", related_name="order_final_payment")
     final_payment_type = models.CharField(max_length=30, verbose_name="Тип на плащане", choices = PAYMENT_TYPES, default='CASH')
 
-    discount = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Отстъпка")
+    discount = models.DecimalField( max_digits=8, decimal_places=2, blank=True, null=True, verbose_name="Отстъпка", validators=[MinValueValidator(Decimal('0'))])
 
     # validity_date = models.DateField(blank=True, null=True, verbose_name="Дата на валидност")
     refusal_date = models.DateField(blank=True, null=True, verbose_name="Дата на отказ")
