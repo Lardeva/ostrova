@@ -54,7 +54,7 @@ class Order(models.Model):
 
     # validity_date = models.DateField(blank=True, null=True, verbose_name="Дата на валидност")
     refusal_date = models.DateField(blank=True, null=True, verbose_name="Дата на отказ")
-    refusal_reason = models.CharField(max_length=400, blank=True, verbose_name="Причина за отказ")
+    refusal_reason = models.CharField(max_length=400, blank=True, null=True, verbose_name="Причина за отказ")
 
     notes = models.TextField(max_length=12000, blank=True, null=True, verbose_name="Забележка")
     notes_torta = models.TextField(max_length=2000, blank=True, null=True, verbose_name="Забележка за тортата")

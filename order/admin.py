@@ -212,11 +212,11 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
     list_per_page = 50
 
     date_hierarchy = "rec_date"
-    list_display = ('rec_date', 'club_fk', 'saloon_fk', 'rec_time', 'rec_time_end','parent', 'child', 'status', 'locked', 'priceFinal',)
+    list_display = ('rec_date', 'club_fk', 'rec_time', 'rec_time_end','parent', 'child', 'status', 'locked', 'priceFinal',)
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-club',),
-            'fields': ('club_fk','rec_date','rec_time','rec_time_end','locked','store_status','status',)
+            'fields': ('club_fk','saloon_fk','rec_date','rec_time','rec_time_end','locked','store_status','status',)
         }),
 
         ('Клиент', {
