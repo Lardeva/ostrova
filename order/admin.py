@@ -172,7 +172,7 @@ class OrderForm(ChainedChoicesModelForm):
             if  status in ('REQUESTED', 'ORDERED', 'CONFIRMED') and self.cleaned_data['status'] != self.instance.status:
                 raise ValidationError('Статусът на поръчката може да бъде променян ръчно само в "ОТКАЗАНА".')
 
-            if status == 'CANCELED' and self.instanice.locked:
+            if status == 'CANCELED' and self.instance.locked:
                 raise ValidationError('Приключена поръчка не може да се бъде отказвана.')
 
         if status == 'CANCELED':
@@ -186,7 +186,7 @@ class OrderForm(ChainedChoicesModelForm):
 
         if 'payed_final' in self.cleaned_data and self.cleaned_data['payed_final']:
             if self.instance and self.cleaned_data['payed_final'] != self.instance.dueAmount:
-                raise ValidationError('Сумата по ойкончателното плащане се разминава със сумата за доплащане.')
+                raise ValidationError('Сумата по офкончателното плащане се разминава със сумата за доплащане.')
 
         return self.cleaned_data
 
