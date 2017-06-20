@@ -174,7 +174,7 @@ class OrderForm(ChainedChoicesModelForm):
                 raise ValidationError('Дата и причина за отказ са задължителни при маркитане на поръчка като "ОТКАЗАНА".')
 
 
-        if 'payed_final' in self.cleaned_data:
+        if 'payed_final' in self.cleaned_data and self.cleaned_data['payed_final'] > 0:
             if self.instance and self.cleaned_data['payed_final'] != self.instance.dueAmount:
                 raise ValidationError('Сумата по ойкончателното плащане се разминава със сумата за доплащане.')
 
