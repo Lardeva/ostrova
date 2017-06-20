@@ -151,14 +151,17 @@ class OrderForm(ChainedChoicesModelForm):
 
         ########################################################33
         # Check payment type arrangement
-        if self.cleaned_data['deposit_payment_type'] != 'CASH' and 'deposit_date' not in self.cleaned_data:
-            raise ValidationError('Датата за капаро е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
+        if 'deposit_payment_type' in self.cleaned_data:
+            if self.cleaned_data['deposit_payment_type'] != 'CASH' and 'deposit_date' not in self.cleaned_data:
+                raise ValidationError('Датата за капаро е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
 
-        if self.cleaned_data['deposit2_payment_type'] != 'CASH' and 'deposit2_date' not in self.cleaned_data:
-            raise ValidationError('Датата за капаро 2 е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
+        if 'deposit2_payment_type' in self.cleaned_data:
+            if self.cleaned_data['deposit2_payment_type'] != 'CASH' and 'deposit2_date' not in self.cleaned_data:
+                raise ValidationError('Датата за капаро 2 е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
 
-        if self.cleaned_data['final_payment_type'] != 'CASH' and 'payment_date' not in self.cleaned_data:
-            raise ValidationError('Датата за плащане е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
+        if 'final_payment_type' in self.cleaned_data:
+            if self.cleaned_data['final_payment_type'] != 'CASH' and 'payment_date' not in self.cleaned_data:
+                raise ValidationError('Датата за плащане е задължителна, ако е избран тип на плащане, раличен от "В БРОЙ".')
 
 
         ########################################################33
