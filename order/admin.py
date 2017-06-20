@@ -258,11 +258,13 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
     closed_readonly_fields = flatten(x[1].get('fields') for x in fieldsets) # all fields
 
     def get_readonly_fields(self, request, obj=None):
+
+        actual_readonly_fields = self.readonly_fields.copy()
+
         if obj:
             if (obj.locked and not request.user.is_superuser or
                     obj.store_status
             ):
-
                 pay_only_readonly_fields = self.closed_readonly_fields.copy()
                 if obj.dueAmount > 0:
 
@@ -282,32 +284,28 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
                         pay_only_readonly_fields.remove('final_payment_type')
                         pay_only_readonly_fields.remove('discount')
 
-
                     return pay_only_readonly_fields
 
                 return self.closed_readonly_fields
 
+            if obj.deposit:
+                actual_readonly_fields.append('deposit')
+                actual_readonly_fields.append('deposit_date')
+                actual_readonly_fields.append('deposit_payment_type')
 
-        actual_readonly_fields = self.readonly_fields.copy()
+            if obj.deposit2:
+                actual_readonly_fields.append('deposit2')
+                actual_readonly_fields.append('deposit2_date')
+                actual_readonly_fields.append('deposit2_payment_type')
 
-        if obj.deposit:
-            actual_readonly_fields.append('deposit')
-            actual_readonly_fields.append('deposit_date')
-            actual_readonly_fields.append('deposit_payment_type')
+            if obj.payed_final:
+                actual_readonly_fields.append('payed_final')
+                actual_readonly_fields.append('payment_date')
+                actual_readonly_fields.append('final_payment_type')
+                actual_readonly_fields.append('discount')
 
-        if obj.deposit2:
-            actual_readonly_fields.append('deposit2')
-            actual_readonly_fields.append('deposit2_date')
-            actual_readonly_fields.append('deposit2_payment_type')
-
-        if obj.payed_final:
-            actual_readonly_fields.append('payed_final')
-            actual_readonly_fields.append('payment_date')
-            actual_readonly_fields.append('final_payment_type')
-            actual_readonly_fields.append('discount')
-
-        if obj.status in ('CANCELED',):
-            actual_readonly_fields.append('status')
+            if obj.status in ('CANCELED',):
+                actual_readonly_fields.append('status')
 
         return actual_readonly_fields
 
