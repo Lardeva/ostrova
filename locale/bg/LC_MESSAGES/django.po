@@ -57,8 +57,16 @@ msgstr "Въведеният номер на телефона е некорек�
 #####################################################################
 # Django Admin - change labels
 
-msgid "Changed "
+msgid "changed"
 msgstr "Променено"
 
-msgid "Added "
-msgstr "Добавен"
+msgid "added"
+msgstr "Добавенo"
+
+msgid "delete"
+msgstr "Изтрито"
+
+msgid "Unknown content"
+msgstr "Неизвестно съдържание"
+
+
