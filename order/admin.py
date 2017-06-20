@@ -169,7 +169,7 @@ class OrderForm(ChainedChoicesModelForm):
         ########################################################33
         # Check status is manually changed only to Canceled
 
-        status = self.cleaned_data['status'] or self.instance.status
+        status = self.cleaned_data.get('status',None) or self.instance.status
         if self.instance:
             if  status in ('REQUESTED', 'ORDERED', 'CONFIRMED') and self.cleaned_data['status'] != self.instance.status:
                 raise ValidationError('Статусът на поръчката може да бъде променян ръчно само в "ОТКАЗАНА".')
