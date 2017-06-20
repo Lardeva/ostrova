@@ -151,8 +151,6 @@ class OrderForm(ChainedChoicesModelForm):
                     if self.cleaned_data ['rec_time'] <= order.rec_time and self.cleaned_data['rec_time_end'] >= order.rec_time_end:
                         raise ValidationError('Моля изберете други часове за начало и край на поръчката. Времената се припокриват - друга поръчката  в '+ str(order.rec_time) + '.')
 
-        # todo: rec_date triabva da e > datetime.now() bez chas
-
         ########################################################33
         # Check payment type arrangement
         if 'deposit_payment_type' in self.cleaned_data:
@@ -403,7 +401,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
                     cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
                 except Cashdesk.DoesNotExist:
                     messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
-                    obj.deposit = 0
+                    obj.deposit2 = 0
                     obj.save()
                 else:
                     payment_doc.order_fk = obj
@@ -427,7 +425,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
                     cashdesk = Cashdesk.objects.get(club_fk=obj.club_fk,status='OPENED')
                 except Cashdesk.DoesNotExist:
                     messages.error(request,"В момента нямате отворена каса. Моля отворете каса и опитайте пак.")
-                    obj.deposit = 0
+                    obj.payed_final = 0
                     obj.save()
                 else:
                     payment_doc.order_fk = obj
