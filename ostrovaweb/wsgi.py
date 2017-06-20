@@ -17,6 +17,7 @@ from whitenoise.django import DjangoWhiteNoise
 from werkzeug.wsgi import DispatcherMiddleware
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.environ['BASE_DIR'] = BASE_DIR
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ostrovaweb.settings")
 
