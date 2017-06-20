@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'store.apps.StoreConfig',
     'nomenclature.apps.NomenclatureConfig',
 
-    'registration',
     'suit',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -51,26 +50,24 @@ INSTALLED_APPS = [
     #'mod_wsgi.server',
 
     'django_object_actions',
+    'phonenumber_field',
 
     # Object history
-    'reversion',
-    'reversion_compare',
+    # 'reversion',
+    # 'reversion_compare',
 
     'django_select2',
-
-    # 'jquery-ui',
-    # 'bootstrap',
-    #'djangobower',
 
     'corsheaders',
     'cubesviewer.apps.CubesViewerConfig',
 
-    # 'paypal.standard.ipn',
     'rest_framework',
 
-    'django_forms_bootstrap',
+    # external site libs
+    # 'registration',
+    # 'django_forms_bootstrap',
+    # 'paypal.standard.ipn',
 
-    'phonenumber_field',
 ]
 
 # django-registration-redux settings
