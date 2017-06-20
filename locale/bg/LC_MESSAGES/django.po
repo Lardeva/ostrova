@@ -52,7 +52,7 @@ msgstr "Въведеният номер на телефона е некорек�
 
 # Forgot your password? Enter your email in the form below and we'll send you instructions for creating a new one.
 # Reset password
-
+# Enter the same password as above, for verification.
 
 #####################################################################
 # Django Admin - change labels

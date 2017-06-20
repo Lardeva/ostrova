@@ -29,6 +29,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from django.conf import settings
+from django.db.models.options import Options
 
 
 class CubesViewerModel(models.Model):
@@ -63,5 +64,9 @@ class CubesView(CubesViewerModel):
         verbose_name = u"Записан Изглед за Куб"
         verbose_name_plural = u"Записани изгледи за кубове"
 
+        permissions = Options.default_permissions + (
+            ('view_olap_reports','Достъп до справките'),
+
+        )
 
 

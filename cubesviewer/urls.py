@@ -28,7 +28,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from cubesviewer.views.cubesviewer import CubesViewerView
 from cubesviewer.api import proxy
 from cubesviewer.api.view import ViewSaveView, ViewListView
@@ -39,7 +39,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
 
-    url(r'^$', login_required( CubesViewerView.as_view() ) ),
+    url(r'^$', permission_required( 'cubesviewer.view_olap_reports') (login_required( CubesViewerView.as_view() ) ) ),
 
     url(r'^view/list/$', ViewListView.as_view() ),
     url(r'^view/save/$', csrf_exempt(ViewSaveView.as_view()) ),
