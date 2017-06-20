@@ -227,6 +227,13 @@ class DeliveryAdmin(DjangoObjectActions, admin.ModelAdmin):
 
     change_actions = ('deliver', 'cancel','pay')
 
+    def has_delete_permission(self, request, obj=None):
+        if obj:
+            if obj.is_closed():
+                return False
+        return True
+
+
 admin.site.register(Delivery, DeliveryAdmin)
 
 

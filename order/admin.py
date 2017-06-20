@@ -71,9 +71,11 @@ class OrderDetailInline(admin.TabularInline):
 
     def has_delete_permission(self, request, obj=None):
         if obj:
-            if obj.status == 'REQESTED':
-                return True
-        return False
+            if (obj.locked and not request.user.is_superuser or
+                    obj.store_status
+                ):
+                return False
+        return True
 
 class OrderForm(ChainedChoicesModelForm):
 
@@ -510,6 +512,12 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
     take_out_of_store.short_description = "Изписване от слкада"  # optional
 
     change_actions = ('take_out_of_store', )
+
+    def has_delete_permission(self, request, obj=None):
+        if obj:
+            if obj.status == 'REQESTED':
+                return True
+        return False
 
 admin.site.register(Order, OrderAdmin)
 
