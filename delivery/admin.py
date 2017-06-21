@@ -65,9 +65,9 @@ class DeliveryDetailInline(admin.TabularInline):
 class DeliveryAdmin(DjangoObjectActions, admin.ModelAdmin):
     list_display = ('id','club_fk','order_date', 'delivery_date', 'supplier_fk', 'invoice_no','firm_invoice_no','status', 'paid','delivery_amount',)
     # list_editable = ('club_fk','status')
-    search_fields = ('club_fk__name','order_date','supplier_fk__name',)
+    search_fields = ('club_fk__name','order_date','supplier_fk__name','paid')
     list_filter     = (
-        'order_date','club_fk','supplier_fk',
+        'order_date','club_fk','supplier_fk','paid'
     )
 
     ordering = ['-id']

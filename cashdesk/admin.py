@@ -42,9 +42,10 @@ class Cashdesk_detail_expenseAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(Cashdesk_detail_expenseAdmin, self).get_queryset(request)
-        qs = qs.filter(cashdesk__status__in = ('OPENED','JUSTCLOSED',))
+
         if request.user.employee.club_fk is not None:
             qs.filter(cashdesk__club_fk = request.user.employee.club_fk)
+            qs = qs.filter(cashdesk__status__in = ('OPENED','JUSTCLOSED',))
         return qs
 
     def get_club_name(self, obj):
@@ -74,10 +75,12 @@ class Cashdesk_detail_transferAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(Cashdesk_detail_transferAdmin, self).get_queryset(request)
-        qs = qs.filter(cashdesk__status__in = ('OPENED','JUSTCLOSED',))
+
         qs = qs.filter(transfer_club_fk__isnull=False)
         if request.user.employee.club_fk is not None:
+            qs = qs.filter(cashdesk__status__in = ('OPENED','JUSTCLOSED',))
             qs.filter(cashdesk__club_fk = request.user.employee.club_fk)
+
         return qs
 
 
