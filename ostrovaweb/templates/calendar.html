@@ -27,9 +27,9 @@
     <div id="calendar"></div>
 
     <div>
-        Легенда за Календара:
-        {% for status, name in STATUS %}
-               <div style=" width: 20px; height: 8px; background: {{STATUS_COLOR[status]}}; border-radius: 50%;"></div> - <strong>{{name}}</strong>
+        <strong>Легенда за Календара:</strong>
+        {% for status, color in STATUS_COLORS %}
+               <div style="display: inline; width: 25px; height: 12px; background: {{color}}; border-radius: 50%;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div> - {{status}}
         {% endfor %}
     </div>
 
@@ -58,7 +58,7 @@
             maxTime : "21:00",
             locale : 'bg',
             columnFormat: 'dddd',
-            contentHeight: 592,
+            contentHeight: 594,
             //slotDuration: '00:30:00' ,
             events: {
                 url: '/calendar_orders_feed',

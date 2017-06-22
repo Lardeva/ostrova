@@ -20,7 +20,7 @@ def calendar_order_data(request):
     end_date = datetime.strptime(end_parameter,'%Y-%m-%d')
     club_id = request.GET['club_id']
 
-    orders=Order.objects.filter(rec_date__gte=start_date,rec_date__lte =end_date,club_fk = club_id).exclude(status='CANCELED')
+    orders=Order.objects.filter(rec_date__gte=start_date,rec_date__lte =end_date,club_fk = club_id)
 
     json_ins = []
     for order in orders:
@@ -32,7 +32,7 @@ def calendar_order_data(request):
         inp['id'] = order.id
         inp['url'] = '/erp/order/order/'+str(order.id)+'/change/'
         inp['textColor'] = 'black'
-        inp['color'] = order.STATUS_COLORS[order.status]
+        inp['color'] = dict(order.STATUS_COLORS)[dict(order.STATUS) [order.status]]
 
         json_ins.append(inp)
 
@@ -58,7 +58,6 @@ def calendar_view(request):
 
     calendar_data={}
     calendar_data['form'] = form_club
-    calendar_data['STATUS'] = Order.STATUS
     calendar_data['STATUS_COLORS'] = Order.STATUS_COLORS
 
     return render_to_response("calendar.html", calendar_data,context)

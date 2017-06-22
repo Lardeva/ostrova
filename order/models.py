@@ -26,10 +26,10 @@ class Order(models.Model):
     )
 
     STATUS_COLORS = (
-        ('REQUESTED', '#85e085'),
-        ('CONFIRMED', '#ffff99'),
-        ('ORDERED', '#ff8566'),
-        ('CANCELED', '#00ff00'),
+        ('ЗАЯВЕНА', '#ffff99'),
+        ('ПОТВЪРДЕНА', '#85e085'),
+        ('ПОРЪЧАНА', '#ff8566'),
+        ('ОТКАЗАНА', '#B0B0B0'),
     )
 
 
