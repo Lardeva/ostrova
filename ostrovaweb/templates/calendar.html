@@ -76,12 +76,23 @@
             },
             dayClick: function(date, jsEvent, view) {
 
-                window.open('/erp/order/order/add?'+
-                 'rec_date='+ date.format('YYYY-MM-DD') +
-                 '&rec_time=' + date.format('HH')  + ':15' +
-                 '&rec_time_end=' + new moment(date).add(2, 'H').format('HH')+ ':15' +
-                 '&club_fk=' + $('#id_club_field')[0].value
-                ,"_self");
+                var today= new Date();
+                tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate()+1);
+
+                /*if(date.get('hour') % 2 == 0) {
+                   date.add(1, 'hours');
+                }*/
+
+                if(date > tomorrow) {
+
+                    window.open('/erp/order/order/add?'+
+                     'rec_date='+ date.format('YYYY-MM-DD') +
+                     '&rec_time=' + date.format('HH')  + ':15' +
+                     '&rec_time_end=' + new moment(date).add(2, 'H').format('HH')+ ':15' +
+                     '&club_fk=' + $('#id_club_field')[0].value
+                    ,"_self");
+
+                }
 
 
             },
