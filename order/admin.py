@@ -174,6 +174,9 @@ class OrderForm(ChainedChoicesModelForm):
             if  status in ('REQUESTED', 'ORDERED', 'CONFIRMED') and status != self.instance.status:
                 raise ValidationError('Статусът на поръчката може да бъде променян ръчно само в "ОТКАЗАНА".')
 
+            if status == 'CANCELED' and status != self.instance.status:
+                raise ValidationError('Отказана поръчка не може да бъде възстановявана - направете нова.')
+
             if status == 'CANCELED' and self.instance.locked:
                 raise ValidationError('Приключена поръчка не може да се бъде отказвана.')
 
@@ -291,7 +294,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
                 return self.closed_readonly_fields
 
-            if obj.deposit or obj.dueAmount_int() == 0:
+            if obj.deposit:
                 actual_readonly_fields.append('deposit')
                 actual_readonly_fields.append('deposit_date')
                 actual_readonly_fields.append('deposit_payment_type')
@@ -307,8 +310,8 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
                 actual_readonly_fields.append('final_payment_type')
                 actual_readonly_fields.append('discount')
 
-            if obj.status in ('CANCELED',):
-                actual_readonly_fields.append('status')
+            # if obj.status in ('CANCELED',):
+            #     actual_readonly_fields.append('status')
 
         return actual_readonly_fields
 
