@@ -219,7 +219,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
     fieldsets = [
         (None, {
             'classes': ('suit-tab', 'suit-tab-club',),
-            'fields': ('club_fk','saloon_fk','rec_date','rec_time','rec_time_end','locked','store_status','status',)
+            'fields': ('id','club_fk','saloon_fk','rec_date','rec_time','rec_time_end','locked','store_status','status',)
         }),
 
         ('Клиент', {
@@ -257,7 +257,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
                       ('notes', 'Забележки'))
 
 
-    readonly_fields = ['store_status','locked','create_date','last_update_date','user','priceDetail','dueAmount', 'priceFinal','cashdesk_deposit2_fk','cashdesk_payment_fk', 'cashdesk_deposit_fk',]
+    readonly_fields = ['id','store_status','locked','create_date','last_update_date','user','priceDetail','dueAmount', 'priceFinal','cashdesk_deposit2_fk','cashdesk_payment_fk', 'cashdesk_deposit_fk',]
     closed_readonly_fields = flatten(x[1].get('fields') for x in fieldsets) # all fields
 
     def get_readonly_fields(self, request, obj=None):

@@ -4,11 +4,11 @@
     {
       "name": "order_detail",
       "label": "Поръчка за кухня",
-      "dimensions": ["article","order","club","dt"],
+      "dimensions": ["article","club","dt","ORDER"],
       "joins": [
         { "master": "article_fk_id", "detail": "article.id"},
-        { "master": "order_fk_id", "detail": "order.id"},
-        { "master": "order.club_fk_id", "detail": "club.id"}
+        { "master": "order_fk_id", "detail": "ORDER.id"},
+        { "master": "ORDER.club_fk_id", "detail": "club.id"}
       ],
       "measures": [
           { "name": "cnt", "label": "Count" }
@@ -25,15 +25,23 @@
   ],
 
   "mappings": {
-    "dt": {"table": "order","column":"rec_date","extract":"month"},
-    "date.year": {"table": "order","column":"rec_date", "extract":"year"}
+    "dt.year": {"table": "ORDER","column":"rec_date", "extract":"year" },
+    "dt.month": {"table": "ORDER","column":"rec_date", "extract":"month"},
+    "dt.day": {"table": "ORDER","column":"rec_date", "extract":"day"}
   },
 
   "dimensions": [
      { "name":"article",   "attributes": ["id","name"], "locales" : ["bg"] },
-     { "name":"order",   "attributes": ["id","rec_date"] },
+     { "name":"ORDER",   "attributes": ["id","rec_date","rec_time"] },
      { "name":"club",   "attributes": ["id","name"] },
-     { "name":"dt", "role": "time"}
+     { "name":"dt", "role": "time",
+       "levels": ["year", "month", "day", "hour", "minute"],
+       "hierarchies": [
+         { "name": "default", "levels":["year", "month", "day"]}
+       ],
+       "default_hierarchy_name": "default",
+       "default_hierarchy": "default"
+     }
   ],
   "info": {
     "min_date": "2017-01-01",

@@ -44,7 +44,7 @@ cubes_application = create_server(config)
 debug = os.environ.get("SLICER_DEBUG")
 if debug and str_to_bool(debug):
     cubes_application.debug = True
-cubes_application.log
+
 application = DispatcherMiddleware(
     django_application,
     { '/cubes_backend':     cubes_application }
