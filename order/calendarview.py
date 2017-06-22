@@ -32,17 +32,7 @@ def calendar_order_data(request):
         inp['id'] = order.id
         inp['url'] = '/erp/order/order/'+str(order.id)+'/change/'
         inp['textColor'] = 'black'
-
-        if order.status == 'REQUESTED':
-            inp['color'] = '#85e085'
-        elif order.status == 'CONFIRMED':
-            inp['color'] = '#ffff99'
-        elif order.status == 'ORDERED':
-            inp['color'] = '#ff8566'
-        elif order.status == 'CANCELED':
-            inp['color'] = '#00ff00'
-        else:
-            inp['color'] = '#85e085'
+        inp['color'] = order.STATUS_COLORS[order.status]
 
         json_ins.append(inp)
 
@@ -60,11 +50,16 @@ class Form_Club(forms.Form):
 
 def calendar_view(request):
     context = RequestContext(request)
+
     form_club = Form_Club()
     if request.user.employee.club_fk:
         form_club.fields['club_field'].initial = request.user.employee.club_fk
         form_club.fields['club_field'].widget.attrs.update({'readonly':'True','style':'pointer-events:none'})  # simulates readonly on the browser with the help of css
+
     calendar_data={}
     calendar_data['form'] = form_club
+    calendar_data['STATUS'] = Order.STATUS
+    calendar_data['STATUS_COLORS'] = Order.STATUS_COLORS
+
     return render_to_response("calendar.html", calendar_data,context)
 # 'form':form

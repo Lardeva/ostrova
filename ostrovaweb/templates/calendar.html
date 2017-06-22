@@ -25,6 +25,14 @@
     {% endfor %}
 
     <div id="calendar"></div>
+
+    <div>
+        Легенда за Календара:
+        {% for status, name in STATUS %}
+               <div style=" width: 20px; height: 8px; background: {{STATUS_COLOR[status]}}; border-radius: 50%;"></div> - <strong>{{name}}</strong>
+        {% endfor %}
+    </div>
+
     <script type='text/javascript'>
     $(document).ready(function() {
 

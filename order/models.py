@@ -18,6 +18,21 @@ class Order(models.Model):
         ('BANK_CARD', 'ПЛАЩАНЕ С КАРТА'),
     )
 
+    STATUS = (
+        ('REQUESTED', 'ЗАЯВЕНА'),
+        ('CONFIRMED', 'ПОТВЪРДЕНА'),
+        ('ORDERED', 'ПОРЪЧАНА'),
+        ('CANCELED', 'ОТКАЗАНА'),
+    )
+
+    STATUS_COLORS = (
+        ('REQUESTED', '#85e085'),
+        ('CONFIRMED', '#ffff99'),
+        ('ORDERED', '#ff8566'),
+        ('CANCELED', '#00ff00'),
+    )
+
+
     id = models.AutoField(primary_key=True, verbose_name="Номер")
 
     rec_date = models.DateField(verbose_name="Дата на р.д.")
@@ -68,12 +83,7 @@ class Order(models.Model):
 
     store_status = models.BooleanField(default=False, verbose_name=" Изписано от склада")
     locked = models.BooleanField(default=False, max_length=4,  verbose_name="Приключено")
-    status = models.CharField(max_length=80, verbose_name="Статус", choices = (
-        ('REQUESTED', 'ЗАЯВЕНА'),
-        ('CONFIRMED', 'ПОТВЪРДЕНА'),
-        ('ORDERED', 'ПОРЪЧАНА'),
-        ('CANCELED', 'ОТКАЗАНА'),
-    ), default='REQUESTED')
+    status = models.CharField(max_length=80, verbose_name="Статус", choices = STATUS, default='REQUESTED')
 
     def priceDetail_int(self):
         result = OrderDetail.objects.filter(order_fk=self).aggregate(agg_Result=Sum(F('cnt')*F('price')))
