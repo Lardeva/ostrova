@@ -1,0 +1,51 @@
+{
+  "locale":"bg",
+  "cubes": [
+    {
+      "name": "order_detail",
+      "label": "Поръчка за кухня",
+      "dimensions": ["article","club","dt","order"],
+      "joins": [
+        { "master": "article_fk_id", "detail": "article.id"},
+        { "master": "order_fk_id", "detail": "order.id"},
+        { "master": "order.club_fk_id", "detail": "club.id"}
+      ],
+      "measures": [
+          { "name": "cnt", "label": "Count" }
+      ],
+      "aggregates": [
+        {
+          "name": "aggregate_cnt",
+          "function": "sum",
+          "measure": "cnt"
+        }
+      ]
+
+    }
+  ],
+
+  "mappings": {
+    "dt.year": {"table": "order","column":"rec_date", "extract":"year" },
+    "dt.month": {"table": "order","column":"rec_date", "extract":"month"},
+    "dt.day": {"table": "order","column":"rec_date", "extract":"day"}
+  },
+
+  "dimensions": [
+     { "name":"article",   "attributes": ["id","name"], "locales" : ["bg"] },
+     { "name":"order",   "attributes": ["id","rec_date","rec_time"] },
+     { "name":"club",   "attributes": ["id","name"] },
+     { "name":"dt", "role": "time",
+       "levels": ["year", "month", "day", "hour", "minute"],
+       "hierarchies": [
+         { "name": "default", "levels":["year", "month", "day"]}
+       ],
+       "default_hierarchy_name": "default",
+       "default_hierarchy": "default"
+     }
+  ],
+  "info": {
+    "min_date": "2017-01-01",
+    "max_date": "2018-12-31"
+  }
+
+}
