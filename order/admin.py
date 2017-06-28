@@ -174,7 +174,7 @@ class OrderForm(ChainedChoicesModelForm):
             if  status in ('REQUESTED', 'ORDERED', 'CONFIRMED') and status != self.instance.status:
                 raise ValidationError('Статусът на поръчката може да бъде променян ръчно само в "ОТКАЗАНА".')
 
-            if status == 'CANCELED' and status != self.instance.status:
+            if status != 'CANCELED' and self.instance.status == 'CANCELED':
                 raise ValidationError('Отказана поръчка не може да бъде възстановявана - направете нова.')
 
             if status == 'CANCELED' and self.instance.locked:

@@ -77,6 +77,9 @@ class ArticleAdmin(admin.ModelAdmin):
     list_filter = ('group_fk','active')
     search_fields = ('name', 'description', '=id')
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 admin.site.register(Article, ArticleAdmin)
 
 
