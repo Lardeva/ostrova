@@ -1,7 +1,23 @@
- INSERT INTO "OSTROVA"."SALOON"   SELECT   "ID", 	"NAME", 	"CLUB_ID" FROM   OSTROVA_IMP.SALON;
- INSERT INTO "OSTROVA"."CLUB"     "CLUB_ID", 	"NAME", 	"ZALA_PRICE", 	"ADDRESS"   FROM     OSTROVA_IMP.CLUB;
-  INSERT INTO "OSTROVA"."SUPPLIER"   SELECT   	"SUP_ID", 	"NAME", 	"DESCRIPTION" FROM   OSTROVA_IMP."SUPPLIER";
 
+-- ############## Импортиране на основни номенклатури
+INSERT INTO "OSTROVA"."CLUB"     "CLUB_ID", 	"NAME", 	"ZALA_PRICE", 	"ADDRESS"   FROM     OSTROVA_IMP.CLUB;
+INSERT INTO "OSTROVA"."SALOON"   SELECT   "ID", 	"NAME", 	"CLUB_ID", '1' FROM   OSTROVA_IMP.SALON;
+INSERT INTO "OSTROVA"."SUPPLIER"   SELECT   	"SUP_ID", 	"NAME", 	"DESCRIPTION" FROM   OSTROVA_IMP."SUPPLIER";
+
+-- Поправка на sequence, така че при добавяне на нови записи да не се получи конфликт с прехвърлените от старата
+-- система идентификатори
+drop sequence "OSTROVA"."CLUB_SQ";
+CREATE SEQUENCE  "OSTROVA"."CLUB_SQ"  START WITH 1000;
+
+drop sequence "OSTROVA"."SALOON_SQ";
+CREATE SEQUENCE  "OSTROVA"."SALOON_SQ"  START WITH 1000;
+
+drop sequence "OSTROVA"."SUPPLIER_SQ";
+CREATE SEQUENCE  "OSTROVA"."SUPPLIER_SQ"  START WITH 1000;
+
+
+ -- ############## Импортиране на съществуващите потребителски профили,
+ -- парола по подразбиране 12345678
  INSERT INTO OSTROVA.auth_user
   SELECT
   OSTROVA.AUTH_USER_SQ.NEXTVAL,
@@ -18,7 +34,7 @@
 FROM
   OSTROVA_IMP."STAFF";
 
-
+-- ############## Импортиране на артикули - доставка
 insert into ostrova.article_group
 select
   ostrova.article_group_sq.nextval,
@@ -45,8 +61,8 @@ select
  from ostrova_imp.stoka x
 ;
 
--- fix sequence
-
+-- Ръчна Поправка на sequence за артикули,
+-- тъй като ще използваме оригиналните ID-та от старата база, за да се избегне нуждата от прегрупиране
 drop sequence OSTROVA.ARTICLE_SQ;
 
 declare
@@ -58,9 +74,10 @@ EXECUTE IMMEDIATE v_sql;
 end;
 /
 
-
+-- Първите два записа в оригиналната база са тестови и са непълни, затова се премахват
 delete from OSTROVA_IMP.RECORD_ORDERS where order_id in (1,2);
 
+-- ############## Импортиране на доставки
 INSERT INTO OSTROVA.DELIVERY
 SELECT
 ORDER_ID x,
@@ -79,6 +96,7 @@ kasa_no,
 nvl((select nvl(ID,0) from OSTROVA.SUPPLIER z where z.NAME = X.FIRM),0) SUP_ID
 FROM OSTROVA_IMP.RECORD_ORDERS X;
 
+-- ############## Импортиране на доставки - детайни записи
 INSERT INTO OSTROVA.DELIVERY_DETAIL
 SELECT
 ostrova.delivery_detail_sq.nextval,
@@ -92,6 +110,7 @@ nvl((select ID from OSTROVA.ARTICLE_GROUP z where z.NAME = X.GROUP_NAME),0) GROU
 FROM OSTROVA_IMP.RECORD_ORDERS_DETAIL X;
 
 
+-- ############## Импортиране на артикулни - поръчка
 INSERT INTO OSTROVA.ARTICLE_GROUP
   SELECT
     ostrova.article_group_sq.nextval,
@@ -102,13 +121,16 @@ INSERT INTO OSTROVA.ARTICLE_GROUP
   FROM
     OSTROVA_IMP.GROUPS;
 
-
+-- добавяне на служебна група - артикули с липсваща група (съществувала и изтрита)
 insert into OSTROVA.article_group values(0, 'MISSING', sysdate, 0,1);
 
+-- добавяне на служебна група - липсващи артикули (изтрити)
 insert into OSTROVA.article_group values(1, 'DELETED', sysdate, 0,1);
 
+-- добавяне на "паразитна колона"
 alter Table ostrova.article add old_id number;
 
+-- ############## Импортиране на артикули - поръчка
 INSERT INTO OSTROVA.ARTICLE
 	  SELECT
 		OSTROVA.ARTICLE_SQ.nextval,
@@ -119,20 +141,27 @@ INSERT INTO OSTROVA.ARTICLE
 		null,
 		PRICE,
 		LAST_UPDATE_DATE,
-		(select ID from ostrova.article_group where name = nvl((select name from OSTROVA_IMP.GROUPS z where z.ID = X.GROUP_ID),'MISSING') and order_type = 1) grupa,
+		(select
+		    ID
+   	     from
+   	        ostrova.article_group
+         where
+            name = nvl((select name from OSTROVA_IMP.GROUPS z where z.ID = X.GROUP_ID),'MISSING') and
+            order_type = 1) grupa,
 		MIARKA,
 		1,
 		ID
 	FROM
 	  OSTROVA_IMP."ARTIKUL_TYPES" x;
 
+-- Артикулите с липсваща група се правят неактивни
 update OSTROVA.ARTICLE set active = 0 where group_fk_id = 0;
 
--- insert missing old articles from old orders (hm, needed to be executed 3 times)
--- aggressive search of old and deleted articles, which do not have a record any more in original article (artikul_types) table. These are loaded in a special group (id 1 - "deleted")
--- articles are taken direclty from record_article, since they are only located there.
--- this is necessary, not to break master/detail relationship in order/ordeR_detail records.
--- the articles are inserted as inactive
+-- Добавяне на лиспващите стари артикули от старите поръчки (изпълнява се на 3 паса за да се обхванат всички случаи)
+-- Всички такива артикули се добавят към група DELETED (id=1)
+-- Артикулите се добавят само с името си, тъй като присъстват единствено в старата таблица за поръчки
+-- Това е необходимо за да не се наруши master/detail отношението в таблица order/detail
+-- Всички артикули се добавят като неактивни (is_active=0)
 INSERT INTO OSTROVA.ARTICLE
 select
     OSTROVA.ARTICLE_SQ.nextval,
@@ -141,6 +170,7 @@ select
     NULL,
     PRICE,
     NULL,
+    PRICE,
     sysdate,
     0,
     null,
@@ -148,7 +178,14 @@ select
     ARTICLE_TYPE_ID
 from "OSTROVA_IMP"."RECORD_ARTICLE"
 where ARTICLE_TYPE_ID in (
-     select max(ARTICLE_TYPE_ID) from "OSTROVA_IMP"."RECORD_ARTICLE" group by NAME where ARTICLE_TYPE_ID not in (select old_id from ostrova.article)
+     select
+        max(ARTICLE_TYPE_ID)
+     from
+        "OSTROVA_IMP"."RECORD_ARTICLE"
+     where
+        ARTICLE_TYPE_ID not in (select old_id from ostrova.article)
+     group by
+        NAME
 );
 
 INSERT INTO OSTROVA.ARTICLE
@@ -160,10 +197,11 @@ select
     0,
     NULL,
     NULL,
+    NULL,
     sysdate,
-    1,
+    1,                  -- група DELETED
     null,
-    0,
+    0,                  -- IS_ACTIVE 0
     ARTICLE_TYPE_ID
 from (
 select
@@ -171,7 +209,14 @@ select
     ARTICLE_TYPE_ID
 from "OSTROVA_IMP"."RECORD_ARTICLE"
 where ARTICLE_TYPE_ID in (
-     select max(ARTICLE_TYPE_ID) from "OSTROVA_IMP"."RECORD_ARTICLE" where ARTICLE_TYPE_ID not in (select old_id from ostrova.article where old_id is not null)  group by NAME
+     select
+        max(ARTICLE_TYPE_ID)
+     from
+        "OSTROVA_IMP"."RECORD_ARTICLE"
+     where
+        ARTICLE_TYPE_ID not in (select old_id from ostrova.article where old_id is not null)
+     group by
+        NAME
 ) group by name, article_type_id
 )
 ;
@@ -185,10 +230,11 @@ select
     0,
     NULL,
     NULL,
+    NULL,
     sysdate,
-    1,
+    1,             -- група DELETED
     null,
-    0,
+    0,             -- IS_ACTIVE 0
     ARTICLE_TYPE_ID
 from (
 select
@@ -196,11 +242,19 @@ select
     ARTICLE_TYPE_ID
 from "OSTROVA_IMP"."RECORD_ARTICLE"
 where ARTICLE_TYPE_ID in (
-     select max(ARTICLE_TYPE_ID) from "OSTROVA_IMP"."RECORD_ARTICLE" where ARTICLE_TYPE_ID not in (select old_id from ostrova.article where old_id is not null)  group by NAME
+     select
+       max(ARTICLE_TYPE_ID)
+     from
+       "OSTROVA_IMP"."RECORD_ARTICLE"
+     where
+       ARTICLE_TYPE_ID not in (select old_id from ostrova.article where old_id is not null)
+     group by
+       NAME
 ) group by name, article_type_id
 )
 ;
 
+-- ############## Импортиране на поръчки
 INSERT INTO OSTROVA."ORDER"
 	  SELECT
 		REC_ID,
@@ -244,21 +298,36 @@ INSERT INTO OSTROVA."ORDER"
 		FROM
 	  OSTROVA_IMP.Record_data x where rec_id > 57;
 
--- aggressive search of old and deleted articles, which do not have a record any more in original article (artikul_types) table. These are loaded in a special group (id 1 - "deleted")
--- this is necessary, not to break master/detail relationship in order/ordeR_detail records.
+-- ############## Импортиране на доставки - детайни записи
+-- Артикулите/Артикулите групи се издирват по OLD_ID и се прикачат към новите си идентификатори
+-- Артикулите/Артикулите групи, които са били изтрити се издирват само по име
 INSERT INTO OSTROVA.ORDER_DETAIL
 	select
 	OSTROVA.OSTROVACALENDAR_ORDERDETAIL_SQ.NEXTVAL,
     CNT,
 	PRICE,
-    (select ID from ostrova.article z where (z.old_id = x.ARTICLE_TYPE_ID and z.name = x.NAME and z.group_fk_id = 1) or (z.old_id = x.ARTICLE_TYPE_ID and z.group_fk_id <> 1) ) article_id,
-	(select GROUP_FK_ID from ostrova.article z where (z.old_id = x.ARTICLE_TYPE_ID and z.name = x.NAME and z.group_fk_id = 1) or (z.old_id = x.ARTICLE_TYPE_ID and z.group_fk_id <> 1)) article_id,
+    (select
+       ID
+     from
+       ostrova.article z
+     where
+           (z.old_id = x.ARTICLE_TYPE_ID and z.name = x.NAME and z.group_fk_id = 1) or
+           (z.old_id = x.ARTICLE_TYPE_ID and z.group_fk_id <> 1)
+     ) article_id,
+	(select
+	       GROUP_FK_ID
+     from
+           ostrova.article z
+     where
+           (z.old_id = x.ARTICLE_TYPE_ID and z.name = x.NAME and z.group_fk_id = 1) or
+           (z.old_id = x.ARTICLE_TYPE_ID and z.group_fk_id <> 1)
+    ) article_id,
     REC_ID
 	from
  "OSTROVA_IMP"."RECORD_ARTICLE" x
  where rec_id in (select id from OSTROVA."ORDER");
 
--- fix total exceptions with missing article names
+-- Корекция на лиспащ артикул "Детско меню", който не е бил намерен
 INSERT INTO OSTROVA.ARTICLE
 values(
     OSTROVA.ARTICLE_SQ.nextval,
@@ -268,56 +337,19 @@ values(
     0,
     NULL,
     NULL,
+    NULL,
     sysdate,
     1,
     null,
     0,
     9998);
 
+-- Ръчна корекция на невалидни записи от старата база
 update OSTROVA.ORDER_DETAIL set article_fk_id = (select max(id) from OSTROVA.ARTICLE) , group_fk_id = 1 where article_fk_id is null and order_fk_id in (6148,6205,7815,7856);
-
-
- -- original non-aggressive artcile search
-/*INSERT INTO OSTROVA.ORDER_DETAIL
-	select
-	OSTROVA.OSTROVACALENDAR_ORDERDETAIL_SQ.NEXTVAL,
-    CNT,
-	PRICE,
-    (select ID from ostrova.article z where z.old_id = ARTICLE_TYPE_ID) article_id,
-	(select GROUP_FK_ID from ostrova.article z where z.old_id = ARTICLE_TYPE_ID) article_id,
-    REC_ID
-	from
- "OSTROVA_IMP"."RECORD_ARTICLE"
- where rec_id in (select id from OSTROVA."ORDER");
-*/
-
-INSERT INTO OSTROVA.ARTICLE
-
-
-	  SELECT
-		OSTROVA.ARTICLE_SQ.nextval,
-		NAME,
-		null,
-		null,
-		PRICE,
-		null,
-		PRICE,
-		LAST_UPDATE_DATE,
-		(select ID from ostrova.article_group where name = nvl((select name from OSTROVA_IMP.GROUPS z where z.ID = X.GROUP_ID),'MISSING') and order_type = 1) grupa,
-		MIARKA,
-		1,
-		ID
-	FROM
-	  OSTROVA_IMP."ARTIKUL_TYPES" x;
-
-
-alter Table ostrova.article drop column old_id;
-
-drop sequence "OSTROVA"."SUPPLIER_SQ";
-CREATE SEQUENCE  "OSTROVA"."SUPPLIER_SQ"  MINVALUE 1 MAXVALUE 9999999999999999999999999999 INCREMENT BY 1 START WITH 1000 CACHE 20 NOORDER  NOCYCLE ;
 
 commit;
 
+alter Table ostrova.article drop column old_id;
 
 
 

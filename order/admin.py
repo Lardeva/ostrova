@@ -186,7 +186,7 @@ class OrderForm(ChainedChoicesModelForm):
                 not self.cleaned_data['refusal_date'] or
                 not self.cleaned_data['refusal_reason']
                 ):
-                raise ValidationError('Дата и причина за отказ са задължителни при маркитане на поръчка като "ОТКАЗАНА".')
+                raise ValidationError('Дата и причина за отказ са задължителни при маркиране на поръчка като "ОТКАЗАНА".')
 
 
         if 'payed_final' in self.cleaned_data and self.cleaned_data['payed_final']:
