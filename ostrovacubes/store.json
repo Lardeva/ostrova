@@ -17,18 +17,18 @@
   ],
   "cubes": [
     {
-      "name":"article_store",
+      "name":"article_store_min",
       "label":"Склад анализ",
       "dimensions":["club","article"],
       "joins":[
-        {"master":"article_store.article_fk_id", "detail":"article.id"},
-        {"master":"article_store.club_fk_id", "detail":"club.id"}
+        {"master":"article_store_min.article_fk_id", "detail":"article.id"},
+        {"master":"article_store_min.club_fk_id", "detail":"club.id"}
       ],
       "measures":[
-        {"name":"cnt_min", "label":"Минимално количество"}
+        {"name":"under_cnt", "label":"Под Минимално количество"}
       ],
       "aggregates":[
-        {"name": "agg_count","function": "sum","measure": "cnt_min","label" : "Минимално количество"}
+        {"name": "agg_count","function": "sum","measure": "under_cnt","label" : "Минимално количество"}
       ],
       "mappings": {
         "ASRTCLE_STORE.CNT": "dm_ASRTCLE_STORE.ASRTCLE_STORE_CNT",

@@ -25,7 +25,7 @@ from store.models import ArticleStore, stock_delivery_detail, stock_receipt_prot
 class OrderDetailForm(ChainedChoicesModelForm):
 
     price = ChainedNumberInputField(parent_field='article_fk', ajax_url=reverse_lazy('article_ajax_chained_order_models'),
-                                    label=u'Цена', required=True )
+                                     label=u'Цена', required=True )
 
     def clean_amount(self):
         self.cleaned_data['amount'] = round(Decimal(nvl(self.cleaned_data.get('price',0),0)) * Decimal(nvl(self.cleaned_data.get('cnt',0),0)),2)
@@ -42,13 +42,13 @@ class OrderDetailInline(admin.TabularInline):
     readonly_fields = ()
     fields = ('article_fk', 'cnt', 'price', 'amount')
 
-    extra = 8
+    extra = 3
 
     raw_id_fields = ( 'article_fk',)
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-           if (obj.locked and not request.user.is_superuser or
+           if (obj.locked and request.user.employee.club_fk or
                obj.store_status or obj.payed_final
            ):
             self.form = ModelForm
@@ -57,7 +57,7 @@ class OrderDetailInline(admin.TabularInline):
 
     def get_extra(self, request, obj=None, **kwargs):
         if obj:
-            if (obj.locked and not request.user.is_superuser or
+            if (obj.locked and request.user.employee.club_fk or
                     obj.store_status or obj.payed_final
             ):
                 return 0
@@ -65,7 +65,7 @@ class OrderDetailInline(admin.TabularInline):
 
     def get_max_num(self, request, obj=None, **kwargs):
         if obj:
-            if (obj.locked and not request.user.is_superuser or
+            if (obj.locked and request.user.employee.club_fk or
                     obj.store_status or obj.payed_final
             ):
                 return 0
@@ -73,7 +73,7 @@ class OrderDetailInline(admin.TabularInline):
 
     def has_delete_permission(self, request, obj=None):
         if obj:
-            if (obj.locked and not request.user.is_superuser or
+            if (obj.locked and request.user.employee.club_fk or
                     obj.store_status or obj.payed_final
                 ):
                 return False
@@ -208,7 +208,7 @@ class OrderForm(ChainedChoicesModelForm):
 class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
     change_list_template = "admin/order/order/change_list.html"
-    search_fields = ('locked','status','child','parent','phone',)
+    search_fields = ('locked','status','child','parent','phone','id')
     list_filter     = (
         'rec_date','club_fk','locked','status',
     )
@@ -268,7 +268,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
         actual_readonly_fields = self.readonly_fields.copy()
 
         if obj:
-            if (obj.locked and not request.user.is_superuser or
+            if (obj.locked and request.user.employee.club_fk or
                     obj.store_status
             ):
                 pay_only_readonly_fields = self.closed_readonly_fields.copy()
@@ -315,20 +315,20 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
         return actual_readonly_fields
 
-    def suit_row_attributes(self, obj):
-        class_locked = {
-            '0': 'success',
-            '1': 'warning',
-        }
-        css_class = class_locked.get(obj.locked)
-        if css_class:
-            return {'class': css_class}
-
-    def suit_cell_attributes(self, obj, column):
-        if column == 'locked':
-            return {'class': 'text-center'}
-        elif column == 'right_aligned':
-            return {'class': 'text-right muted'}
+    # def suit_row_attributes(self, obj):
+    #     class_locked = {
+    #         '0': 'success',
+    #         '1': 'warning',
+    #     }
+    #     css_class = class_locked.get(obj.locked)
+    #     if css_class:
+    #         return {'class': css_class}
+    #
+    # def suit_cell_attributes(self, obj, column):
+    #     if column == 'locked':
+    #         return {'class': 'text-center'}
+    #     elif column == 'right_aligned':
+    #         return {'class': 'text-right muted'}
 
     inlines = [
         OrderDetailInline,

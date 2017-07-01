@@ -13,8 +13,8 @@ class ArticleStore(models.Model):
     club_fk = models.ForeignKey('nomenclature.Club', null=True, verbose_name="Клуб")
     article_fk = models.ForeignKey('nomenclature.Article', blank=False, null=True, verbose_name="Артикул")
     cnt = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Налично кол.")
-    cnt_min = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Минимално кол.", validators=[MinValueValidator(Decimal('0.001'))])
-    cnt_bl = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Блокирано кол.", validators=[MinValueValidator(Decimal('0.001'))])
+    cnt_min = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Минимално кол.", validators=[MinValueValidator(Decimal('0'))])
+    cnt_bl = models.DecimalField( max_digits=8, decimal_places=3, blank=True, null=True, verbose_name="Блокирано кол.", validators=[MinValueValidator(Decimal('0'))])
     note = models.TextField(max_length=1000, blank=True, null=True,verbose_name="Забележка за блокировката")
 
     def __str__(self):

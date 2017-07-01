@@ -123,9 +123,9 @@ class stock_receipt_protocolAdmin(DjangoObjectActions, admin.ModelAdmin):
     list_display =('type','id','receipt_date', 'club_fk','transfer_club_fk' )
     readonly_fields = ('id','order_fk' ,'delivery_fk','transfer_fk','receipt_date', 'closed')
     form = stock_receipt_protocolForm
-    fields = ('cashdesk', 'group_fk','note','amount','transfer_club_fk')
+    #fields = ('cashdesk', 'group_fk','note','amount','transfer_club_fk')
     list_filter = ('receipt_date','type','club_fk','closed')
-    search_fields = ('note','group_fk__name','group_fk__sub_name')
+    search_fields = ('note','order_fk__id',)
     list_per_page = 50
     date_hierarchy = "receipt_date"
 
