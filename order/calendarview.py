@@ -20,6 +20,10 @@ def calendar_order_data(request):
     end_date = datetime.strptime(end_parameter,'%Y-%m-%d')
     club_id = request.GET['club_id']
 
+    # show requests with missing club only
+    if club_id is not None and club_id.strip() == '':
+        club_id = None
+
     orders=Order.objects.filter(rec_date__gte=start_date,rec_date__lte =end_date,club_fk = club_id)
 
     json_ins = []
