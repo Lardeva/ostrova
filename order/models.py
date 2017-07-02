@@ -95,6 +95,9 @@ class Order(models.Model):
     def dueAmount_int(self):
         return Decimal(Decimal(nvl(self.priceFinal_int(),0)) - Decimal(nvl(self.deposit2,0)) - Decimal(nvl(self.deposit,0)) - Decimal(nvl(self.payed_final,0)))
 
+    def payedAmount_int(self):
+        return Decimal(Decimal(nvl(self.deposit2,0)) + Decimal(nvl(self.deposit,0)) + Decimal(nvl(self.payed_final,0)))
+
     @property
     def priceDetail(self):
         return formats.number_format(self.priceDetail_int(),2)
@@ -110,8 +113,13 @@ class Order(models.Model):
         return formats.number_format(self.dueAmount_int(),2)
     dueAmount.fget.short_description = 'Сума за доплащане'
 
+    @property
+    def payedAmount(self):
+        return formats.number_format(self.payedAmount_int(),2)
+    payedAmount.fget.short_description = 'Платена сума'
+
     def __str__(self):
-        return str(nvl(self.rec_date,'')) + ":" + str(nvl(self.rec_time,'')) + ":" +  str(nvl(self.rec_time_end,'')) + ":" + str(nvl(self.parent,'')) + ":" + str(nvl(self.phone,'')) + ":" + str(nvl(self.child,'')) + " :" + str(nvl(self.deposit,0)) + " лв."
+        return str(nvl(self.rec_date,'')) + ":" + str(nvl(self.rec_time,'')) + ":" +  str(nvl(self.rec_time_end,'')) + ":" + str(nvl(self.parent,'')) + ":" + str(nvl(self.phone,'')) + ":" + str(nvl(self.child,'')) + " :" + str(formats.number_format(nvl(self.deposit,0),2)) + " лв."
 
 
     class Meta:

@@ -237,7 +237,7 @@ def show_me_the_money(sender, **kwargs):
         amount = Decimal(data[2])
 
         # Undertake some action depending upon `ipn_obj`.
-        if operation =="deposit":
+        if operation == "deposit":
             order = Order.objects.get(id=order_id)
             if order.status == 'REQUESTED':
                 order.status = 'CONFIRMED'

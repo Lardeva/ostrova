@@ -24,8 +24,9 @@
         <div class="span1   text-right"><strong>Брой деца</strong></div>
         <div class="span1_1 text-right"><strong>Брой възрастни</strong></div>
         <div class="span1_1 text-right"><strong>Статус</strong></div>
-        <div class="span1   text-right"><strong>Сума за плащане</strong></div>
+        <div class="span1   text-right"><strong>Платена сума</strong></div>
         <div class="span1"><strong>Капаро</strong></div>
+        <div class="span1   text-right"><strong>Сума за доплащане</strong></div>
         <div class="span1   text-right"><strong>Финално плащане</strong></div>
     </div>
 
@@ -43,13 +44,16 @@
         <div class="span1   text-right"> {{ order.child_count|default:"" }}</div>
         <div class="span1_1 text-right"> {{ order.adult_count|default:"" }}</div>
         <div class="span1_1 text-right"> {{ order.get_status_display }}</div>
-        <div class="span1   text-right"> {{ order.dueAmount }}</div>
+        <div class="span1   text-right"> {{ order.payedAmount }}</div>
 
         <div class="span1">
             {% if order.status != 'CANCELED' and not order.deposit %}
             <a class= "btn btn-info" href="/siteorderpaydeposit/?id={{order.id}}">Капаро 50лв.</a>
             {% endif %}
         </div>
+
+        <div class="span1   text-right"> {{ order.dueAmount }}</div>
+
         <div class="span1">
             {% if order.status == 'ORDERED' and order.locked and order.dueAmount_int%}
             <a class= "btn btn-info" href="/siteorderpayfinal/?id={{order.id}}">Финално плащане</a>
