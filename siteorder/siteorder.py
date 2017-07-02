@@ -237,7 +237,7 @@ def show_me_the_money(sender, **kwargs):
         amount = Decimal(data[2])
 
         # Undertake some action depending upon `ipn_obj`.
-        if ipn_obj.invoice.startswith("deposit"):
+        if operation =="deposit":
             order = Order.objects.get(id=order_id)
             if order.status == 'REQUESTED':
                 order.status = 'CONFIRMED'
@@ -246,7 +246,7 @@ def show_me_the_money(sender, **kwargs):
             order.deposit_payment_type = 'BANK_CARD'
             order.save()
 
-        elif ipn_obj.invoice.startswith("final"):
+        elif operation == "final":
             order = Order.objects.get(id=order_id)
             if order.status == 'REQUESTED':
                 order.status = 'CONFIRMED'
