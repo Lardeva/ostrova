@@ -37,11 +37,11 @@
      { "name":"club",   "attributes": ["id","name"], "label": "Клуб"},
      { "name":"dt", "role": "time", "label": "Дата",
        "levels": [
-         { "name": "Година", "attributes": ["year"] },
-         { "name": "Тримесечие", "attributes": ["quarter"] },
-         { "name": "Месец", "attributes": ["month", "month_name"] },
-         { "name": "Седмица", "attributes": ["week"] },
-         { "name": "Ден", "attributes": ["day"] }
+         { "name": "year", "label": "Година", "attributes": ["year"] },
+         { "name": "quarter", "label": "Тримесечие", "attributes": ["quarter"] },
+         { "name": "month", "label": "Месец", "attributes": ["month", "month_name"] },
+         { "name": "week", "label": "Седмица", "attributes": ["week"] },
+         { "name": "day",  "label": "Ден", "attributes": ["day"] }
        ],
        "hierarchies": [
          { "name": "default", "levels":["year", "month", "day"]}
