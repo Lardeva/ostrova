@@ -6,17 +6,24 @@ from django.http import HttpResponse
 from clever_select_enhanced.views import ChainedSelectChoicesView
 from nomenclature.models import Article, ArticleGroup, Supplier
 from ostrovaweb.utils import nvl
+from store.models import ArticleStore
 
 
 def article_name_lookup(request):
-    #field = request.GET['field']
+    field = request.GET['field']
     value = request.GET['value']
 
     article_text = ''
-    try:
-        article_text = str(Article.objects.get(id=value))
-    except Article.NotFoundException:
-        pass
+    if field.endswith('article_fk'):
+        try:
+            article_text = str(Article.objects.get(id=value))
+        except Article.NotFoundException:
+            pass
+    elif field.endswith('article_store_fk'):
+        try:
+            article_text = str(ArticleStore.objects.get(id=value))
+        except Article.NotFoundException:
+            pass
 
     return HttpResponse(article_text)
 
