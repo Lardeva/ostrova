@@ -203,7 +203,7 @@ def siteorder_pay_final(request):
     template_data['form'] = form
     template_data['user'] = request.user
     template_data['payment_data'] = [
-        ['Сума', "%.2f" % float(amount),],
+        ['Сума', "$ %.2f" % float(amount),],
         ['Основание', text],
     ]
     return render_to_response("siteorder_paypal.html", template_data, context)
