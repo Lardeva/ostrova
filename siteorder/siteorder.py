@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 import logging
+from pprint import pformat
+
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -208,6 +210,7 @@ def siteorder_pay_final(request):
 def show_me_the_money(sender, **kwargs):
     ipn_obj = sender
     logging.error("Received payment confirmation" + str(sender))
+    logging.error("Data " + pformat (vars(sender)))
 
     logging.error("Receiver " + str(ipn_obj.receiver_email))
     logging.error("status " + str(ipn_obj.payment_status))
