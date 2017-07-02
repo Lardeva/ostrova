@@ -18,7 +18,7 @@
         <div class="span1"><strong>Начало</strong></div>
         <div class="span1"><strong>Край</strong></div>
         <div class="span1"><strong>Родител</strong></div>
-        <div class="span1_1"><strong>Телефон</strong></div>
+        <div class="span2"><strong>Телефон</strong></div>
         <div class="span1"><strong>Дете</strong></div>
         <div class="span1   text-right"><strong>Години</strong></div>
         <div class="span1   text-right"><strong>Бр. деца</strong></div>
@@ -38,7 +38,7 @@
         <div class="span1"> {{ order.rec_time }}</div>
         <div class="span1"> {{ order.rec_time_end }}</div>
         <div class="span1"> {{ order.parent|default:"" }}</div>
-        <div class="span1_1"> {{ order.phone|default:"" }}</div>
+        <div class="span2"> {{ order.phone|default:"" }}</div>
         <div class="span1"> {{ order.child|default:"" }}</div>
         <div class="span1   text-right"> {{ order.age|default:"" }}</div>
         <div class="span1   text-right"> {{ order.child_count|default:"" }}</div>
