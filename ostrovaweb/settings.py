@@ -64,9 +64,9 @@ INSTALLED_APPS = [
     'rest_framework',
 
     # external site libs
-    # 'registration',
-    # 'django_forms_bootstrap',
-    # 'paypal.standard.ipn',
+    'registration',
+    'django_forms_bootstrap',
+    'paypal.standard.ipn',
 
 ]
 

@@ -47,9 +47,9 @@ MarkupSafe==1.0
 expressions==0.2.3
 
 # external site libs
-# django-registration-redux==1.6
-# django-paypal==0.3.6
-# django-forms-bootstrap==3.1.0
+django-registration-redux==1.6
+django-paypal==0.3.6
+django-forms-bootstrap==3.1.0
 
 # uwsgi
 #django-reversion==2.0.8
