@@ -250,3 +250,8 @@ def show_me_the_money(sender, **kwargs):
 
 
 valid_ipn_received.connect(show_me_the_money)
+
+from django.db.models.signals import *
+for signal in [pre_save, pre_init, pre_delete, post_save, post_delete, post_init, post_syncdb]:
+    # print a List of connected listeners
+    logging.info(str(signal.receivers))
