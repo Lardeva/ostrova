@@ -155,7 +155,8 @@ def siteorder_pay_deposit(request):
         "business": "putbul_lady-facilitator@abv.bg",
         "amount": amount,
         "item_name": text,
-        "invoice": "order-deposit" + str(order.id),
+        "invoice": "order-deposit-" + str(order.id),
+        "custom": "deposit-" + str(order.id) + "-50.00",
         "notify_url": "https://partyerp.herokuapp.com" + reverse('paypal-ipn'),
         "return_url": "https://partyerp.herokuapp.com/accounts/profile/",
         "cancel_return": "https://partyerp.herokuapp.com/pay-cancel",
@@ -189,6 +190,7 @@ def siteorder_pay_final(request):
         "amount": amount,
         "item_name": text,
         "invoice": "order-final" + str(order.id),
+        "custom": "final-" + str(order.id) + "-" + order.dueAmount,
         "notify_url": "https://partyerp.herokuapp.com" + reverse('paypal-ipn'),
         "return_url": "https://partyerp.herokuapp.com/accounts/profile/",
         "cancel_return": "https://partyerp.herokuapp.com/pay-cancel",
@@ -229,11 +231,13 @@ def show_me_the_money(sender, **kwargs):
         # ALSO: for the same reason, you need to check the amount
         # received etc. are all what you expect.
 
-        # Undertake some action depending upon `ipn_obj`.
-        if ipn_obj.invoice.startswith("order-deposit"):
-            order_id = int(ipn_obj.invoice[13:])
-            amount = Decimal(round(nvl(ipn_obj.payment_gross,0) / Decimal(0.572310),2))
+        data = ipn_obj.custom.split('-')
+        operation = data[0]
+        order_id = int(data[1])
+        amount = Decimal(data[2])
 
+        # Undertake some action depending upon `ipn_obj`.
+        if ipn_obj.invoice.startswith("deposit"):
             order = Order.objects.get(id=order_id)
             if order.status == 'REQUESTED':
                 order.status = 'CONFIRMED'
@@ -241,10 +245,8 @@ def show_me_the_money(sender, **kwargs):
             order.deposit_date = datetime.now()
             order.deposit_payment_type = 'BANK_CARD'
             order.save()
-        elif ipn_obj.invoice.startswith("order-final"):
-            order_id = int(ipn_obj.invoice[11:])
-            amount = ipn_obj.amount
 
+        elif ipn_obj.invoice.startswith("final"):
             order = Order.objects.get(id=order_id)
             if order.status == 'REQUESTED':
                 order.status = 'CONFIRMED'
@@ -255,8 +257,3 @@ def show_me_the_money(sender, **kwargs):
 
 
 valid_ipn_received.connect(show_me_the_money)
-logging.error('shhh2')
-from django.db.models.signals import *
-for signal in [pre_save, pre_init, pre_delete, post_save, post_delete, post_init]:
-    # print a List of connected listeners
-    logging.error(str(signal.receivers))
