@@ -7047,7 +7047,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.charttype == 'bars-vertical'\">\n" +
-    "        <h3><i class=\"fa fa-fw fa-bar-chart\"></i> Chart\n" +
+    "        <h3><i class=\"fa fa-fw fa-bar-chart\"></i> Диаграма\n" +
     "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "        </h3>\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
@@ -7095,7 +7095,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.charttype == 'radar'\">\n" +
-    "        <h3><i class=\"fa fa-fw fa-bullseye\"></i> Chart\n" +
+    "        <h3><i class=\"fa fa-fw fa-bullseye\"></i> Диаграма\n" +
     "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "        </h3>\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
@@ -7107,7 +7107,7 @@ angular.module('cv.cubes').service("gaService", ['$rootScope', '$http', '$cookie
     "    </div>\n" +
     "\n" +
     "    <div ng-if=\"view.params.charttype == 'sunburst'\">\n" +
-    "        <h3><i class=\"fa fa-fw fa-sun-o\"></i> Chart\n" +
+    "        <h3><i class=\"fa fa-fw fa-sun-o\"></i> Диаграма\n" +
     "            <i ng-show=\"view.pendingRequests > 0\" class=\"fa fa-circle-o-notch fa-spin fa-fw margin-bottom text-info pull-right\"></i>\n" +
     "        </h3>\n" +
     "        <div ng-if=\"view.pendingRequests > 0\" class=\"loadingbar-content\">\n" +
