@@ -212,7 +212,7 @@ def show_me_the_money(sender, **kwargs):
     logging.error("Receiver " + str(ipn_obj.receiver_email))
     logging.error("status " + str(ipn_obj.payment_status))
     logging.error("invoice " + str(ipn_obj.invoice))
-    logging.error("amt " + str(ipn_obj.auth_amount))
+    logging.error("amt " + str(ipn_obj.amount))
 
     if ipn_obj.payment_status == ST_PP_COMPLETED:
         # WARNING !
