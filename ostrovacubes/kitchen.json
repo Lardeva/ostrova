@@ -45,7 +45,7 @@
        ],
 
        "hierarchies": [
-         { "name": "default", "levels":["year", "month", "day"]}
+         { "name": "default", "levels":["year", "month", "week", "day"]}
        ],
        "default_hierarchy_name": "default",
        "default_hierarchy": "default"
