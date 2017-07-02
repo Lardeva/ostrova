@@ -152,9 +152,9 @@ def siteorder_pay_deposit(request):
         "amount": amount,
         "item_name": text,
         "invoice": "order-deposit" + str(order.id),
-        "notify_url": "https://ostrovaweb.herokuapp.com" + reverse('paypal-ipn'),
-        "return_url": "https://ostrovaweb.herokuapp.com/accounts/profile/",
-        "cancel_return": "https://ostrovaweb.herokuapp.com/pay-cancel",
+        "notify_url": "https://partyerp.herokuapp.com" + reverse('paypal-ipn'),
+        "return_url": "https://partyerp.herokuapp.com/accounts/profile/",
+        "cancel_return": "https://partyerp.herokuapp.com/pay-cancel",
     }
 
     # Create the instance.
