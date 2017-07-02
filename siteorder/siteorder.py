@@ -220,7 +220,7 @@ def show_me_the_money(sender, **kwargs):
         # Undertake some action depending upon `ipn_obj`.
         if ipn_obj.invoice.starts_with("order-deposit"):
             order_id = int(ipn_obj.invoice[13:])
-            amount = ipn_obj.amount
+            amount = ipn_obj.auth_amount
 
             order = Order.objects.get(id=order_id)
             order.status = 'CONFIRMED'
