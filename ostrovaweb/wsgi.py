@@ -40,7 +40,8 @@ logging.error("init cubes")
 # initialize logging
 if config.has_option("server","log"):
     logging.error("init logging:" + config.get("server","log"))
-    get_logger(config.get("server","log"))
+    lg = get_logger(config.get("server","log"))
+    lg.error("logging test")
 
 cubes_application = create_server(config)
 
