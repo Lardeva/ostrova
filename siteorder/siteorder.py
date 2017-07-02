@@ -230,7 +230,7 @@ def show_me_the_money(sender, **kwargs):
         # received etc. are all what you expect.
 
         # Undertake some action depending upon `ipn_obj`.
-        if ipn_obj.invoice.starts_with("order-deposit"):
+        if ipn_obj.invoice.startswith("order-deposit"):
             order_id = int(ipn_obj.invoice[13:])
             amount = Decimal(round(nvl(ipn_obj.payment_gross,0) / Decimal(0.572310),2))
 
@@ -241,7 +241,7 @@ def show_me_the_money(sender, **kwargs):
             order.deposit_date = datetime.now()
             order.deposit_payment_type = 'BANK_CARD'
             order.save()
-        elif ipn_obj.invoice.starts_with("order-final"):
+        elif ipn_obj.invoice.startswith("order-final"):
             order_id = int(ipn_obj.invoice[11:])
             amount = ipn_obj.amount
 
