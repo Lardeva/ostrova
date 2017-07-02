@@ -212,7 +212,7 @@ def show_me_the_money(sender, **kwargs):
     logging.error("Receiver " + str(ipn_obj.receiver_email))
     logging.error("status " + str(ipn_obj.payment_status))
     logging.error("invoice " + str(ipn_obj.invoice))
-    logging.error("amt " + str(ipn_obj.amount))
+    logging.error("amtX " + str(ipn_obj.amount))
 
     if ipn_obj.payment_status == ST_PP_COMPLETED:
         # WARNING !
@@ -232,7 +232,8 @@ def show_me_the_money(sender, **kwargs):
             amount = ipn_obj.auth_amount
 
             order = Order.objects.get(id=order_id)
-            order.status = 'CONFIRMED'
+            if order.status == 'REQUESTED':
+                order.status = 'CONFIRMED'
             order.deposit = amount
             order.deposit_date = datetime.now()
             order.deposit_payment_type = 'BANK_CARD'
@@ -242,10 +243,11 @@ def show_me_the_money(sender, **kwargs):
             amount = ipn_obj.amount
 
             order = Order.objects.get(id=order_id)
-            order.status = 'CONFIRMED'
-            order.deposit = amount
-            order.deposit_date = datetime.now()
-            order.deposit_payment_type = 'BANK_CARD'
+            if order.status == 'REQUESTED':
+                order.status = 'CONFIRMED'
+            order.payed_final = amount
+            order.payment_date= datetime.now()
+            order.final_payment_type = 'BANK_CARD'
             order.save()
 
 
