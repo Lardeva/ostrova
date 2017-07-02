@@ -190,7 +190,7 @@ def siteorder_pay_final(request):
         "amount": amount,
         "item_name": text,
         "invoice": "order-final" + str(order.id),
-        "custom": "final-" + str(order.id) + "-" + order.dueAmount,
+        "custom": "final-" + str(order.id) + "-" + str(order.dueAmount_int()),
         "notify_url": "https://partyerp.herokuapp.com" + reverse('paypal-ipn'),
         "return_url": "https://partyerp.herokuapp.com/accounts/profile/",
         "cancel_return": "https://partyerp.herokuapp.com/pay-cancel",
