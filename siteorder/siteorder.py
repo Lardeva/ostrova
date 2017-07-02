@@ -8,6 +8,8 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from paypal.standard.forms import PayPalPaymentsForm
+from paypal.standard.ipn.signals import valid_ipn_received
+from paypal.standard.models import ST_PP_COMPLETED
 from phonenumber_field.formfields import PhoneNumberField
 
 from datetimewidget.widgets import DateTimeWidget, DateWidget, TimeWidget
@@ -183,9 +185,9 @@ def siteorder_pay_final(request):
         "amount": amount,
         "item_name": text,
         "invoice": "order-final" + str(order.id),
-        "notify_url": "https://ostrovaweb.herokuapp.com" + reverse('paypal-ipn'),
-        "return_url": "https://ostrovaweb.herokuapp.com/accounts/profile/",
-        "cancel_return": "https://ostrovaweb.herokuapp.com/pay-cancel",
+        "notify_url": "https://partyerp.herokuapp.com" + reverse('paypal-ipn'),
+        "return_url": "https://partyerp.herokuapp.com/accounts/profile/",
+        "cancel_return": "https://partyerp.herokuapp.com/pay-cancel",
     }
 
     # Create the instance.
@@ -199,3 +201,43 @@ def siteorder_pay_final(request):
         ['Основание', text],
     ]
     return render_to_response("siteorder_paypal.html", template_data, context)
+
+
+def show_me_the_money(sender, **kwargs):
+    ipn_obj = sender
+    if ipn_obj.payment_status == ST_PP_COMPLETED:
+        # WARNING !
+        # Check that the receiver email is the same we previously
+        # set on the business field request. (The user could tamper
+        # with those fields on payment form before send it to PayPal)
+        if ipn_obj.receiver_email != "putbul_lady-facilitator@abv.bg":
+            # Not a valid payment
+            return
+
+        # ALSO: for the same reason, you need to check the amount
+        # received etc. are all what you expect.
+
+        # Undertake some action depending upon `ipn_obj`.
+        if ipn_obj.invoice.starts_with("order-deposit"):
+            order_id = int(ipn_obj.invoice[13:])
+            amount = ipn_obj.amount
+
+            order = Order.objects.get(id=order_id)
+            order.status = 'CONFIRMED'
+            order.deposit = amount
+            order.deposit_date = datetime.now()
+            order.deposit_payment_type = 'BANK_CARD'
+            order.save()
+        elif ipn_obj.invoice.starts_with("order-final"):
+            order_id = int(ipn_obj.invoice[11:])
+            amount = ipn_obj.amount
+
+            order = Order.objects.get(id=order_id)
+            order.status = 'CONFIRMED'
+            order.deposit = amount
+            order.deposit_date = datetime.now()
+            order.deposit_payment_type = 'BANK_CARD'
+            order.save()
+
+
+valid_ipn_received.connect(show_me_the_money)
