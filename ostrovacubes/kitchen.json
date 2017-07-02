@@ -28,6 +28,7 @@
   "mappings": {
     "dt.year": {"table": "ORDER","column":"rec_date", "extract":"year" },
     "dt.month": {"table": "ORDER","column":"rec_date", "extract":"month"},
+    "dt.week": {"table": "ORDER","column":"rec_date", "extract":"week"},
     "dt.day": {"table": "ORDER","column":"rec_date", "extract":"day"}
   },
 
@@ -38,7 +39,7 @@
      { "name":"dt", "role": "time", "label": "Дата",
        "levels": [
          { "name": "year", "label": "Година", "attributes": ["year"] },
-         { "name": "month", "label": "Месец", "attributes": ["month", "month_name"] },
+         { "name": "month", "label": "Месец", "attributes": ["month"] },
          { "name": "week", "label": "Седмица", "attributes": ["week"] },
          { "name": "day",  "label": "Ден", "attributes": ["day"] }
        ],
