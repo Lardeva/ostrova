@@ -272,7 +272,7 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
                     obj.store_status
             ):
                 pay_only_readonly_fields = self.closed_readonly_fields.copy()
-                if obj.dueAmount_int() > 0:
+                if obj.dueAmount_int() > 0 and obj.status != 'CANCELED':
 
                     if not obj.deposit:
                         pay_only_readonly_fields.remove('deposit')
@@ -294,17 +294,17 @@ class OrderAdmin(DjangoObjectActions, ModelAdmin):
 
                 return self.closed_readonly_fields
 
-            if obj.deposit:
+            if obj.deposit or obj.status == 'CANCELED':
                 actual_readonly_fields.append('deposit')
                 actual_readonly_fields.append('deposit_date')
                 actual_readonly_fields.append('deposit_payment_type')
 
-            if obj.deposit2 or obj.dueAmount_int() == 0:
+            if obj.deposit2 or obj.dueAmount_int() == 0 or obj.status == 'CANCELED':
                 actual_readonly_fields.append('deposit2')
                 actual_readonly_fields.append('deposit2_date')
                 actual_readonly_fields.append('deposit2_payment_type')
 
-            if obj.payed_final or obj.dueAmount_int() == 0:
+            if obj.payed_final or obj.dueAmount_int() == 0 or obj.status == 'CANCELED':
                 actual_readonly_fields.append('payed_final')
                 actual_readonly_fields.append('payment_date')
                 actual_readonly_fields.append('final_payment_type')
