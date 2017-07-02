@@ -6,7 +6,7 @@ It exposes the WSGI callable as a module-level variable named ``application``.
 For more information on this file, see
 https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/
 """
-
+import logging
 import os
 
 from cubes.server import create_server
@@ -35,8 +35,11 @@ django_application = DjangoWhiteNoise(django_application)
 
 config = read_slicer_config(os.environ["SLICER_CONFIG"])
 
+logging.error("init cubes")
+
 # initialize logging
 if config.has_option("server","log"):
+    logging.error("init logging:" + config.get("server","log"))
     get_logger(config.get("server","log"))
 
 cubes_application = create_server(config)
