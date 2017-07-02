@@ -215,7 +215,7 @@ def show_me_the_money(sender, **kwargs):
     logging.error("Receiver " + str(ipn_obj.receiver_email))
     logging.error("status " + str(ipn_obj.payment_status))
     logging.error("invoice " + str(ipn_obj.invoice))
-    logging.error("amtX " + str(ipn_obj.amount))
+    logging.error("amtX " + str(ipn_obj.payment_gross))
 
     if ipn_obj.payment_status == ST_PP_COMPLETED:
         # WARNING !
@@ -232,7 +232,7 @@ def show_me_the_money(sender, **kwargs):
         # Undertake some action depending upon `ipn_obj`.
         if ipn_obj.invoice.starts_with("order-deposit"):
             order_id = int(ipn_obj.invoice[13:])
-            amount = ipn_obj.auth_amount
+            amount = Decimal(round(nvl(ipn_obj.payment_gross,0) / Decimal(0.572310),2))
 
             order = Order.objects.get(id=order_id)
             if order.status == 'REQUESTED':
