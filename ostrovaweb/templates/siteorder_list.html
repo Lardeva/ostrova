@@ -46,7 +46,7 @@
         <div class="span1   text-right"> {{ order.dueAmount }}</div>
 
         <div class="span1">
-            {% if order.status == 'CONFIRMED' and not order.deposit %}
+            {% if order.status != 'CANCELED' and not order.deposit %}
             <a class= "btn btn-info" href="/siteorderpaydeposit/?id={{order.id}}">Капаро 50лв.</a>
             {% endif %}
         </div>

@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from paypal.standard.forms import PayPalPaymentsForm
+from phonenumber_field.formfields import PhoneNumberField
 
 from datetimewidget.widgets import DateTimeWidget, DateWidget, TimeWidget
 from nomenclature.models import Club, Saloon
@@ -17,7 +18,7 @@ from ostrovaweb.utils import nvl
 
 class Form_SiteOrder(forms.Form):
     parent = forms.CharField(label='Родител',  required=True, max_length=240)
-    phone = forms.CharField(label="Телефон",  required=True, max_length=100)
+    phone = PhoneNumberField(label="Телефон",  required=True, max_length=100)
     child = forms.CharField(label="Дете",max_length=200,required=False)
     age = forms.IntegerField(label="Години",required=False)
 
