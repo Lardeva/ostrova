@@ -13,7 +13,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from paypal.standard.forms import PayPalPaymentsForm
 from paypal.standard.ipn.signals import valid_ipn_received
-from paypal.standard.models import ST_PP_COMPLETED
+from paypal.standard.models import ST_PP_COMPLETED, ST_PP_PENDING
 from phonenumber_field.formfields import PhoneNumberField
 
 from datetimewidget.widgets import DateTimeWidget, DateWidget, TimeWidget
@@ -217,7 +217,7 @@ def show_me_the_money(sender, **kwargs):
     logging.error("invoice " + str(ipn_obj.invoice))
     logging.error("amtX " + str(ipn_obj.payment_gross))
 
-    if ipn_obj.payment_status == ST_PP_COMPLETED:
+    if ipn_obj.payment_status == ST_PP_COMPLETED or  ipn_obj.payment_status == ST_PP_PENDING:
         # WARNING !
         # Check that the receiver email is the same we previously
         # set on the business field request. (The user could tamper
