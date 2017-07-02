@@ -28,7 +28,7 @@ class ArticleStoreAdmin(admin.ModelAdmin):
     form = ArticleStoreForm
     readonly_fields = ('id','club_fk','article_fk','cnt','user','create_date','last_update_date')
     fields = ('club_fk','article_fk','user','create_date','last_update_date','cnt','cnt_min', 'cnt_bl','note')
-    list_display = ( related_field('article_fk__id'),'club_fk','article_fk', 'cnt', 'cnt_min', 'cnt_bl','note')
+    list_display = ( related_field('article_fk__id', "Артикул Ном."),'club_fk','article_fk', 'cnt', 'cnt_min', 'cnt_bl','note')
     search_fields = ('=article_fk__id','article_fk__name','article_fk__group_fk__name',)
     raw_id_fields = ('article_fk',)
     list_filter     = (

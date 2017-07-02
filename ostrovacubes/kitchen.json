@@ -11,13 +11,14 @@
         { "master": "ORDER.club_fk_id", "detail": "club.id"}
       ],
       "measures": [
-          { "name": "cnt", "label": "Count" }
+        { "name": "cnt", "label": "Брой" }
       ],
       "aggregates": [
         {
           "name": "aggregate_cnt",
           "function": "sum",
-          "measure": "cnt"
+          "measure": "cnt",
+          "label": "Брой"
         }
       ]
 
@@ -31,11 +32,11 @@
   },
 
   "dimensions": [
-     { "name":"article",   "attributes": ["id","name"], "locales" : ["bg"] },
-     { "name":"ORDER",   "attributes": ["id","rec_date","rec_time"] },
-     { "name":"club",   "attributes": ["id","name"] },
-     { "name":"dt", "role": "time",
-       "levels": ["year", "month", "day", "hour", "minute"],
+     { "name":"article",   "attributes": ["id","name"], "locales" : ["bg"], "label": "Артикул" },
+     { "name":"ORDER",   "attributes": ["id","rec_date","rec_time"], "label": "Поръчка" },
+     { "name":"club",   "attributes": ["id","name"], "label": "Клуб" },
+     { "name":"dt", "role": "time", "label": "Дата",
+       "levels": ["year", "month", "day"],
        "hierarchies": [
          { "name": "default", "levels":["year", "month", "day"]}
        ],
