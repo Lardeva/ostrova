@@ -207,12 +207,12 @@ def siteorder_pay_final(request):
 
 def show_me_the_money(sender, **kwargs):
     ipn_obj = sender
-    logging.info("Received payment confirmation" + str(sender))
+    logging.error("Received payment confirmation" + str(sender))
 
-    logging.info("Receiver " + str(ipn_obj.receiver_email))
-    logging.info("status " + str(ipn_obj.payment_status))
-    logging.info("invoice " + str(ipn_obj.invoice))
-    logging.info("amt " + str(ipn_obj.auth_amount))
+    logging.error("Receiver " + str(ipn_obj.receiver_email))
+    logging.error("status " + str(ipn_obj.payment_status))
+    logging.error("invoice " + str(ipn_obj.invoice))
+    logging.error("amt " + str(ipn_obj.auth_amount))
 
     if ipn_obj.payment_status == ST_PP_COMPLETED:
         # WARNING !
@@ -250,8 +250,8 @@ def show_me_the_money(sender, **kwargs):
 
 
 valid_ipn_received.connect(show_me_the_money)
-
+logging.error('shhh2')
 from django.db.models.signals import *
 for signal in [pre_save, pre_init, pre_delete, post_save, post_delete, post_init]:
     # print a List of connected listeners
-    logging.info(str(signal.receivers))
+    logging.error(str(signal.receivers))
