@@ -28,7 +28,7 @@
   "mappings": {
     "dt.year": {"table": "order","column":"rec_date", "extract":"year" },
     "dt.month": {"table": "order","column":"rec_date", "extract":"month"},
-    "dt.week": {"table": "ORDER","column":"rec_date", "extract":"week"},
+    "dt.week": {"table": "order","column":"rec_date", "extract":"week"},
     "dt.day": {"table": "order","column":"rec_date", "extract":"day"}
   },
 
