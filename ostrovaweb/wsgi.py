@@ -38,10 +38,10 @@ config = read_slicer_config(os.environ["SLICER_CONFIG"])
 logging.error("init cubes")
 
 # initialize logging
-if config.has_option("server","log"):
-    logging.error("init logging:" + config.get("server","log"))
-    lg = get_logger(config.get("server","log"))
-    lg.error("logging test")
+#if config.has_option("server","log"):
+logging.error("init logging:" + config.get("server","log"))
+lg = get_logger(config.get("server","log"),None)
+lg.error("logging test")
 
 cubes_application = create_server(config)
 
